@@ -4,7 +4,7 @@
 // Dependency order is strictly one-way:
 //   core <- entities <- { sync, tags, stats, maintenance }
 //
-// core.ts exports a handful of shared internals (db, SOURCE, now, nanoid,
+// core.ts exports a handful of shared internals (db, currentSource, now, nanoid,
 // getAllTasksRaw, logChange, queueTaskWrite) purely so its siblings can reach
 // them. Those are NOT re-exported here — the named list below is exactly the
 // set of core members that are part of './db's public surface.

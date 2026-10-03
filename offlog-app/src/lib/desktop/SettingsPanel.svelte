@@ -638,10 +638,8 @@
     }
   }
 
-  // Renaming this device only affects new writes' `source` field — no
-  // reload needed the way changing the sync URL needs one (db.ts's
-  // module-level SOURCE constant is a separate concern from this saved
-  // string; the *next* app launch is what actually picks up a rename).
+  // Renaming this device only affects new writes' `source` field, from the
+  // next write on — no reload needed the way changing the sync URL needs one.
   function saveDeviceName() { setDeviceName(deviceName); deviceName = getDeviceName(); }
 
   let deviceLastSeen: { device: string; lastSeen: string }[] = [];

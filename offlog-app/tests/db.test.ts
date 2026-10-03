@@ -128,6 +128,19 @@ describe('project + task CRUD', () => {
     expect(tasks[0].title).toBe('My task');
   });
 
+  it('stamps the device name current at each write, not the one at start-up', async () => {
+    await seedSpace();
+    const project = await createProject('space:unsorted', 'Named');
+    localStorage.setItem('offlog_device_name', 'Galaxy S24 Ultra');
+    const task = await createTask(project._id, 'space:unsorted', project.columns[0].id, 'Stamped');
+    expect((await getTaskById(task._id!))!.source).toBe('Galaxy S24 Ultra');
+    expect((await getRecentLogs(1))[0].source).toBe('Galaxy S24 Ultra');
+    localStorage.setItem('offlog_device_name', 'Renamed');
+    await updateTask(task._id!, { title: 'Stamped again' });
+    expect((await getTaskById(task._id!))!.source).toBe('Renamed');
+    expect((await getRecentLogs(1))[0].source).toBe('Renamed');
+  });
+
   it('getTasksForProject never truncates past 25 results (the bug caught in v2.9.0)', async () => {
     await seedSpace();
     const project = await createProject('space:unsorted', 'Big Project');

@@ -6,7 +6,7 @@ import { getDefaultReminderTime } from '../../config';
 import type { SpaceDoc, ProjectDoc, TaskDoc, Column, CustomFieldDef, TaskAttachment, Source } from '../types';
 import { wordSet, wordSetSimilarity, localDateStr, advanceDate } from '../utils';
 import { ATTACHMENT_MAX_BYTES, isAttachmentExtensionAllowed, attachmentExtension, attachmentMimeType } from '../attachments';
-import { db, SOURCE, DEFAULT_COLS, initIndexes, getAllTasksRaw, invalidateTaskCache, now, nanoid, logChange, queueTaskWrite, bulkWrite } from './core';
+import { db, currentSource, DEFAULT_COLS, initIndexes, getAllTasksRaw, invalidateTaskCache, now, nanoid, logChange, queueTaskWrite, bulkWrite } from './core';
 
 // A purge writes only {_id, _rev, _deleted}. A deleted revision that keeps
 // the doc's fields keeps its _attachments digests, so compaction never frees
@@ -67,12 +67,12 @@ export async function wipeAndReseed(): Promise<void> {
   // Seed fresh: one space + one project
   await db.put<SpaceDoc>({
     _id: 'space:unsorted', type: 'space', name: 'Unsorted', color: '#6B7280',
-    position: 0, updated_at: now(), source: SOURCE,
+    position: 0, updated_at: now(), source: currentSource(),
   });
   await db.put({
     _id: 'project:draft', type: 'project', space_id: 'space:unsorted',
     name: 'Draft', position: 0, columns: DEFAULT_COLS,
-    default_view: 'kanban', updated_at: now(), source: SOURCE,
+    default_view: 'kanban', updated_at: now(), source: currentSource(),
   });
 }
 
@@ -123,13 +123,13 @@ export async function seedIfEmpty() {
   ];
   for (let i = 0; i < SPACES.length; i++) {
     const { key, name, color } = SPACES[i];
-    await db.put<SpaceDoc>({ _id: `space:${key}`, type: 'space', name, color, position: i, updated_at: now(), source: SOURCE });
+    await db.put<SpaceDoc>({ _id: `space:${key}`, type: 'space', name, color, position: i, updated_at: now(), source: currentSource() });
   }
   // One starter project
   await db.put({
     _id: 'project:draft', type: 'project', space_id: 'space:unsorted',
     name: 'Draft', position: 0, columns: DEFAULT_COLS,
-    default_view: 'kanban', updated_at: now(), source: SOURCE,
+    default_view: 'kanban', updated_at: now(), source: currentSource(),
   });
   localStorage.setItem(SEEDED_KEY, '1');
 }
@@ -155,7 +155,7 @@ export async function createSpace(name: string, color: string, icon?: string): P
   const position = existing.length ? Math.max(...existing.map(s => s.position)) + 1 : 0;
   const doc: SpaceDoc = {
     _id: `space:${nanoid()}`, type: 'space', name, color, ...(icon ? { icon } : {}), position,
-    updated_at: now(), source: SOURCE,
+    updated_at: now(), source: currentSource(),
   };
   await db.put(doc);
   await logChange(doc._id!, 'create', undefined, undefined, undefined, { space_name: name });
@@ -164,7 +164,7 @@ export async function createSpace(name: string, color: string, icon?: string): P
 
 export async function updateSpace(id: string, changes: Partial<Pick<SpaceDoc, 'name' | 'color' | 'icon'>>): Promise<SpaceDoc> {
   const doc = await db.get<SpaceDoc>(id);
-  const updated = { ...doc, ...changes, updated_at: now(), source: SOURCE };
+  const updated = { ...doc, ...changes, updated_at: now(), source: currentSource() };
   await db.put(updated);
   const skip = new Set(['updated_at', 'source']);
   // Keyed to what `changes` can contain, not all of SpaceDoc: `keyof SpaceDoc`
@@ -186,7 +186,7 @@ export async function reorderSpaces(spaceIds: string[]): Promise<void> {
   const updates = spaceIds
     .map((id, i) => {
       const doc = byId.get(id);
-      return doc ? { ...doc, position: i, updated_at: now(), source: SOURCE } : null;
+      return doc ? { ...doc, position: i, updated_at: now(), source: currentSource() } : null;
     })
     .filter((d): d is SpaceDoc => d !== null);
   if (updates.length) await bulkWrite(updates);
@@ -204,7 +204,7 @@ export async function deleteSpace(id: string): Promise<void> {
   // is gone.
   const projects = [...await getProjects(id), ...(await getArchivedProjects()).filter(p => p.space_id === id)];
   if (projects.length) {
-    await bulkWrite(projects.map(p => ({ ...p, space_id: 'space:unsorted', updated_at: now(), source: SOURCE })));
+    await bulkWrite(projects.map(p => ({ ...p, space_id: 'space:unsorted', updated_at: now(), source: currentSource() })));
   }
   await db.remove(doc);
   await logChange(id, 'delete', undefined, undefined, undefined, { space_name: doc.name });
@@ -247,7 +247,7 @@ export async function createProject(spaceId: string, name: string): Promise<Proj
       { id: `col:${nanoid()}`, name: 'In Process' },
       { id: `col:${nanoid()}`, name: 'Completed' },
     ],
-    default_view: 'kanban', updated_at: now(), source: SOURCE,
+    default_view: 'kanban', updated_at: now(), source: currentSource(),
   };
   await db.put(doc);
   await logChange(doc._id!, 'create', undefined, undefined, undefined, { project_name: name });
@@ -279,7 +279,7 @@ export async function createProjectFromTemplate(
 
   const doc: ProjectDoc = {
     _id: `project:${nanoid()}`, type: 'project', space_id: spaceId, name, position,
-    columns, default_view: template.default_view, updated_at: now(), source: SOURCE,
+    columns, default_view: template.default_view, updated_at: now(), source: currentSource(),
   };
   await db.put(doc);
   await logChange(doc._id!, 'create', undefined, undefined, undefined, { project_name: name });
@@ -307,7 +307,7 @@ export async function createProjectFromTemplate(
         checklist: t.checklist?.map(item => ({ ...item, done: false })),
         created_at: ts,
         updated_at: ts,
-        source: SOURCE,
+        source: currentSource(),
       };
       await db.put(copy);
       await logChange(copy._id!, 'create', undefined, undefined, undefined, { task_title: copy.title, project_name: name });
@@ -320,7 +320,7 @@ export async function createProjectFromTemplate(
 
 export async function updateProject(id: string, changes: Partial<ProjectDoc>): Promise<ProjectDoc> {
   const doc = await db.get<ProjectDoc>(id);
-  const updated = { ...doc, ...changes, updated_at: now(), source: SOURCE };
+  const updated = { ...doc, ...changes, updated_at: now(), source: currentSource() };
   await db.put(updated);
   const skip = new Set(['updated_at', 'source', 'default_view']);
   for (const key of Object.keys(changes) as (keyof ProjectDoc)[]) {
@@ -377,7 +377,7 @@ export async function addCustomFieldDef(name: string, type: CustomFieldDef['type
   let doc: CustomFieldsDoc;
   try { doc = await db.get<CustomFieldsDoc>(CUSTOM_FIELDS_DOC_ID); } catch { doc = { _id: CUSTOM_FIELDS_DOC_ID, type: 'meta' }; }
   const fields = [...(doc.fields ?? []), field];
-  await db.put({ ...doc, fields, updated_at: now(), source: SOURCE });
+  await db.put({ ...doc, fields, updated_at: now(), source: currentSource() });
   await logChange(field.id, 'create', undefined, undefined, undefined, { field_name: name });
   return fields;
 }
@@ -390,7 +390,7 @@ export async function updateCustomFieldDef(fieldId: string, patch: { name?: stri
   let doc: CustomFieldsDoc;
   try { doc = await db.get<CustomFieldsDoc>(CUSTOM_FIELDS_DOC_ID); } catch { return []; }
   const fields = (doc.fields ?? []).map(f => f.id === fieldId ? { ...f, ...patch } : f);
-  await db.put({ ...doc, fields, updated_at: now(), source: SOURCE });
+  await db.put({ ...doc, fields, updated_at: now(), source: currentSource() });
   await logChange(fieldId, 'update', undefined, undefined, undefined, { field_name: patch.name });
   return fields;
 }
@@ -417,7 +417,7 @@ export async function removeCustomFieldDef(fieldId: string): Promise<CustomField
   // the leftovers are a known, detectable state (checkIntegrity's
   // orphaned_custom_value). Sweeping first and then failing would throw the
   // values away while the field still existed -- silent data loss.
-  await db.put({ ...doc, fields, updated_at: now(), source: SOURCE });
+  await db.put({ ...doc, fields, updated_at: now(), source: currentSource() });
 
   // custom_values is keyed by field id, so deleting a definition without this
   // sweep would strand every value under it: nothing renders them, nothing cleans them,
@@ -429,7 +429,7 @@ export async function removeCustomFieldDef(fieldId: string): Promise<CustomField
     await bulkWrite(affected.map(t => {
       const next = { ...t.custom_values };
       delete next[fieldId];
-      return { ...t, custom_values: next, updated_at: now(), source: SOURCE };
+      return { ...t, custom_values: next, updated_at: now(), source: currentSource() };
     }));
     invalidateTaskCache();
   }
@@ -463,7 +463,7 @@ export async function deleteProject(id: string): Promise<void> {
 export async function archiveProject(id: string): Promise<void> {
   const doc = await db.get<ProjectDoc>(id);
   const lastColId = doc.columns.at(-1)?.id;
-  await db.put({ ...doc, archived: true, updated_at: now(), source: SOURCE });
+  await db.put({ ...doc, archived: true, updated_at: now(), source: currentSource() });
   await logChange(id, 'update', 'archived', false, true, { project_name: doc.name });
   const all = await getAllTasksRaw();
   const toArchive = all.filter(t => t.project_id === id && !t.deleted && !t.archived && t.column_id !== lastColId);
@@ -473,7 +473,7 @@ export async function archiveProject(id: string): Promise<void> {
 
 export async function unarchiveProject(id: string): Promise<void> {
   const doc = await db.get<ProjectDoc>(id);
-  await db.put({ ...doc, archived: false, updated_at: now(), source: SOURCE });
+  await db.put({ ...doc, archived: false, updated_at: now(), source: currentSource() });
   await logChange(id, 'update', 'archived', true, false, { project_name: doc.name });
 
   // Restore exactly what archiving hid. Filtering on archivedWithProject is
@@ -509,7 +509,7 @@ function moveForColumnRemoval(id: string, fromId: string, to: Column, fromName: 
   return queueTaskWrite(id, async () => {
     const doc = await db.get<TaskDoc>(id);
     if (doc.column_id !== fromId) return;
-    await db.put({ ...doc, column_id: to.id, updated_at: now(), source: SOURCE });
+    await db.put({ ...doc, column_id: to.id, updated_at: now(), source: currentSource() });
     invalidateTaskCache();
     await logChange(id, 'move', 'column_id', fromName, to.name, { task_title: doc.title, project_name: projName });
   });
@@ -748,7 +748,7 @@ export async function createTask(
     recurrence: overrides?.recurrence ?? null,
     recurrenceInterval: overrides?.recurrenceInterval, recurrenceWeekdaysOnly: overrides?.recurrenceWeekdaysOnly,
     position: maxPos + 1024,
-    deleted: false, created_at: ts, updated_at: ts, source: SOURCE,
+    deleted: false, created_at: ts, updated_at: ts, source: currentSource(),
   };
   await db.put(doc);
   invalidateTaskCache();
@@ -854,7 +854,7 @@ async function updateTaskImpl(id: string, changesOrCompute: Partial<TaskDoc> | (
   const recurrenceReset = isCompleting && doc.recurrence && proj ? computeRecurrenceReset(doc, proj) : null;
   const finalChanges: Partial<TaskDoc> = recurrenceReset ? { ...changes, ...recurrenceReset } : changes;
 
-  await db.put({ ...doc, ...finalChanges, updated_at: now(), source: SOURCE });
+  await db.put({ ...doc, ...finalChanges, updated_at: now(), source: currentSource() });
   invalidateTaskCache();
 
   // Collect genuinely changed fields (excluding position/meta) -- always
@@ -904,7 +904,7 @@ async function updateTaskImpl(id: string, changesOrCompute: Partial<TaskDoc> | (
     await logChange(id, 'update', undefined, undefined, undefined, { task_title: taskTitle, project_name: projName, diffs });
   }
 
-  return { ...doc, ...finalChanges, updated_at: now(), source: SOURCE } as TaskDoc;
+  return { ...doc, ...finalChanges, updated_at: now(), source: currentSource() } as TaskDoc;
 }
 
 // ── Attachments ──────────────────────────────────────────────────────────────
@@ -956,7 +956,7 @@ async function addAttachmentImpl(taskId: string, input: AddAttachmentInput): Pro
     // existing content as-is rather than requiring every attachment to be
     // re-sent on every write. Only the new key needs real `data` here.
     _attachments: { ...doc._attachments, [key]: { content_type: contentType, data: input.base64Data } },
-    updated_at: now(), source: SOURCE,
+    updated_at: now(), source: currentSource(),
   });
   invalidateTaskCache();
   await logChange(taskId, 'update', 'attachments', prevMeta, nextMeta, { task_title: doc.title });
@@ -978,7 +978,7 @@ async function deleteAttachmentImpl(taskId: string, key: string): Promise<TaskDo
     ...doc,
     attachments: nextMeta,
     _attachments: nextAttachments,
-    updated_at: now(), source: SOURCE,
+    updated_at: now(), source: currentSource(),
   });
   invalidateTaskCache();
   await logChange(taskId, 'update', 'attachments', prevMeta, nextMeta, { task_title: doc.title });
@@ -1029,7 +1029,7 @@ export async function duplicateTask(id: string): Promise<TaskDoc> {
     reminder_at: null,
     created_at: ts,
     updated_at: ts,
-    source: SOURCE,
+    source: currentSource(),
   };
   await db.put(doc);
   invalidateTaskCache();
@@ -1061,7 +1061,7 @@ export async function undoDelete(id: string): Promise<void> {
     if (proj.archived && !archived) { archived = true; archivedWithProject = true; }
   } catch { /* no project to check against; leave it for checkIntegrity */ }
 
-  await db.put({ ...current, deleted: false, column_id, archived, archivedWithProject, updated_at: now(), source: SOURCE });
+  await db.put({ ...current, deleted: false, column_id, archived, archivedWithProject, updated_at: now(), source: currentSource() });
   invalidateTaskCache();
   let projName: string | undefined;
   try { projName = (await db.get<ProjectDoc>(current.project_id)).name; } catch {}

@@ -17,9 +17,10 @@ import type { TaskDoc, Source } from '../types';
 
 PouchDB.plugin(PouchDBFind);
 
-// Read once per module load, not per write: renaming a device triggers a
-// location.reload(), so a fresh value is picked up then.
-export const SOURCE: Source = getDeviceName();
+// Read at every write, never cached at import: the device's real name
+// arrives after start-up (initDeviceName) and a rename in Settings applies
+// at once.
+export function currentSource(): Source { return getDeviceName(); }
 const SOURCE_ID: string = getDeviceId();
 // auto_compaction discards superseded revision bodies as soon as a new
 // revision lands. Without it PouchDB keeps every historical revision
@@ -256,7 +257,7 @@ export async function logChange(
       : meta;
     await db.put({
       _id: `log:${ts}-${nanoid(8)}`,
-      type: 'log', ts, source: SOURCE, source_id: SOURCE_ID, ref, action,
+      type: 'log', ts, source: currentSource(), source_id: SOURCE_ID, ref, action,
       ...(field !== undefined ? { field, from: excerpt(from ?? null), to: excerpt(to ?? null) } : {}),
       ...(m ?? {}),
     });

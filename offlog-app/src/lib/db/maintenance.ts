@@ -1,7 +1,7 @@
 // Housekeeping: log/deleted-task retention, integrity check + repair, the
 // Settings maintenance run, and backup import/export.
 import type { SpaceDoc, ProjectDoc, TaskDoc, Column } from '../types';
-import { db, SOURCE, getAllTasksRaw, invalidateTaskCache, now, DEFAULT_COLS, bulkWrite } from './core';
+import { db, currentSource, getAllTasksRaw, invalidateTaskCache, now, DEFAULT_COLS, bulkWrite } from './core';
 import { getProjects, getCustomFieldDefs, createProject, tombstone } from './entities';
 // repairDatabase() re-scans for conflicts after rewriting docs. maintenance ->
 // sync is the one edge beyond core <- entities; sync never imports back.
@@ -420,16 +420,16 @@ export async function repairDatabase(known?: IntegrityIssue[]): Promise<{ fixed:
         // home there is always available.
         let fallback = (await getProjects('space:unsorted'))[0];
         if (!fallback) fallback = await createProject('space:unsorted', 'Recovered');
-        await db.put({ ...doc, project_id: fallback._id, space_id: fallback.space_id, column_id: fallback.columns[0]?.id ?? doc.column_id, updated_at: now(), source: SOURCE });
+        await db.put({ ...doc, project_id: fallback._id, space_id: fallback.space_id, column_id: fallback.columns[0]?.id ?? doc.column_id, updated_at: now(), source: currentSource() });
         fixed++;
       } else if (issue.type === 'invalid_column') {
         const doc = await db.get<TaskDoc>(issue.docId);
         const proj = await db.get<ProjectDoc>(doc.project_id);
-        await db.put({ ...doc, column_id: proj.columns[0]?.id ?? doc.column_id, updated_at: now(), source: SOURCE });
+        await db.put({ ...doc, column_id: proj.columns[0]?.id ?? doc.column_id, updated_at: now(), source: currentSource() });
         fixed++;
       } else if (issue.type === 'orphaned_project') {
         const doc = await db.get<ProjectDoc>(issue.docId);
-        await db.put({ ...doc, space_id: 'space:unsorted', updated_at: now(), source: SOURCE });
+        await db.put({ ...doc, space_id: 'space:unsorted', updated_at: now(), source: currentSource() });
         fixed++;
       } else if (issue.type === 'orphaned_custom_value') {
         const doc = await db.get<TaskDoc>(issue.docId);
@@ -437,7 +437,7 @@ export async function repairDatabase(known?: IntegrityIssue[]): Promise<{ fixed:
         const custom_values = Object.fromEntries(
           Object.entries(doc.custom_values ?? {}).filter(([id]) => live.has(id)),
         );
-        await db.put({ ...doc, custom_values, updated_at: now(), source: SOURCE });
+        await db.put({ ...doc, custom_values, updated_at: now(), source: currentSource() });
         fixed++;
       } else if (issue.type === 'dangling_link') {
         const doc = await db.get<TaskDoc>(issue.docId);
@@ -450,7 +450,7 @@ export async function repairDatabase(known?: IntegrityIssue[]): Promise<{ fixed:
         };
         const related = doc.related ? await keep(doc.related) : undefined;
         const blocked_by = doc.blocked_by ? await keep(doc.blocked_by) : undefined;
-        await db.put({ ...doc, related, blocked_by, updated_at: now(), source: SOURCE });
+        await db.put({ ...doc, related, blocked_by, updated_at: now(), source: currentSource() });
         fixed++;
       } else if (issue.type === 'unarchived_in_archived') {
         const doc = await db.get<TaskDoc>(issue.docId);
@@ -458,7 +458,7 @@ export async function repairDatabase(known?: IntegrityIssue[]): Promise<{ fixed:
         // up -- exactly what archiveProject()'s cascade does. Without the flag
         // un-archiving the project would never bring this task back, so the
         // repair would quietly make the hiding permanent.
-        await db.put({ ...doc, archived: true, archivedWithProject: true, updated_at: now(), source: SOURCE });
+        await db.put({ ...doc, archived: true, archivedWithProject: true, updated_at: now(), source: currentSource() });
         fixed++;
       } else if (issue.type === 'attachment_mismatch') {
         const doc = await db.get<TaskDoc & { _attachments?: Record<string, unknown> }>(issue.docId);
@@ -468,7 +468,7 @@ export async function repairDatabase(known?: IntegrityIssue[]): Promise<{ fixed:
         // revision per attachment, and dead bytes are a space cost, not a
         // broken card.
         const attachments = (doc.attachments ?? []).filter(a => blobKeys.has(a.key));
-        await db.put({ ...doc, attachments, updated_at: now(), source: SOURCE });
+        await db.put({ ...doc, attachments, updated_at: now(), source: currentSource() });
         fixed++;
       } else {
         skipped++;

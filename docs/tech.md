@@ -353,7 +353,9 @@ One PouchDB database, `offlog`. The `_id` prefix is the document type.
 - **Source** is the device name that made a write, for the changelog. Until someone picks a name it is the
   device's own (Android's device name, else its model, via `@capacitor/device`;
   Windows' computer name, via the desktop's `get_device_name` command), set
-  once by `initDeviceName()` before sync starts.
+  once by `initDeviceName()` before sync starts. Every write reads it fresh
+  through `currentSource()`, so that name and any later rename apply from the
+  next write; a value cached at import would stamp the generic default.
 
 ### Fields with behaviour attached
 
