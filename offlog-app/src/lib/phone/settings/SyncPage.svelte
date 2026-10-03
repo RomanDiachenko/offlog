@@ -482,8 +482,11 @@
 <style>
   .card { background: var(--surface); border-radius: 20px; box-shadow: var(--p-shadow); padding: 22px 18px 18px; margin-bottom: 14px; text-align: center; }
   .pair { display: flex; align-items: flex-start; justify-content: center; gap: 4px; margin-bottom: 16px; }
-  .end { display: flex; flex-direction: column; align-items: center; width: 108px; min-width: 0; font-size: var(--p-fs-s); color: var(--faint); }
-  .end b { margin-top: 8px; font-size: var(--p-fs-m); font-weight: 600; color: var(--text); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .end { display: flex; flex-direction: column; align-items: center; flex: 1 1 0; max-width: 150px; min-width: 0; font-size: var(--p-fs-s); color: var(--faint); text-align: center; }
+  /* Device names run long ("Galaxy S24 Ultra"): two balanced lines before
+     any ellipsis. */
+  .end b { margin-top: 8px; font-size: var(--p-fs-m); font-weight: 600; color: var(--text); max-width: 100%; overflow: hidden; overflow-wrap: anywhere; text-wrap: balance;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
   .circ { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 12%, transparent); }
   .me .circ { color: var(--on-accent); background: var(--accent); }

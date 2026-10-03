@@ -255,6 +255,7 @@ rather than guessed at.
 | C1 | Open-source the repository | 2026-07-22 |
 | C2 | Zero-config first run, verified | v4.24.0 |
 | C4 | F-Droid listing | declined |
+| C5 | Website at offlog.io (GitHub Pages; offlog.co redirects) | 2026-10-04 |
 | C6 | Brand & positioning pass | 2026-07-22 |
 | C7 | Fix hardcoded CouchDB credentials | 2026-07-17 |
 | C8 | New app icon, all platforms | v4.17.0 |
