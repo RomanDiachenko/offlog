@@ -36,14 +36,6 @@ State as of 4 Oct 2026.
 
 ## Ours to do
 
-- **Release process review.** Each release still repeats hand work: the
-  changelog and release notes written separately from the same commits,
-  the changelog's keep-10 rotation and link list kept by hand, checks run
-  locally and again in CI, and a manual Publish followed by a manual
-  Website run before offlog.io shows the new version. Start with an
-  analysis of CLAUDE.md's Release steps, `scripts/version.js`,
-  `release.yml`, `pages.yml` and `.github/scripts/`, then the owner
-  picks what to change.
 - **Windows installer polish.** Review the NSIS installer end to end
   (pages, wording, artwork, the uninstaller) against brand.md, the same
   way the phone app was reviewed.

@@ -13,6 +13,7 @@
     "test": "vitest run",
     "version:check": "node scripts/version.js check",
     "version:set": "node scripts/version.js set",
+    "release:prepare": "node scripts/version.js prepare",
     "bench": "vitest bench",
     "postinstall": "node scripts/patch-capacitor-app.js"
   },

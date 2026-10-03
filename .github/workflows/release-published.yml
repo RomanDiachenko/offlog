@@ -1,0 +1,22 @@
+# Clicking Publish on a release refreshes offlog.io's download section.
+# This doesn't deploy the site itself: Pages accepts deploys only from main,
+# and a release run is on its tag. It starts the Website workflow on main
+# instead -- workflow_dispatch is the one event GITHUB_TOKEN is allowed to
+# start, so no extra secret is needed.
+name: Release published
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  actions: write
+
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run the Website workflow on main
+        run: gh workflow run pages.yml --ref main --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}

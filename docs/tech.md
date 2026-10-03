@@ -1061,7 +1061,9 @@ arrives; the hero's Dashboard image is preloaded. It loads
 nothing from other origins, and its CSP meta forbids inline styles and
 scripts, so styling goes in `style.css`. `site/CNAME` holds `offlog.io`;
 `.github/workflows/pages.yml` publishes `site/` to GitHub Pages on pushes
-to `main` that touch it, and daily. Before upload,
+to `main` that touch it, and whenever a release is published
+(`release-published.yml` starts it on `main`, since Pages refuses deploys
+from a tag). Before upload,
 `.github/scripts/stamp-release.mjs` writes the latest published release's
 version, date, installer link and file sizes into the download section's
 `data-rel` elements; the committed values are the fallback if that lookup

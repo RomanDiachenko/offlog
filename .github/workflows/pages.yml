@@ -9,11 +9,8 @@ on:
   push:
     branches: [main]
     paths: ['site/**', '.github/workflows/pages.yml', '.github/scripts/stamp-release.mjs']
-  # Daily, so a new release reaches the download section within a day. Not on
-  # the release event: Pages only accepts deploys from the default branch, and
-  # a release run is on its tag.
-  schedule:
-    - cron: '17 6 * * *'
+  # Also started by release-published.yml when a release is published, so the
+  # download section shows it straight away.
   workflow_dispatch:
 
 permissions:

@@ -284,25 +284,31 @@ inside and import it back.
 
 ## Release
 
-1. `npm run build`, `npm run check`, `npm test` — all clean, judged by exit
-   code
-2. Verify visually in light **and** dark mode
-3. `npm run version:set X.Y.Z` — writes all three version sources and
-   derives `versionCode`. Never edit them by hand. **MAJOR only when an
-   older install can no longer read, sync or restore** (schema, storage,
-   backup format, or a required migration); MINOR for a user-visible
-   capability; PATCH for a fix. A feature is never MAJOR, however large —
-   see decisions.md.
-4. Add a `docs/changelog.md` entry (Keep a Changelog format) **and** a
-   `docs/release-notes.md` entry in plain language with its **In short**
-   block. Both, always — they're written for different readers. Nothing
-   user-visible still gets a one-line entry; the extraction script needs one.
-5. `npm run version:check` — must exit 0. It also runs in CI, and
-   `release.yml` refuses to publish a tag that disagrees with it.
-6. Check maintenance.md's current pointer. If a pass is due, say so and wait
-   for confirmation — don't start one.
-7. Commit (`feat:`/`fix:`, version in the subject) and tag `vX.Y.Z`
-8. After a real test round, reset to a fresh state —
+1. `npm run release:prepare X.Y.Z` — writes all three version sources and
+   derives `versionCode` (never edit them by hand), adds TODO entries to
+   `docs/changelog.md` and `docs/release-notes.md`, moves changelog entries
+   past the newest ten into `docs/archive/history.md`, adds the compare
+   link, and prints the maintenance due date and the commits since the last
+   tag. **MAJOR only when an older install can no longer read, sync or
+   restore** (schema, storage, backup format, or a required migration);
+   MINOR for a user-visible capability; PATCH for a fix. A feature is never
+   MAJOR, however large — see decisions.md.
+2. Replace every TODO: the changelog entry (Keep a Changelog, maintainer
+   detail) **and** the release-notes entry (plain language, **In short**
+   under 500 characters for Google Play). Both, always — they're written
+   for different readers. Nothing user-visible still gets a one-line entry.
+   Read the archive row once. If maintenance is due, say so and wait for
+   confirmation — don't start a pass.
+3. `npm run version:check` — must exit 0; it refuses a leftover TODO or an
+   over-long In short. No local build, check or test run: `release.yml`'s
+   first job runs all three and stops before anything is built.
+4. Commit (`feat:`/`fix:`, version in the subject), tag `vX.Y.Z`, and push
+   both at once: `git push --atomic origin main vX.Y.Z`. CI builds a
+   **draft** release in about 11 minutes.
+5. Install the draft's APK on a phone, check light **and** dark mode, then
+   Publish. Publishing updates offlog.io's download section by itself
+   (`release-published.yml` runs the Website workflow).
+6. After a real test round, reset to a fresh state —
    `offlog-desktop/scripts/reset-dev-env.ps1` plus the browser/Android steps
    in tech.md. Dev state accumulates silently otherwise.
 

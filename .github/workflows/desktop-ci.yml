@@ -19,10 +19,14 @@ name: Desktop CI
 # change there must not spend a full release cargo build. The list is
 # repeated rather than shared via a YAML anchor -- GitHub Actions does
 # not resolve anchors.
+#
+# On push, tauri.conf.json alone doesn't count: a release commit changes only
+# its version, and release.yml builds the same code minutes later. Any other
+# src-tauri change still runs this, and still compiles the config with it.
 on:
   push:
     branches: [main]
-    paths: ['offlog-desktop/src-tauri/**', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', '.github/workflows/desktop-ci.yml']
+    paths: ['offlog-desktop/src-tauri/**', '!offlog-desktop/src-tauri/tauri.conf.json', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', '.github/workflows/desktop-ci.yml']
   pull_request:
     branches: [main]
     paths: ['offlog-desktop/src-tauri/**', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', '.github/workflows/desktop-ci.yml']
