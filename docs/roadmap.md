@@ -36,9 +36,6 @@ State as of 4 Oct 2026.
 
 ## Ours to do
 
-- **Windows installer polish.** Review the NSIS installer end to end
-  (pages, wording, artwork, the uninstaller) against brand.md, the same
-  way the phone app was reviewed.
 - **Windows without the SmartScreen warning, at no cost.** decisions.md
   rules out a paid certificate and SignPath declined us, so the search is
   for a free way to distribute instead. Two routes to evaluate, smallest
