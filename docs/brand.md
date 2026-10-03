@@ -173,8 +173,9 @@ default font or a second "display" typeface for headlines.
   `resources/generate-icons.cjs` exports the Android launcher and
   notification icons and `public/icon-512.png` from it,
   `generate-splash.cjs` the legacy Android splash images and
-  `generate-installer-art.cjs` the Windows installer sidebar (run
-  `npm i --no-save sharp` in `offlog-app/` first; it is not a dependency);
+  `generate-installer-art.cjs` the Windows installer sidebar (the icon
+  scripts need `npm i --no-save sharp` in `offlog-app/` first; it is not a
+  dependency, and the installer art draws with headless Edge instead);
   `offlog-desktop/src-tauri/icons/` holds the desktop sizes
   (32/64/128/128@2x, `.ico`, `.icns`).
 - **No separate wordmark/logotype exists yet.** The icon is the only

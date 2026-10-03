@@ -1,110 +1,125 @@
 // Generates the Windows NSIS installer's welcome/finish sidebar image
-// from the same
-// resources/source-logo.svg every other platform icon comes from, instead
-// of shipping Tauri/NSIS's generic default installer chrome. Not part of
-// the build pipeline; run manually (`node resources/generate-installer-art.cjs`
-// from offlog-app/) whenever the logo or brand color changes, same
-// convention as generate-icons.cjs/generate-splash.cjs. Uses `sharp`,
-// which is not a dependency: run `npm i --no-save sharp` first.
+// (offlog-desktop/src-tauri/installer-sidebar.bmp) from
+// resources/source-logo.svg and the self-hosted Hanken Grotesk. Not part of
+// the build pipeline; run manually from offlog-app/ whenever the logo, brand
+// colour or wording changes, same convention as generate-icons.cjs:
+//
+//   node resources/generate-installer-art.cjs
+//
+// The page is drawn by headless Microsoft Edge (Windows only, like the
+// desktop build), because the banner needs the brand font and an image
+// library's SVG renderer can't load a webfont.
+//
+// Drawn at 1.5x (246x471, NSIS's 164x314 at 150%). MUI2's FitControl
+// stretch resizes with a rough nearest-pixel filter, so the bitmap matches
+// 150%, the most common laptop scaling, where it shows pixel for pixel; a 2x
+// bitmap shrunk to 150% turned the small logo grainy. The layout below is
+// written at 328x628 and zoomed to .75.
 //
 // Don't add a MUI_HEADERIMAGE_BITMAP. NSIS renders it at native size in
 // the header control's top-left corner and fills the rest of that bar
-// with the page's plain white background, so a dark banner reads as a
-// clashing dark square. There is no MUI2 define that recolors the
-// remainder -- MUI_BGCOLOR/MUI_TEXTCOLOR are Classic-UI-only and Modern
-// UI 2's Directory/Components/Install pages ignore them. The sidebar
-// (Welcome/Finish pages) carries the brand instead.
+// with the page's plain white background, so a coloured banner reads as a
+// clashing square. There is no MUI2 define that recolours the remainder.
 //
-// NSIS's `Header image`/`Wizard image` slots require classic uncompressed
-// 24-bit BMP (no alpha channel) — sharp has no BMP encoder, so this writes
-// a minimal BITMAPFILEHEADER/BITMAPINFOHEADER by hand around a flattened
-// raw RGB buffer (bottom-up row order, each row padded to a 4-byte
-// boundary, BGR channel order — all classic BMP requirements, not
-// optional).
-const sharp = require('sharp');
+// NSIS needs classic uncompressed 24-bit BMP (no alpha): written by hand
+// below (bottom-up rows, BGR, each row padded to 4 bytes).
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const zlib = require('zlib');
+const { execFileSync } = require('child_process');
 
-const BG = { r: 0x18, g: 0x1a, b: 0x20, alpha: 1 };      // colorPrimaryDark / tauri.conf.json window backgroundColor
-const ACCENT = { r: 0x57, g: 0x5f, b: 0xca, alpha: 1 };  // app.css --accent (light) / brand.md's only brand color
+const W = 246, H = 471;
+const ACCENT = '#575FCA'; // app.css --accent (light) / brand.md's only brand colour
+const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const SRC = path.join(__dirname, 'source-logo.svg');
-const OUT_DIR = path.join(__dirname, '..', '..', 'offlog-desktop', 'src-tauri');
+const FONT = path.join(__dirname, '..', 'public', 'fonts', 'HankenGrotesk-variable.woff2');
+const OUT = path.join(__dirname, '..', '..', 'offlog-desktop', 'src-tauri', 'installer-sidebar.bmp');
+const fileUrl = p => 'file:///' + path.resolve(p).split(path.sep).join('/');
 
-function toBmp24(rgbBuffer, width, height) {
-  const rowSize = Math.ceil((width * 3) / 4) * 4; // rows padded to 4-byte boundary
-  const pixelArraySize = rowSize * height;
-  const fileSize = 14 + 40 + pixelArraySize;
-  const buf = Buffer.alloc(fileSize);
+const svg = fs.readFileSync(SRC, 'utf8').replace(/<\?xml[^>]*>/, '')
+  .replace(/fill="#000000"/g, 'fill="currentColor"').replace(/width="100%"/, 'width="100%" height="100%"');
+const logo = (size, color, style = '') => `<div style="width:${size}px;height:${size}px;color:${color};${style}">${svg}</div>`;
 
-  // BITMAPFILEHEADER
-  buf.write('BM', 0);
-  buf.writeUInt32LE(fileSize, 2);
-  buf.writeUInt32LE(0, 6);
-  buf.writeUInt32LE(14 + 40, 10); // pixel data offset
+// The website's line, under the name, on the accent; a large faint mark
+// bleeds off the bottom-right corner.
+const html = `<!doctype html><html><head><style>
+@font-face { font-family: H; src: url(${fileUrl(FONT)}) format('woff2'); font-weight: 100 900; }
+* { box-sizing: border-box; }
+body { margin: 0; width: 328px; height: 628px; zoom: .75; overflow: hidden; position: relative; background: ${ACCENT}; font-family: H, sans-serif; color: #fff; }
+.name { position: absolute; top: 40px; left: 34px; display: flex; align-items: center; gap: 12px; font-size: 30px; font-weight: 780; letter-spacing: -.03em; }
+.line { position: absolute; left: 34px; bottom: 46px; font-size: 24px; font-weight: 700; line-height: 1.15; letter-spacing: -.02em; }
+</style></head><body>
+${logo(470, 'rgba(255, 255, 255, .14)', 'position:absolute;right:-170px;bottom:-120px')}
+<div class="name">${logo(46, '#fff')}Offlog</div>
+<div class="line">Your tasks.<br>Your devices.<br>Nobody else's.</div>
+</body></html>`;
 
-  // BITMAPINFOHEADER
-  buf.writeUInt32LE(40, 14);           // header size
-  buf.writeInt32LE(width, 18);
-  buf.writeInt32LE(height, 22);
-  buf.writeUInt16LE(1, 26);            // planes
-  buf.writeUInt16LE(24, 28);           // bits per pixel
-  buf.writeUInt32LE(0, 30);            // no compression
-  buf.writeUInt32LE(pixelArraySize, 34);
-  buf.writeInt32LE(2835, 38);          // 72 DPI
-  buf.writeInt32LE(2835, 42);
-  buf.writeUInt32LE(0, 46);
-  buf.writeUInt32LE(0, 50);
-
-  // Pixel data: BMP rows go bottom-up, BGR order, padded per row.
-  let offset = 14 + 40;
-  for (let y = height - 1; y >= 0; y--) {
-    for (let x = 0; x < width; x++) {
-      const srcIdx = (y * width + x) * 3;
-      buf[offset++] = rgbBuffer[srcIdx + 2]; // B
-      buf[offset++] = rgbBuffer[srcIdx + 1]; // G
-      buf[offset++] = rgbBuffer[srcIdx];     // R
-    }
-    offset += rowSize - width * 3; // row padding
+function render() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'offlog-installer-art-'));
+  const page = path.join(dir, 'sidebar.html'), png = path.join(dir, 'sidebar.png');
+  fs.writeFileSync(page, html);
+  try {
+    execFileSync(EDGE, ['--headless=new', '--inprivate', '--disable-sync', '--no-first-run', '--hide-scrollbars',
+      `--user-data-dir=${path.join(dir, 'profile')}`, '--allow-file-access-from-files', '--force-device-scale-factor=1',
+      `--window-size=${W},${H}`, '--virtual-time-budget=2000', `--screenshot=${png}`, fileUrl(page)], { stdio: 'ignore' });
+    // Edge can return before the screenshot lands.
+    for (let i = 0; i < 40 && !fs.existsSync(png); i++) execFileSync(process.execPath, ['-e', 'setTimeout(() => {}, 250)']);
+    return fs.readFileSync(png);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
   }
+}
 
+// Just enough PNG decoding for Edge's screenshots: 8-bit RGB or RGBA,
+// not interlaced. Returns tightly packed RGB.
+function decodePng(buf) {
+  let off = 8, width, height, channels;
+  const idat = [];
+  while (off < buf.length) {
+    const len = buf.readUInt32BE(off), type = buf.toString('ascii', off + 4, off + 8), data = buf.subarray(off + 8, off + 8 + len);
+    if (type === 'IHDR') {
+      width = data.readUInt32BE(0); height = data.readUInt32BE(4);
+      const depth = data[8], color = data[9], interlace = data[12];
+      if (depth !== 8 || ![2, 6].includes(color) || interlace) throw new Error(`unsupported PNG (depth ${depth}, colour ${color}, interlace ${interlace})`);
+      channels = color === 6 ? 4 : 3;
+    } else if (type === 'IDAT') idat.push(data);
+    off += 12 + len;
+  }
+  const raw = zlib.inflateSync(Buffer.concat(idat)), stride = width * channels;
+  const px = Buffer.alloc(height * stride);
+  for (let y = 0; y < height; y++) {
+    const f = raw[y * (stride + 1)], row = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
+    for (let x = 0; x < stride; x++) {
+      const a = x >= channels ? px[y * stride + x - channels] : 0, b = y ? px[(y - 1) * stride + x] : 0;
+      const c = x >= channels && y ? px[(y - 1) * stride + x - channels] : 0;
+      const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
+      const pred = [0, a, b, (a + b) >> 1, pa <= pb && pa <= pc ? a : pb <= pc ? b : c][f];
+      px[y * stride + x] = (row[x] + pred) & 255;
+    }
+  }
+  const rgb = Buffer.alloc(width * height * 3);
+  for (let i = 0, j = 0; i < px.length; i += channels, j += 3) { rgb[j] = px[i]; rgb[j + 1] = px[i + 1]; rgb[j + 2] = px[i + 2]; }
+  return { width, height, rgb };
+}
+
+function toBmp24(rgb, width, height) {
+  const rowSize = Math.ceil((width * 3) / 4) * 4;
+  const size = 54 + rowSize * height;
+  const buf = Buffer.alloc(size);
+  buf.write('BM', 0); buf.writeUInt32LE(size, 2); buf.writeUInt32LE(54, 10);
+  buf.writeUInt32LE(40, 14); buf.writeInt32LE(width, 18); buf.writeInt32LE(height, 22);
+  buf.writeUInt16LE(1, 26); buf.writeUInt16LE(24, 28); buf.writeUInt32LE(rowSize * height, 34);
+  buf.writeInt32LE(2835, 38); buf.writeInt32LE(2835, 42);
+  let o = 54;
+  for (let y = height - 1; y >= 0; y--) {
+    for (let x = 0; x < width; x++) { const i = (y * width + x) * 3; buf[o++] = rgb[i + 2]; buf[o++] = rgb[i + 1]; buf[o++] = rgb[i]; }
+    o += rowSize - width * 3;
+  }
   return buf;
 }
 
-async function markOn(bg, color, markSize) {
-  const { data, info } = await sharp(SRC).resize(markSize, markSize).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  for (let i = 0; i < data.length; i += 4) { data[i] = color.r; data[i + 1] = color.g; data[i + 2] = color.b; }
-  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
-}
-
-async function canvas(width, height, mark, left, top) {
-  const { data, info } = await sharp({ create: { width, height, channels: 4, background: BG } })
-    .composite([{ input: mark, left, top }])
-    .flatten({ background: BG })
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-  // flatten() drops the alpha channel conceptually but raw() can still
-  // emit it as an opaque 255 byte depending on sharp/libvips version —
-  // normalize to a tightly-packed 3-channel buffer explicitly rather than
-  // assuming info.channels === 3.
-  if (info.channels === 3) return toBmp24(data, width, height);
-  const rgb = Buffer.alloc(width * height * 3);
-  for (let i = 0, j = 0; i < data.length; i += info.channels, j += 3) {
-    rgb[j] = data[i]; rgb[j + 1] = data[i + 1]; rgb[j + 2] = data[i + 2];
-  }
-  return toBmp24(rgb, width, height);
-}
-
-async function main() {
-  // Welcome/finish sidebar — 164x314, mark centered, sized to leave real
-  // breathing room (a full-bleed edge-to-edge mark on a tall narrow strip
-  // reads as cramped, same lesson as the splash-icon truncation fix).
-  const SIDE_W = 164, SIDE_H = 314;
-  const sideMarkSize = 96;
-  const sideMark = await markOn(BG, ACCENT, sideMarkSize);
-  const sideBmp = await canvas(SIDE_W, SIDE_H, sideMark, Math.round((SIDE_W - sideMarkSize) / 2), Math.round((SIDE_H - sideMarkSize) / 2));
-  fs.writeFileSync(path.join(OUT_DIR, 'installer-sidebar.bmp'), sideBmp);
-
-  console.log('Wrote installer-sidebar.bmp to offlog-desktop/src-tauri/.');
-}
-
-main().catch(e => { console.error(e); process.exit(1); });
+const { width, height, rgb } = decodePng(render());
+if (width !== W || height !== H) throw new Error(`rendered ${width}x${height}, expected ${W}x${H}`);
+fs.writeFileSync(OUT, toBmp24(rgb, width, height));
+console.log(`Wrote ${path.relative(process.cwd(), OUT)} (${W}x${H}).`);
