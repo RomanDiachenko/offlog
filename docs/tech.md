@@ -1027,6 +1027,17 @@ uncompressed 24-bit BMP specifically. There is deliberately **no
 offers no supported way to recolour it, so a dark header clashes instead of
 reading as a banner.
 
+The wording is Offlog's, without forking Tauri's `installer.nsi`:
+`installer-hooks.nsh` (Tauri includes it above every page macro) defines the
+MUI page texts, and `installer-english.nsh` replaces Tauri's own English
+strings, including the uninstaller's delete-data checkbox, which removes the
+tasks, backups and settings under `%APPDATA%` and `%LOCALAPPDATA%\com.offlog.app`
+and so must say so. That file must carry every key of the tauri-bundler
+version in use; diff it against the new `English.nsh` after an upgrade. The
+page headings and status lines are MUI language strings, which MUI sets only
+when not already defined, so the hooks file defines them first. Only the
+buttons and the disk-space labels stay stock, as standard Windows wording.
+
 ```bash
 cd offlog-app && npm run build
 cd ../offlog-desktop

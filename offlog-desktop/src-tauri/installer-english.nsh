@@ -1,0 +1,32 @@
+; Tauri's English installer strings (tauri-bundler 2.10.0), every one in
+; Offlog's wording. Tauri uses this file instead of its own, and copies it
+; as-is (no {{placeholders}} filled in), so it names Offlog directly and must
+; carry every key: after a tauri-bundler upgrade, diff it against the new
+; English.nsh or a missing key shows as an empty label.
+LangString addOrReinstall ${LANG_ENGLISH} "Reinstall Offlog"
+LangString alreadyInstalled ${LANG_ENGLISH} "Offlog is already installed"
+LangString alreadyInstalledLong ${LANG_ENGLISH} "Offlog ${VERSION} is already on this PC. Choose what to do, then click Next."
+LangString appRunning ${LANG_ENGLISH} "Offlog is open. Close it, then try again."
+LangString appRunningOkKill ${LANG_ENGLISH} "Offlog is open.$\nClick OK to close it and continue."
+LangString chooseMaintenanceOption ${LANG_ENGLISH} "Reinstall Offlog, or remove it."
+LangString choowHowToInstall ${LANG_ENGLISH} "Choose how to install this version."
+LangString createDesktop ${LANG_ENGLISH} "Add a desktop shortcut"
+LangString dontUninstall ${LANG_ENGLISH} "Install over the current version"
+LangString dontUninstallDowngrade ${LANG_ENGLISH} "Install over the current version (not possible when going back to an older one)"
+LangString failedToKillApp ${LANG_ENGLISH} "Could not close Offlog. Close it yourself, then try again."
+LangString installingWebview2 ${LANG_ENGLISH} "Installing WebView2, which Offlog needs to run..."
+LangString newerVersionInstalled ${LANG_ENGLISH} "A newer version of Offlog is already on this PC. To go back to this older one, uninstall the current version first. Your tasks stay on this PC. Choose what to do, then click Next."
+LangString older ${LANG_ENGLISH} "older"
+LangString olderOrUnknownVersionInstalled ${LANG_ENGLISH} "An $R4 version of Offlog is on this PC. Uninstalling it first is recommended; your tasks stay on this PC. Choose what to do, then click Next."
+LangString silentDowngrades ${LANG_ENGLISH} "A newer version of Offlog is installed, so this older one cannot install silently. Run the installer normally instead."
+LangString unableToUninstall ${LANG_ENGLISH} "Could not uninstall Offlog. Please try again."
+LangString uninstallApp ${LANG_ENGLISH} "Uninstall Offlog"
+LangString uninstallBeforeInstalling ${LANG_ENGLISH} "Uninstall the current version first (your tasks stay)"
+LangString unknown ${LANG_ENGLISH} "unknown"
+LangString webview2AbortError ${LANG_ENGLISH} "Could not install WebView2, which Offlog needs to run. Please run the installer again."
+LangString webview2DownloadError ${LANG_ENGLISH} "Could not download WebView2 ($0). Check the internet connection, then please try again."
+LangString webview2DownloadSuccess ${LANG_ENGLISH} "WebView2 downloaded."
+LangString webview2Downloading ${LANG_ENGLISH} "Downloading WebView2..."
+LangString webview2InstallError ${LANG_ENGLISH} "Could not install WebView2 (error $1). Please try again."
+LangString webview2InstallSuccess ${LANG_ENGLISH} "WebView2 installed."
+LangString deleteAppData ${LANG_ENGLISH} "Also delete my tasks, backups and settings from this PC. This can't be undone."

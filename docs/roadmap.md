@@ -39,3 +39,17 @@ State as of 4 Oct 2026.
 - **Windows installer polish.** Review the NSIS installer end to end
   (pages, wording, artwork, the uninstaller) against brand.md, the same
   way the phone app was reviewed.
+- **Windows without the SmartScreen warning, at no cost.** decisions.md
+  rules out a paid certificate and SignPath declined us, so the search is
+  for a free way to distribute instead. Two routes to evaluate, smallest
+  first; check each one's current terms before starting:
+  1. **winget** (`winget install Offlog`). An installer winget downloads
+     doesn't carry the browser's download mark, so SmartScreen doesn't
+     step in, and unsigned installers are accepted. Each release is a pull
+     request to `microsoft/winget-pkgs`, which `release.yml` could open
+     with `wingetcreate`. The website download stays as it is.
+  2. **Microsoft Store, as MSIX.** The Store signs the package itself, and
+     registration is free for individual developers. Needs an MSIX build
+     (tauri-bundler doesn't make one), the self-updater off in that build
+     since the Store updates it, and a check that the bundled NyxDB server
+     and network discovery work inside an MSIX package.
