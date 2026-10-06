@@ -1061,6 +1061,11 @@ powershell -ExecutionPolicy Bypass -File scripts/fetch-nyxdb-win.ps1   # once
 cargo tauri build
 ```
 
+For local test installers, set `CARGO_PROFILE_RELEASE_INCREMENTAL=true`
+first: a rebuild after a change to the app crate drops from about 3 minutes
+to under 30 seconds (the first such build fills the cache). Release builds
+in CI keep the default, non-incremental profile.
+
 ---
 
 ## Website (offlog.io)
