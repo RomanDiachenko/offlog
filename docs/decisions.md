@@ -511,6 +511,20 @@ leak and dependency for a job regex already does. Ambiguous phrasing is
 left as plain text rather than guessed at, a promise a rule-based parser
 can make and a phrasing-sensitive LLM can't.
 
+### Notes use CodeMirror 6, not a home-made editor or Write/Preview tabs
+Task notes render Markdown live, in the one box you type in: `**bold**`
+turns bold and `# Heading` becomes a heading as you type. That replaced a
+Write/Preview tab toggle on 27 Aug 2026. A plain `<textarea>` can't style
+its own text, and a home-made `contenteditable` editor is where cursor
+jumps, broken undo, IME and non-Latin keyboard input (Armenian included),
+and paste bugs come from. CodeMirror handles all of those; Offlog only adds
+the live-rendering decorations (`shared/markdownLiveView.ts`, ~230 lines with
+the wrapper). It is the largest dependency at about 485 KB, so it loads only
+when a note is opened (`phone/noteEditor.ts` on the phone), never at
+start-up. Not rewritten in Rust or WASM either: an editor is UI inside the
+WebView, where neither helps. The fallback, if it ever has to go, is the old
+Write/Preview tabs with the existing renderer, not another editor library.
+
 ---
 
 ## Data model
