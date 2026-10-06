@@ -385,7 +385,7 @@
   async function revealTauriWindow() {
     if (!isTauri()) return;
     await tick();
-    requestAnimationFrame(() => { invokeTauri('show_main_window').catch(() => {}); });
+    requestAnimationFrame(() => { invokeTauri('show_main_window_at_start').catch(() => {}); });
   }
 
   // Desktop tray-resident + global shortcut: Rust's

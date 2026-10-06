@@ -19,6 +19,13 @@ struct NyxdbProcess(Mutex<Option<std::process::Child>>);
 // supervisor never mistakes it for a crash and respawns the sidecar.
 static NYXDB_STOPPING: AtomicBool = AtomicBool::new(false);
 
+// The login entry launches with this flag. The app then stays in the tray:
+// the start-up reveal (show_main_window_at_start and the 5-second fallback)
+// does nothing. Every deliberate show -- tray, Ctrl+Alt+O, a second launch,
+// a reminder click -- still shows the window.
+const LAUNCH_HIDDEN_ARG: &str = "--minimized";
+static LAUNCHED_HIDDEN: AtomicBool = AtomicBool::new(false);
+
 fn device_name() -> String {
     std::env::var("COMPUTERNAME").unwrap_or_else(|_| "Offlog PC".to_string())
 }
@@ -135,15 +142,24 @@ fn check_desktop_notification_setting(app: tauri::AppHandle) -> bool {
 // The main window starts hidden (tauri.conf.json's `visible: false`) so
 // there's no blank-white-then-content-pops-in flash while the frontend's
 // own onMount does its thing (theme, init(), view restore) -- App.svelte
-// calls this once `ready = true` is actually painted, revealing a
-// window that's already fully rendered instead of an empty shell.
-// `show()` is idempotent, so the setup()-side timeout fallback below
+// calls show_main_window_at_start once `ready = true` is actually painted,
+// revealing a window that's already fully rendered instead of an empty
+// shell. `show()` is idempotent, so the setup()-side timeout fallback below
 // firing after this already ran is harmless.
 #[tauri::command]
 fn show_main_window(app: tauri::AppHandle) {
     if let Some(w) = app.get_webview_window("main") {
         let _ = w.show();
         let _ = w.set_focus();
+    }
+}
+
+// Only for the reveal at start-up; anything the user asked for uses
+// show_main_window, so a login start can't swallow it.
+#[tauri::command]
+fn show_main_window_at_start(app: tauri::AppHandle) {
+    if !LAUNCHED_HIDDEN.load(Ordering::SeqCst) {
+        show_main_window(app);
     }
 }
 
@@ -422,8 +438,9 @@ pub fn run() {
                 let _ = app.emit("show-dashboard", ());
             }
         }).build())
-        // Start-on-login toggle in the tray menu below.
-        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, None))
+        // Start-on-login toggle in the tray menu below. The entry carries
+        // LAUNCH_HIDDEN_ARG so a login start stays in the tray.
+        .plugin(tauri_plugin_autostart::Builder::new().arg(LAUNCH_HIDDEN_ARG).build())
         .setup(|app| {
             // Enabled in every build, not just debug -- an installed
             // release build with no log file is undiagnosable. Don't gate
@@ -530,23 +547,43 @@ pub fn run() {
 
             // Safety net for the hidden-until-ready window (tauri.conf.json's
             // `visible: false`, revealed by the frontend calling
-            // show_main_window once its first render is actually painted):
+            // show_main_window_at_start once its first render is painted):
             // if that call is ever late or never arrives (a frontend JS
             // error before `ready = true`, a slow first paint on a very
             // underpowered machine), the window must not stay invisible
             // forever with no way for the user to even see an error.
             // show() is idempotent, so this firing after the frontend
             // already revealed the window is a harmless no-op.
+            let launched_hidden = std::env::args().any(|a| a == LAUNCH_HIDDEN_ARG);
+            LAUNCHED_HIDDEN.store(launched_hidden, Ordering::SeqCst);
             let timeout_handle = app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                // std::thread::sleep, not an async sleep -- same pattern
-                // sync_host::wait_ready uses, and avoids taking tokio as a
-                // direct dependency for one sleep.
-                std::thread::sleep(Duration::from_secs(5));
-                if let Some(w) = timeout_handle.get_webview_window("main") {
-                    let _ = w.show();
+            if !launched_hidden {
+                tauri::async_runtime::spawn(async move {
+                    // std::thread::sleep, not an async sleep -- same pattern
+                    // sync_host::wait_ready uses, and avoids taking tokio as a
+                    // direct dependency for one sleep.
+                    std::thread::sleep(Duration::from_secs(5));
+                    if let Some(w) = timeout_handle.get_webview_window("main") {
+                        let _ = w.show();
+                    }
+                });
+            }
+
+            // Rewrite an existing login entry on every start: one written
+            // without LAUNCH_HIDDEN_ARG, or pointing at a folder Offlog has
+            // since been reinstalled away from, gets the current flag and
+            // path. Only when is_enabled() -- which also honours Windows
+            // Settings' Startup apps switch -- because enable() switches that
+            // back on, and must not override a user who turned it off there.
+            // Release only: the entry's name is shared, so a debug build
+            // would repoint the installed app's login entry at itself.
+            #[cfg(not(debug_assertions))]
+            if app.autolaunch().is_enabled().unwrap_or(false) {
+                let autolaunch = app.autolaunch();
+                if let Err(e) = autolaunch.enable() {
+                    log::warn!("autostart: could not refresh the login entry: {e}");
                 }
-            });
+            }
 
             // Closing the window (the titlebar X) hides it instead of
             // quitting -- a tray-resident app stays running so the global
@@ -643,7 +680,7 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_sync_info, get_device_name,is_debug_build, generate_pairing_code, reset_sync_data, show_main_window, send_task_notification, check_desktop_notification_setting, get_detected_other_hosts, store_sync_secret, get_sync_secret])
+        .invoke_handler(tauri::generate_handler![get_sync_info, get_device_name,is_debug_build, generate_pairing_code, reset_sync_data, show_main_window, show_main_window_at_start, send_task_notification, check_desktop_notification_setting, get_detected_other_hosts, store_sync_secret, get_sync_secret])
         .build(context)
         .expect("error while building tauri application")
         .run(|app_handle, event| {

@@ -1013,6 +1013,16 @@ fast. `bring_to_front()` toggles `always_on_top` true→false because a bare
 `set_focus()` is ignored by Windows' foreground-lock timeout when called
 from a background thread.
 
+**Start on login.** The HKCU `Run` entry is `Offlog.exe --minimized`. With
+that flag the app stays in the tray: `show_main_window_at_start` (App.svelte's
+first-paint reveal) and the 5-second reveal fallback do nothing, while
+`show_main_window` (a reminder click) and `bring_to_front()` (tray, shortcut,
+a second launch) show it as usual. Each release start rewrites an enabled
+entry, so an old one gains the flag and a moved install its new path; it
+skips that when Windows Settings' Startup apps switch has it off, since
+`enable()` would switch it back on, and debug builds never rewrite it. The
+uninstaller removes the entry; updates keep it.
+
 **Content Security Policy** (`tauri.conf.json`). `script-src 'self'` (the
 pre-paint theme script is same-origin); `style-src` allows `'unsafe-inline'`
 for per-space colour attributes; `img-src 'self' blob:` (image attachments
