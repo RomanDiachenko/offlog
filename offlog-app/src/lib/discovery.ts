@@ -161,7 +161,7 @@ export async function pairWithHost(host: DiscoveredHost, code: string): Promise<
     // nothing to a non-technical reader. The caller's catch block just
     // shows e.message verbatim, so the friendly text has to originate
     // here, not there.
-    throw new Error("Couldn't reach that computer. Make sure it's turned on and both devices are on the same Wi-Fi network.");
+    throw new Error("Couldn't reach that computer. Make sure it's turned on and both devices are on the same Wi-Fi network. If they are, Windows Firewall on the computer may be blocking Offlog: in Windows Security, open Firewall & network protection, then Allow an app through firewall, and allow Offlog and nyxdb.");
   }
   if (!res.ok) throw new Error('Incorrect or expired code.');
 

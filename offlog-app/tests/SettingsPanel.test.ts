@@ -12,6 +12,9 @@ let storedCreds = { user: 'olduser', pass: 'oldpass' };
 const setSyncUrl = vi.fn((u: string) => { storedUrl = u; });
 const setSyncCredentials = vi.fn().mockResolvedValue(undefined);
 const getSyncCredentials = vi.fn().mockImplementation(async () => storedCreds);
+// Flipped per test to render the Windows-only controls.
+let tauri = false;
+const invokeTauri = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('../src/config', () => ({
   getSyncUrl: () => storedUrl,
@@ -26,7 +29,7 @@ vi.mock('../src/config', () => ({
   getQuietHours: () => ({ enabled: false, from: '22:00', to: '07:00' }), setQuietHours: vi.fn(),
   getNotificationsEnabled: () => true, setNotificationsEnabled: vi.fn(),
   getAutoUpdateCheckEnabled: () => true, setAutoUpdateCheckEnabled: vi.fn(),
-  isTauri: () => false, invokeTauri: vi.fn(),
+  isTauri: () => tauri, invokeTauri: (...a: unknown[]) => invokeTauri(...a),
   isAppLockEnabled: () => false, setAppLockPin: vi.fn(), clearAppLockPin: vi.fn(),
   getAppLockTimeoutMinutes: () => 5, setAppLockTimeoutMinutes: vi.fn(),
   getAppLockHint: () => '', isNativePlatform: () => false,
@@ -133,7 +136,7 @@ beforeEach(() => {
   getStorageBreakdown.mockResolvedValue(null);
   getAutoBackupUsage.mockResolvedValue(null);
 });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); tauri = false; invokeTauri.mockReset(); invokeTauri.mockResolvedValue(undefined); });
 
 describe('SettingsPanel sync save', () => {
   it('is announced as a dialog, with a named list of sections', () => {
@@ -431,5 +434,34 @@ describe('SettingsPanel sync tab load failures', () => {
 
     if (original) Object.defineProperty(navigator, 'storage', original);
     else delete (navigator as { storage?: unknown }).storage;
+  });
+});
+
+describe('SettingsPanel Windows shortcut switch', () => {
+  const answer = (failSet = false) => invokeTauri.mockImplementation(async (cmd: string) => {
+    if (cmd === 'get_global_shortcut_enabled') return true;
+    if (cmd === 'set_global_shortcut_enabled' && failSet) throw new Error('registry');
+    return undefined;
+  });
+
+  it('turns Ctrl+Alt+O off from Advanced', async () => {
+    tauri = true;
+    answer();
+    const { findByRole } = render(SettingsPanel, { initialCategory: 'advanced' });
+    const toggle = await findByRole('switch', { name: 'Open Offlog with Ctrl+Alt+O from any app' });
+    expect(toggle.getAttribute('aria-checked')).toBe('true');
+    await fireEvent.click(toggle);
+    expect(invokeTauri).toHaveBeenCalledWith('set_global_shortcut_enabled', { enabled: false });
+    await vi.waitFor(() => expect(toggle.getAttribute('aria-checked')).toBe('false'));
+  });
+
+  it('says so and keeps the switch on when it could not be changed', async () => {
+    tauri = true;
+    answer(true);
+    const { findByRole } = render(SettingsPanel, { initialCategory: 'advanced' });
+    const toggle = await findByRole('switch', { name: 'Open Offlog with Ctrl+Alt+O from any app' });
+    await fireEvent.click(toggle);
+    await vi.waitFor(() => expect(showError).toHaveBeenCalledWith('Could not turn the shortcut off. Please try again.'));
+    expect(toggle.getAttribute('aria-checked')).toBe('true');
   });
 });

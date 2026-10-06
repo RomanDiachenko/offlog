@@ -34,7 +34,6 @@ serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
 tauri = { version = "2.12.0", features = ["tray-icon"] }
 tauri-plugin-log = "2"
-tauri-plugin-notification = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-updater = "2"
@@ -54,6 +53,7 @@ pbkdf2 = "0.13"
 sha2 = "0.11"
 aes-gcm = "0.11"
 base64 = "0.23"
+tauri-plugin-window-state = "2"
 
 [target.'cfg(windows)'.dependencies]
 win32job = "2"

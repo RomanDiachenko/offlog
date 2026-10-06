@@ -55,18 +55,29 @@ export function invokeTauri<T = void>(cmd: string, args?: Record<string, unknown
 //     initTauriSyncDefaults() below before the first sync attempt.
 const DEFAULT_SYNC_URL = envUrl ?? (typeof window !== 'undefined' && !isNativePlatform() && !isTauri() ? 'http://127.0.0.1:5984/offlog' : '');
 
-// Called once at app boot (store.ts's initApp(), before startSync()) — if
-// this is the Tauri desktop app and no URL has been explicitly configured,
-// points it at its own embedded sidecar instead of guessing. Must never
-// override an explicit choice someone already made (e.g. pairing with, or
-// manually configuring, a different machine).
+// Called at every app boot (store.ts's initApp(), before startSync()). While
+// the Tauri desktop app syncs with its own embedded sidecar, its URL and
+// credentials are re-read from get_sync_info each time: the sidecar can move
+// to a new port, or get a new identity when its file was unreadable, and a
+// copy saved once would then sync nowhere without a word. Never overrides an
+// explicit choice (a manually configured server); the URL the sidecar was
+// last given is remembered to tell the two apart. An install from before that
+// key existed counts as following the sidecar when its URL is a loopback
+// /offlog address, which only the sidecar ever wrote.
+const SIDECAR_URL_KEY = 'offlog_sidecar_url';
+
 export async function initTauriSyncDefaults(): Promise<void> {
   if (!isTauri()) return;
   const saved = localStorage.getItem('offlog_sync_url');
-  if (saved && saved !== 'http://127.0.0.1:5984/offlog') return;
+  const lastSidecar = localStorage.getItem(SIDECAR_URL_KEY);
+  const followsSidecar = !saved || saved === 'http://127.0.0.1:5984/offlog' || saved === lastSidecar
+    || (lastSidecar === null && /^http:\/\/127\.0\.0\.1:\d+\/offlog$/.test(saved));
+  if (!followsSidecar) return;
   try {
     const info = await invokeTauri<{ port: number; user: string; password: string }>('get_sync_info');
-    setSyncUrl(`http://127.0.0.1:${info.port}/offlog`);
+    const url = `http://127.0.0.1:${info.port}/offlog`;
+    setSyncUrl(url);
+    localStorage.setItem(SIDECAR_URL_KEY, url);
     await setSyncCredentials(info.user, info.password);
   } catch {
     // sidecar not ready yet or invoke failed — leave whatever was
@@ -377,6 +388,23 @@ const AUTO_UPDATE_CHECK_KEY = 'offlog_auto_update_check';
 export function getAutoUpdateCheckEnabled(): boolean {
   const stored = localStorage.getItem(AUTO_UPDATE_CHECK_KEY);
   return stored === null ? true : stored === 'true';
+}
+
+// Set just before an update installs. The installer restarts Offlog with the
+// old process's arguments, so a session that began at login would come back
+// with --minimized and stay in the tray; the next start reads this instead
+// and shows the window.
+const UPDATE_RELAUNCH_KEY = 'offlog_update_relaunch';
+
+export function markUpdateRelaunch(on: boolean) {
+  if (on) localStorage.setItem(UPDATE_RELAUNCH_KEY, '1');
+  else localStorage.removeItem(UPDATE_RELAUNCH_KEY);
+}
+
+export function takeUpdateRelaunch(): boolean {
+  const was = localStorage.getItem(UPDATE_RELAUNCH_KEY) === '1';
+  localStorage.removeItem(UPDATE_RELAUNCH_KEY);
+  return was;
 }
 
 export function setAutoUpdateCheckEnabled(enabled: boolean) {

@@ -15,7 +15,7 @@
   import type Sidebar from './lib/desktop/Sidebar.svelte';
   import ConfirmDialog from './lib/desktop/ConfirmDialog.svelte';
   import NamePrompt from './lib/desktop/NamePrompt.svelte';
-  import { hasShownNamePrompt, markNamePromptShown, isTauri, invokeTauri, isAppLockEnabled, getAppLockTimeoutMinutes, syncPrivacyScreen, isSyncEnabled } from './config';
+  import { hasShownNamePrompt, markNamePromptShown, isTauri, invokeTauri, isAppLockEnabled, getAppLockTimeoutMinutes, syncPrivacyScreen, isSyncEnabled, takeUpdateRelaunch } from './config';
   import { closeOnBack, closeAll, openLayers } from './lib/modalStack';
   import AppLock from './lib/desktop/AppLock.svelte';
   import UpdateModal from './lib/desktop/UpdateModal.svelte';
@@ -385,7 +385,8 @@
   async function revealTauriWindow() {
     if (!isTauri()) return;
     await tick();
-    requestAnimationFrame(() => { invokeTauri('show_main_window_at_start').catch(() => {}); });
+    const afterUpdate = takeUpdateRelaunch();
+    requestAnimationFrame(() => { invokeTauri(afterUpdate ? 'show_main_window' : 'show_main_window_at_start').catch(() => {}); });
   }
 
   // Desktop tray-resident + global shortcut: Rust's

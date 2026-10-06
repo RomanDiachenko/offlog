@@ -469,6 +469,22 @@
     invokeTauri<boolean>('is_debug_build').then((v) => { isTauriDebug = v; }).catch(() => {});
   }
 
+  // Ctrl+Alt+O from anywhere. The off state lives on the Rust side, which
+  // registers the shortcut before this panel (or any frontend) loads.
+  let globalShortcutEnabled = true;
+  if (isTauri) {
+    invokeTauri<boolean>('get_global_shortcut_enabled').then((v) => { globalShortcutEnabled = v; }).catch(() => {});
+  }
+  async function toggleGlobalShortcut() {
+    const next = !globalShortcutEnabled;
+    try {
+      await invokeTauri('set_global_shortcut_enabled', { enabled: next });
+      globalShortcutEnabled = next;
+    } catch {
+      showError(next ? 'Could not turn the shortcut on. Another app may be using Ctrl+Alt+O. Please try again.' : 'Could not turn the shortcut off. Please try again.');
+    }
+  }
+
   let selectedHost: DiscoveredHost | null = null;
   let pairingCode = '';
   let pairingBusy = false;
@@ -1036,7 +1052,7 @@
     import('@capacitor/app').then(({ App }) => App.getInfo()).then(info => { appVersion = info.version; }).catch(() => {});
   }
   async function onCheckForUpdate() {
-    if ($updateState.phase === 'ready') { showUpdateModal.set(true); return; }
+    if ($updateState.phase === 'ready' || $updateState.phase === 'downloading') { showUpdateModal.set(true); return; }
     updateChecking = true;
     updateStatus = '';
     await checkForUpdate();
@@ -1225,6 +1241,7 @@
               <AdvancedSettings
                 {isTauri} {isTauriDebug} bind:showMaintenanceModal
                 {autoUpdateCheckEnabled} {toggleAutoUpdateCheck} {appVersion}
+                {globalShortcutEnabled} {toggleGlobalShortcut}
                 {updateChecking} {updateStatus} {onCheckForUpdate}
                 {syncEnabled} bind:syncUrl bind:credentialUser bind:credentialPass
                 {syncError} {lastErrorAt} {resetBusy} {resetPcTestData}

@@ -387,11 +387,13 @@ Verified in the code, not just claimed:
 - **Desktop updates are signature-checked** before installing. A
   tampered or corrupted download is rejected.
 - **Installs are per-user and never ask for administrator rights.**
-- **File access is narrowly scoped.** The desktop app can write, list and
-  delete only inside its own automatic-backups folder. Tauri's default
-  file permission set also lets it read its own app-data folders, and
-  nothing else. Files you export go through the system's own Save dialog,
-  where you choose the location.
+- **File access is narrowly scoped.** The desktop app can create, list,
+  write, check and delete files only inside its own automatic-backups
+  folder, each action granted for that folder alone. It has no general read
+  access, not even to its own app-data folders, and the sync identity,
+  stored sync credential, NyxDB data and WebView profile are explicitly
+  denied. Files you export go through the system's own Save dialog, which
+  grants access to exactly the file you chose.
 - **Only two kinds of memory-unsafe code exist** in the whole desktop
   app: the Windows call that shuts down the sync server (used on quit,
   and by a reset that only debug builds allow), and the two calls to

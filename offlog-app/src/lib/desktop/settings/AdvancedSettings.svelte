@@ -7,6 +7,8 @@
   export let showMaintenanceModal: boolean;
   export let autoUpdateCheckEnabled: boolean;
   export let toggleAutoUpdateCheck: () => void;
+  export let globalShortcutEnabled: boolean;
+  export let toggleGlobalShortcut: () => void;
   export let appVersion: string;
   export let updateChecking: boolean;
   export let updateStatus: string;
@@ -31,6 +33,16 @@
               </div>
 
               {#if isTauri}
+                <div class="setting-group">
+                  <div class="setting-section-title">Windows</div>
+                  <div class="setting-row">
+                    <span class="setting-label">Open Offlog with Ctrl+Alt+O from any app</span>
+                    <button class="toggle-btn" class:on={globalShortcutEnabled} on:click={toggleGlobalShortcut} aria-label="Open Offlog with Ctrl+Alt+O from any app" role="switch" aria-checked={globalShortcutEnabled}>
+                      <span class="toggle-knob"></span>
+                    </button>
+                  </div>
+                  <p class="setting-hint compact-hint">Turn this off if you type with AltGr and Ctrl+Alt+O gets in the way, for example ó on a Polish keyboard.</p>
+                </div>
                 <div class="setting-group">
                   <div class="setting-section-title">Software updates</div>
                   <div class="setting-row">

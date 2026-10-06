@@ -1,5 +1,5 @@
 import { writable, get, type Writable } from 'svelte/store';
-import { isTauri, getAutoUpdateCheckEnabled } from '../../config';
+import { isTauri, invokeTauri, getAutoUpdateCheckEnabled, markUpdateRelaunch } from '../../config';
 import type { Update } from '@tauri-apps/plugin-updater';
 
 // Desktop-only auto-updater flow. Split into explicit phases rather than a
@@ -30,6 +30,10 @@ let pendingUpdate: Update | null = null;
 
 export async function checkForUpdate(): Promise<void> {
   if (!isTauri()) return;
+  // A new check replaces pendingUpdate, and installing one that was never
+  // downloaded throws -- so never while an update is downloading or ready.
+  const phase = get(updateState).phase;
+  if (phase === 'downloading' || phase === 'ready') return;
   updateState.set({ phase: 'checking' });
   try {
     const { check } = await import('@tauri-apps/plugin-updater');
@@ -75,10 +79,13 @@ export async function downloadUpdate(): Promise<void> {
 export async function installUpdate(): Promise<void> {
   if (!pendingUpdate) return;
   try {
+    markUpdateRelaunch(true);
+    await invokeTauri('save_window_state').catch(() => {});
     await pendingUpdate.install();
     const { relaunch } = await import('@tauri-apps/plugin-process');
     await relaunch();
   } catch {
+    markUpdateRelaunch(false);
     updateState.update(s => ({ ...s, phase: 'error', error: 'Could not install the update — try restarting the app manually.' }));
   }
 }
@@ -98,8 +105,7 @@ export function startBackgroundUpdateChecks(): void {
   // Never while an update is downloading or ready: a new check replaces the
   // pending Update, and installing an undownloaded one throws.
   const runIfEnabled = () => {
-    const phase = get(updateState).phase;
-    if (getAutoUpdateCheckEnabled() && phase !== 'downloading' && phase !== 'ready') checkForUpdate();
+    if (getAutoUpdateCheckEnabled()) checkForUpdate();
   };
   runIfEnabled();
   intervalId = setInterval(runIfEnabled, CHECK_INTERVAL_MS);

@@ -86,6 +86,29 @@ pub fn load_or_create_info(config_path: &Path) -> SyncHostInfo {
     info
 }
 
+/// The saved port is drawn once from Windows' dynamic range, where Hyper-V,
+/// WSL and Docker reserve blocks at boot and other apps get ports too. If it
+/// can no longer be bound and nothing NyxDB-like answers on it (an earlier
+/// sidecar of ours would), move to a fresh port and save it; the password and
+/// identity stay, and paired phones re-find the PC by uuid over mDNS.
+pub fn ensure_port_usable(mut info: SyncHostInfo, config_path: &Path) -> SyncHostInfo {
+    if TcpListener::bind(("0.0.0.0", info.port)).is_ok() || fetch_uuid(info.port).is_some() {
+        return info;
+    }
+    let old = info.port;
+    let mut port = pick_free_port();
+    for _ in 0..5 {
+        if port != old { break; }
+        port = pick_free_port();
+    }
+    info.port = port;
+    log::warn!("sync_host: port {old} is taken by another program; moving the sync host to {port}");
+    if let Err(e) = write_atomically(config_path, &serde_json::to_vec_pretty(&info).unwrap()) {
+        log::error!("sync_host: couldn't save the new port to {} ({e})", config_path.display());
+    }
+    info
+}
+
 fn new_info() -> SyncHostInfo {
     SyncHostInfo {
         port: pick_free_port(),
@@ -240,9 +263,9 @@ fn spawn_nyxdb_process(binary_path: &Path, data_dir: &Path, info: &SyncHostInfo)
         .spawn()
 }
 
-/// Polls the port instead of the HTTP welcome response — cheaper, and
-/// sufficient: NyxDB doesn't open the listening socket until it's
-/// actually ready, so a successful TCP connect is already a good signal.
+/// Ready means the port answers with NyxDB's welcome document, not just a
+/// TCP accept: another program on the port would otherwise count as ready
+/// and be sent the sync password.
 pub fn wait_ready(port: u16, timeout: Duration) -> bool {
     let deadline = Instant::now() + timeout;
     while Instant::now() < deadline {
@@ -255,7 +278,7 @@ pub fn wait_ready(port: u16, timeout: Duration) -> bool {
 }
 
 pub fn is_ready(port: u16) -> bool {
-    TcpStream::connect(("127.0.0.1", port)).is_ok()
+    TcpStream::connect(("127.0.0.1", port)).is_ok() && fetch_uuid(port).is_some()
 }
 
 /// Delay before readiness re-check `attempt` (0-based) once the initial
@@ -326,7 +349,9 @@ pub fn ensure_database(info: &SyncHostInfo) {
 /// advertising instead of inventing a separate identity scheme.
 pub fn fetch_uuid(port: u16) -> Option<String> {
     let url = format!("http://127.0.0.1:{port}/");
-    let mut resp = ureq::get(&url).call().ok()?;
+    // Bounded: a foreign listener may accept and never answer.
+    let agent: ureq::Agent = ureq::Agent::config_builder().timeout_global(Some(Duration::from_secs(2))).build().into();
+    let mut resp = agent.get(&url).call().ok()?;
     let text = resp.body_mut().read_to_string().ok()?;
     let body: serde_json::Value = serde_json::from_str(&text).ok()?;
     body.get("uuid")?.as_str().map(|s| s.to_string())
@@ -364,6 +389,24 @@ mod tests {
         let mut v: Vec<String> = fs::read_dir(dir).unwrap().map(|e| e.unwrap().file_name().to_string_lossy().into_owned()).collect();
         v.sort();
         v
+    }
+
+    #[test]
+    fn keeps_a_free_port_and_moves_off_one_another_program_holds() {
+        let dir = temp_dir("port");
+        let path = dir.join("sync-host.json");
+        let info = load_or_create_info(&path);
+        let kept = ensure_port_usable(info.clone(), &path);
+        assert_eq!(kept.port, info.port);
+
+        // Something that isn't NyxDB now holds the saved port.
+        let squatter = TcpListener::bind(("0.0.0.0", info.port)).unwrap();
+        let moved = ensure_port_usable(info.clone(), &path);
+        assert_ne!(moved.port, info.port);
+        assert_eq!((moved.user.as_str(), moved.password.as_str()), (info.user.as_str(), info.password.as_str()));
+        assert_eq!(load_or_create_info(&path).port, moved.port, "the new port is saved");
+        assert!(!is_ready(info.port), "a listener that isn't NyxDB is not ready");
+        drop(squatter);
     }
 
     #[test]

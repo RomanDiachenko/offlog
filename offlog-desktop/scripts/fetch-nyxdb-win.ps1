@@ -7,7 +7,10 @@
 # $Ref deliberately, in its own commit, when upgrading.
 #
 # Output is NOT committed to git (~5MB) -- see offlog-desktop/.gitignore.
-# Re-run any time vendor/nyxdb-win/ is missing or after bumping $Ref.
+# Re-run any time vendor/nyxdb-win/ is missing or after bumping $Ref: the
+# folder records the tag it was built from in VERSION, and a different tag
+# rebuilds it. A folder without VERSION counts as the current tag, since CI
+# restores it from a cache keyed on that tag.
 # Requires: git, a Rust toolchain (cargo build --release) on PATH.
 
 $ErrorActionPreference = "Stop"
@@ -19,9 +22,15 @@ $Root = Split-Path -Parent $PSScriptRoot
 $VendorDir = Join-Path $Root "vendor\nyxdb-win"
 $TempClone = Join-Path $env:TEMP "offlog-nyxdb-build-$Ref"
 
+$VersionFile = Join-Path $VendorDir "VERSION"
 if ((Test-Path $VendorDir) -and (Test-Path (Join-Path $VendorDir "nyxdb.exe"))) {
-    Write-Host "vendor\nyxdb-win already present (delete it to re-fetch). Skipping."
-    exit 0
+    if (-not (Test-Path $VersionFile)) { Set-Content -Path $VersionFile -Value $Ref -NoNewline }
+    if ((Get-Content $VersionFile -Raw).Trim() -eq $Ref) {
+        Write-Host "vendor\nyxdb-win is already $Ref. Skipping."
+        exit 0
+    }
+    Write-Host "vendor\nyxdb-win was built from another tag; rebuilding as $Ref."
+    Remove-Item $VendorDir -Recurse -Force
 }
 
 if (Test-Path $TempClone) { Remove-Item $TempClone -Recurse -Force }
@@ -60,6 +69,7 @@ if (-not (Test-Path $builtExe)) {
 
 New-Item -ItemType Directory -Force -Path $VendorDir | Out-Null
 Copy-Item $builtExe (Join-Path $VendorDir "nyxdb.exe") -Force
+Set-Content -Path $VersionFile -Value $Ref -NoNewline
 Write-Host "Copied nyxdb.exe into vendor\nyxdb-win\."
 
 Remove-Item $TempClone -Recurse -Force -ErrorAction SilentlyContinue

@@ -199,7 +199,7 @@ describe('phone Sync page', () => {
     Object.assign(m.syncState, { status: 'error', error: 'Cannot reach sync server — it may be switched off' });
     const { getByRole, getByText, container } = render(SettingsPage, { page: 'sync' });
     expect(getByRole('heading', { name: "Can't reach Office PC" })).toBeTruthy();
-    expect(getByText(/same Wi-Fi\. Your changes are safe here/)).toBeTruthy();
+    expect(getByText(/same Wi-Fi. If they are, Windows Firewall on the computer may be blocking Offlog. Your changes are safe here/)).toBeTruthy();
     expect(container.querySelector('.card.bad')).toBeTruthy();
     await fireEvent.click(getByText('Try again'));
     expect(syncNow).toHaveBeenCalledTimes(1);

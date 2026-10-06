@@ -55,7 +55,7 @@
     if (syncStatus === 'syncing') return { tone: 'ok', title: 'Syncing…', text: lastSynced ? `Synced ${fmtLastSynced(lastSynced)}` : 'First sync', act: 'sync' };
     if (syncStatus === 'offline') return { tone: 'idle', title: 'Offline', text: `Sync picks up again when this ${here} is back on your network.`, act: 'sync' };
     if (syncStatus === 'error') return /cannot reach/i.test(syncError ?? '')
-      ? { tone: 'bad', title: `Can't reach ${hubInText}`, text: ownServer ? 'Check that the server is on and its address is right. Your changes are safe here until then.' : 'Open Offlog on the computer and make sure both are on the same Wi-Fi. Your changes are safe here until then.', act: 'retry' }
+      ? { tone: 'bad', title: `Can't reach ${hubInText}`, text: ownServer ? 'Check that the server is on and its address is right. Your changes are safe here until then.' : 'Open Offlog on the computer and make sure both are on the same Wi-Fi. If they are, Windows Firewall on the computer may be blocking Offlog. Your changes are safe here until then.', act: 'retry' }
       : { tone: 'bad', title: 'Sync stopped', text: `${syncError || 'Something went wrong.'} Your changes are safe here.`, act: 'retry' };
     if (lastSynced) return { tone: 'ok', title: 'Up to date', text: `Synced ${fmtLastSynced(lastSynced)}`, act: 'sync' };
     return { tone: 'ok', title: 'Waiting for the first sync', text: 'This can take a minute.', act: 'sync' };

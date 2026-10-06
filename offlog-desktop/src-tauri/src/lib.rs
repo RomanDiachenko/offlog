@@ -12,6 +12,7 @@ use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri_plugin_autostart::ManagerExt as AutostartManagerExt;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
+use tauri_plugin_window_state::{AppHandleExt as WindowStateExt, StateFlags};
 
 struct NyxdbProcess(Mutex<Option<std::process::Child>>);
 
@@ -25,6 +26,20 @@ static NYXDB_STOPPING: AtomicBool = AtomicBool::new(false);
 // a reminder click -- still shows the window.
 const LAUNCH_HIDDEN_ARG: &str = "--minimized";
 static LAUNCHED_HIDDEN: AtomicBool = AtomicBool::new(false);
+
+const GLOBAL_SHORTCUT: &str = "Ctrl+Alt+O";
+// Present when the user switched the global shortcut off. A file, not
+// localStorage, because the shortcut is registered in setup(), before the
+// frontend has loaded; AltGr layouts (Polish "ó" is AltGr+O) arrive as
+// Ctrl+Alt, so for some people the shortcut swallows a letter.
+const SHORTCUT_OFF_FILE: &str = "global-shortcut-off";
+
+// Size, position and maximized state, restored by tauri-plugin-window-state.
+// Never VISIBLE: the window's visibility belongs to the start-up reveal and
+// the --minimized login start.
+fn window_state_flags() -> StateFlags {
+    StateFlags::all() & !StateFlags::VISIBLE
+}
 
 fn device_name() -> String {
     std::env::var("COMPUTERNAME").unwrap_or_else(|_| "Offlog PC".to_string())
@@ -91,22 +106,25 @@ fn is_debug_build() -> bool {
     cfg!(debug_assertions)
 }
 
-// tauri-plugin-notification's desktop backend wires up no click/action
-// callback: show() fires the toast and emits nothing back on
-// interaction. tauri-winrt-notification (its own dependency) does
-// support it via Toast::on_activated, so reminders bypass the plugin
-// and build the toast with that crate directly -- the only way to get a
-// working click/action callback on desktop. Everything else the plugin
-// handles fine (channel creation, visual appearance) still goes through
-// the plugin.
+// Every desktop reminder is built here with tauri-winrt-notification; the
+// app has no notification plugin. Its Toast::on_activated is what gets a
+// click or a Done/Snooze press back to the frontend, as the
+// 'notification-action' event.
+//
+// That callback lives only as long as this process, and Windows can't
+// relaunch the app for a toast clicked from the notification list (no COM
+// activator is registered). The Reminder scenario keeps the toast on screen
+// until the user acts on it, so the press reaches the running app instead of
+// a toast that slid into the list and went dead.
 #[tauri::command]
 fn send_task_notification(app: tauri::AppHandle, title: String, body: String, task_id: String) -> Result<(), String> {
-    use tauri_winrt_notification::Toast;
+    use tauri_winrt_notification::{Scenario, Toast};
     let app_id = app.config().identifier.clone();
     let emit_id = task_id.clone();
     Toast::new(&app_id)
         .title(&title)
         .text1(&body)
+        .scenario(Scenario::Reminder)
         .add_button("Done", "done")
         .add_button("Snooze 1h", "snooze")
         .on_activated(move |action| {
@@ -118,12 +136,10 @@ fn send_task_notification(app: tauri::AppHandle, title: String, body: String, ta
         .map_err(|e| format!("failed to show notification: {e}"))
 }
 
-// tauri-plugin-notification's isPermissionGranted()/requestPermission() are
-// hardcoded to return granted on desktop (no real permission model behind
-// them), so the frontend can't tell a genuinely-blocked toast from a
-// working one through the plugin. This queries the real Windows per-app
-// notification toggle directly via WinRT -- the same setting the user
-// flips under Settings > Notifications. Any query failure (unregistered
+// Windows still accepts a toast when Offlog's notifications are switched
+// off and just doesn't show it, so the frontend reads the real per-app
+// toggle here, via WinRT -- the same setting the user flips under
+// Settings > Notifications -- before firing a reminder. Any query failure (unregistered
 // AUMID, non-Windows target, API unavailable) falls back to `true`, same
 // as the frontend's prior always-granted assumption -- an unreadable
 // setting shouldn't regress a working install to "blocked".
@@ -148,10 +164,7 @@ fn check_desktop_notification_setting(app: tauri::AppHandle) -> bool {
 // firing after this already ran is harmless.
 #[tauri::command]
 fn show_main_window(app: tauri::AppHandle) {
-    if let Some(w) = app.get_webview_window("main") {
-        let _ = w.show();
-        let _ = w.set_focus();
-    }
+    bring_to_front(&app);
 }
 
 // Only for the reveal at start-up; anything the user asked for uses
@@ -159,8 +172,48 @@ fn show_main_window(app: tauri::AppHandle) {
 #[tauri::command]
 fn show_main_window_at_start(app: tauri::AppHandle) {
     if !LAUNCHED_HIDDEN.load(Ordering::SeqCst) {
-        show_main_window(app);
+        if let Some(w) = app.get_webview_window("main") {
+            let _ = w.show();
+            let _ = w.set_focus();
+        }
     }
+}
+
+// The plugin writes its file only on a normal exit, which Offlog rarely has:
+// Windows ends it at sign-out and an update exits the process. So the state
+// is also written on close-to-tray, on Quit and before an update installs.
+#[tauri::command]
+fn save_window_state(app: tauri::AppHandle) {
+    if let Err(e) = app.save_window_state(window_state_flags()) {
+        log::warn!("window state: could not save: {e}");
+    }
+}
+
+fn shortcut_off_path(app: &tauri::AppHandle) -> Option<std::path::PathBuf> {
+    app.path().app_config_dir().ok().map(|d| d.join(SHORTCUT_OFF_FILE))
+}
+
+#[tauri::command]
+fn get_global_shortcut_enabled(app: tauri::AppHandle) -> bool {
+    shortcut_off_path(&app).map_or(true, |p| !p.exists())
+}
+
+#[tauri::command]
+fn set_global_shortcut_enabled(app: tauri::AppHandle, enabled: bool) -> Result<(), String> {
+    let path = shortcut_off_path(&app).ok_or("no config folder")?;
+    if enabled {
+        let _ = std::fs::remove_file(&path);
+        if !app.global_shortcut().is_registered(GLOBAL_SHORTCUT) {
+            app.global_shortcut().register(GLOBAL_SHORTCUT).map_err(|e| e.to_string())?;
+        }
+    } else {
+        if let Some(dir) = path.parent() { std::fs::create_dir_all(dir).map_err(|e| e.to_string())?; }
+        std::fs::write(&path, b"").map_err(|e| e.to_string())?;
+        if app.global_shortcut().is_registered(GLOBAL_SHORTCUT) {
+            app.global_shortcut().unregister(GLOBAL_SHORTCUT).map_err(|e| e.to_string())?;
+        }
+    }
+    Ok(())
 }
 
 // Shared by the tray menu, tray left-click, and the global shortcut handler
@@ -389,30 +442,30 @@ pub fn run() {
     for w in context.config_mut().app.windows.iter_mut() {
         w.create = false;
     }
-    tauri::Builder::default()
-        // Must be registered FIRST (plugin docs) so a second launch is
-        // rejected before it can start doing anything expensive.
-        //
-        // Load-bearing, not a nicety: the app is tray-resident and can be
-        // running with no visible window, so relaunching from the taskbar
-        // (or autostart-on-login plus one manual click) is expected. Without
-        // this guard a second instance reads the same sync-host.json and
-        // forks a second NyxDB sidecar onto the same port and data
-        // directory, claims its own tray icon, advertises the same uuid
-        // over mDNS, and replicates against the first. terminate_nyxdb()
-        // can only kill the Job it owns, so quitting one instance leaves
-        // the other's sidecar holding the data dir.
-        //
-        // Instead, a second launch surfaces the existing window and exits.
-        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
-            bring_to_front(app);
-        }))
-        // Desktop reminders must not use the plain Web Notification API:
-        // Tauri's embedded WebView2 has no handler for the browser
-        // permission prompt, so requestPermission() silently resolves to
-        // "denied" and no OS prompt is ever shown. This plugin provides
-        // real native Windows toast notifications instead.
-        .plugin(tauri_plugin_notification::init())
+    let builder = tauri::Builder::default();
+    // Must be registered FIRST (plugin docs) so a second launch is
+    // rejected before it can start doing anything expensive.
+    //
+    // Load-bearing, not a nicety: the app is tray-resident and can be
+    // running with no visible window, so relaunching from the taskbar
+    // (or autostart-on-login plus one manual click) is expected. Without
+    // this guard a second instance reads the same sync-host.json and
+    // forks a second NyxDB sidecar onto the same port and data
+    // directory, claims its own tray icon, advertises the same uuid
+    // over mDNS, and replicates against the first. terminate_nyxdb()
+    // can only kill the Job it owns, so quitting one instance leaves
+    // the other's sidecar holding the data dir.
+    //
+    // Instead, a second launch surfaces the existing window and exits.
+    // Release only: the lock is keyed on the identifier alone, which a
+    // debug build shares, so a dev run would just surface the installed
+    // app (and work against its data) instead of starting.
+    #[cfg(not(debug_assertions))]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+        bring_to_front(app);
+    }));
+    builder
+        .plugin(tauri_plugin_window_state::Builder::default().with_state_flags(window_state_flags()).build())
         // Backup/Export can't use a blob URL + `<a download>`: WebView2 has
         // no download manager to hand the file off to, so the download is
         // silently inert. These two give the frontend a real native
@@ -482,7 +535,7 @@ pub fn run() {
             // the two identities can never collide.
             let config_filename = if cfg!(debug_assertions) { "sync-host.dev.json" } else { "sync-host.json" };
             let config_path = app_data_dir.join(config_filename);
-            let info = sync_host::load_or_create_info(&config_path);
+            let info = sync_host::ensure_port_usable(sync_host::load_or_create_info(&config_path), &config_path);
 
             let resource_dir = app.path().resource_dir().ok();
             let nyxdb_binary = sync_host::nyxdb_binary_path(resource_dir);
@@ -592,9 +645,11 @@ pub fn run() {
             // "Quit" item below (or an OS-level process kill).
             if let Some(w) = app.get_webview_window("main") {
                 let w_hide = w.clone();
+                let state_handle = app.handle().clone();
                 w.on_window_event(move |event| {
                     if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                         api.prevent_close();
+                        let _ = state_handle.save_window_state(window_state_flags());
                         let _ = w_hide.hide();
                     }
                 });
@@ -608,7 +663,7 @@ pub fn run() {
             // keeps the CheckMenuItem in sync via set_checked(), holding it
             // through a cheap Rc-backed .clone().
             let autostart_checked = app.autolaunch().is_enabled().unwrap_or(false);
-            let autostart_item = CheckMenuItem::with_id(app, "autostart", "Start on login", true, autostart_checked, None::<&str>)?;
+            let autostart_item = CheckMenuItem::with_id(app, "autostart", "Start on login", !cfg!(debug_assertions), autostart_checked, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let tray_menu = Menu::with_items(app, &[
                 &show_item,
@@ -620,6 +675,7 @@ pub fn run() {
                 &quit_item,
             ])?;
             let autostart_item_for_toggle = autostart_item.clone();
+            let autostart_item_for_open = autostart_item.clone();
             TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&tray_menu)
@@ -639,11 +695,16 @@ pub fn run() {
                         let mgr = app.autolaunch();
                         let now_enabled = mgr.is_enabled().unwrap_or(false);
                         let toggled = if now_enabled { mgr.disable() } else { mgr.enable() };
-                        if toggled.is_ok() {
-                            let _ = autostart_item_for_toggle.set_checked(!now_enabled);
+                        if let Err(e) = toggled {
+                            log::warn!("autostart: could not change the login entry: {e}");
                         }
+                        // The menu flips the checkmark itself on click; set it
+                        // from the registry so a failed write can't show a
+                        // state that was never applied.
+                        let _ = autostart_item_for_toggle.set_checked(mgr.is_enabled().unwrap_or(false));
                     }
                     "quit" => {
+                        let _ = app.save_window_state(window_state_flags());
                         terminate_nyxdb(app);
                         app.exit(0);
                     }
@@ -651,11 +712,20 @@ pub fn run() {
                 })
                 // Left click toggles show/hide rather than always showing,
                 // so the tray icon can also tuck the window away again.
-                .on_tray_icon_event(|tray, event| {
+                .on_tray_icon_event(move |tray, event| {
+                    // Re-read before the menu opens: Windows Settings' Startup
+                    // apps switch can change the state while Offlog runs.
+                    if let TrayIconEvent::Click { button: MouseButton::Right, button_state: MouseButtonState::Down, .. } = event {
+                        let _ = autostart_item_for_open.set_checked(tray.app_handle().autolaunch().is_enabled().unwrap_or(false));
+                    }
                     if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
                         let app = tray.app_handle();
-                        let visible = app.get_webview_window("main").and_then(|w| w.is_visible().ok()).unwrap_or(false);
-                        if visible {
+                        // A minimized window still counts as visible to
+                        // Windows; it should come back, not be hidden.
+                        let shown = app.get_webview_window("main")
+                            .map(|w| w.is_visible().unwrap_or(false) && !w.is_minimized().unwrap_or(false))
+                            .unwrap_or(false);
+                        if shown {
                             if let Some(w) = app.get_webview_window("main") { let _ = w.hide(); }
                         } else {
                             bring_to_front(app);
@@ -674,13 +744,15 @@ pub fn run() {
             // fail .build() and panic the whole app on startup -- tray,
             // window and sync all gone over one key combo. Registration
             // failure must stay non-fatal: log and carry on.
-            if let Err(e) = app.global_shortcut().register("Ctrl+Alt+O") {
-                log::warn!("global shortcut Ctrl+Alt+O unavailable (already bound by another app?): {e}");
+            if get_global_shortcut_enabled(app.handle().clone()) {
+                if let Err(e) = app.global_shortcut().register(GLOBAL_SHORTCUT) {
+                    log::warn!("global shortcut {GLOBAL_SHORTCUT} unavailable (already bound by another app?): {e}");
+                }
             }
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_sync_info, get_device_name,is_debug_build, generate_pairing_code, reset_sync_data, show_main_window, show_main_window_at_start, send_task_notification, check_desktop_notification_setting, get_detected_other_hosts, store_sync_secret, get_sync_secret])
+        .invoke_handler(tauri::generate_handler![get_sync_info, get_device_name,is_debug_build, generate_pairing_code, reset_sync_data, show_main_window, show_main_window_at_start, save_window_state, get_global_shortcut_enabled, set_global_shortcut_enabled, send_task_notification, check_desktop_notification_setting, get_detected_other_hosts, store_sync_secret, get_sync_secret])
         .build(context)
         .expect("error while building tauri application")
         .run(|app_handle, event| {

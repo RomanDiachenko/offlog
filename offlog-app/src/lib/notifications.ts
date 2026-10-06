@@ -2,6 +2,12 @@ import { writable, get } from 'svelte/store';
 import db, { getAllActiveTasksWithReminders, updateTask, getTaskById, clearReminderIfUnchanged } from './db';
 import { invokeTauri, isTauri as isTauriPlatform, getQuietHours, getNotificationsEnabled } from '../config';
 import type { TaskDoc, ProjectDoc } from './types';
+import { fmtDay, dayOf } from './utils';
+
+// The line under a reminder's title, the same on every platform.
+export function reminderBody(task: TaskDoc): string {
+  return task.due_date ? `Due ${fmtDay(dayOf(task.due_date), { weekday: true })}` : 'Reminder';
+}
 
 // Spread queued reminders out instead of letting them all land on the
 // window's end instant: a dozen reminders firing in the same tick present to
@@ -149,9 +155,8 @@ export async function requestPermission(): Promise<PermissionState> {
       return state;
     }
     if (isTauriPlatform()) {
-      // tauri-plugin-notification has no real permission model to request
-      // against, but Windows does -- query it directly (see
-      // check_desktop_notification_setting's own comment).
+      // Windows has no prompt to request, only a per-app switch -- read it
+      // (see check_desktop_notification_setting's own comment).
       const enabled = await invokeTauri<boolean>('check_desktop_notification_setting');
       const state: PermissionState = enabled ? 'granted' : 'denied';
       permissionState.set(state);
@@ -234,7 +239,7 @@ function fireWebNotification(task: TaskDoc): Promise<void> {
   rememberFired(key);
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return Promise.resolve();
   const n = new Notification(task.title, {
-    body: task.due_date ? `Due ${task.due_date}` : 'Reminder',
+    body: reminderBody(task),
     tag: id,
   });
   n.onclick = () => {
@@ -388,7 +393,7 @@ async function scheduleNative(tasks: TaskDoc[]) {
     .map((t, i) => ({
       id: numericId(t._id!),
       title: t.title,
-      body: t.due_date ? `Due ${t.due_date}` : 'Reminder',
+      body: reminderBody(t),
       schedule: { at: applyQuietHours(new Date(t.reminder_at!), i) },
       extra: { taskId: t._id },
       actionTypeId: REMINDER_ACTION_TYPE,
@@ -406,36 +411,34 @@ async function scheduleNative(tasks: TaskDoc[]) {
 // ── Native (Tauri desktop) scheduling — real Windows toast notifications,
 // but on a JS timer, same mechanism as scheduleWeb() above ──
 //
-// tauri-plugin-notification's desktop backend never reads the `schedule`
-// field — scheduling is only implemented on mobile, where the OS owns the
-// wakeup. A "scheduled" notification on desktop therefore either does nothing
-// or fires immediately, ignoring the requested time. So the desktop path must
-// do what scheduleWeb() does (a JS setTimeout, since the app stays running)
-// and display a real native toast at fire time instead of using the browser
-// Notification API. Reuses _webTimers/_firedIds — mutually exclusive with the
-// web path at runtime (one platform per session), so sharing that is safe.
-
-// tauri-plugin-notification's desktop backend wires up no click or action
-// callback at all, so a clicked toast can never reach the app. Its
-// isPermissionGranted()/requestPermission() are also hardcoded to return
-// granted on desktop, and its channel/actionType concepts are meaningless
-// there. Reminders therefore bypass the plugin entirely: a custom Rust
-// command (send_task_notification) builds the toast with
-// tauri-winrt-notification, whose on_activated callback works, and emits a
-// real Tauri event listened for below.
-function fireTauriNotification(task: TaskDoc): Promise<void> {
+// Windows has no OS-side scheduling an unpackaged app can use, so the desktop
+// path does what scheduleWeb() does -- a JS setTimeout, since the app stays
+// running in the tray -- and shows a native toast at fire time through the
+// Rust command send_task_notification (tauri-winrt-notification). A click or
+// a Done/Snooze press comes back as the 'notification-action' event listened
+// for below. Reminders therefore fire only while Offlog is running; after
+// Quit they wait for the next start's catch-up. Reuses _webTimers/_firedIds
+// -- mutually exclusive with the web path at runtime (one platform per
+// session), so sharing that is safe.
+// Windows shows nothing, and Show() still succeeds, when Offlog's toasts are
+// switched off -- and that switch can change while the app sits in the tray.
+// So the setting is read at fire time: while it's off the reminder keeps its
+// reminder_at, as on Android, and the hourly re-arm fires it once allowed.
+// The reminder is cleared only after the toast was actually handed over.
+async function fireTauriNotification(task: TaskDoc): Promise<void> {
   const id = task._id!;
   const key = firedKey(task);
-  if (_firedIds.has(key)) return Promise.resolve();
+  if (_firedIds.has(key)) return;
+  const allowed = await invokeTauri<boolean>('check_desktop_notification_setting').catch(() => true);
+  permissionState.set(allowed ? 'granted' : 'denied');
+  if (!allowed) return;
   rememberFired(key);
-  invokeTauri('send_task_notification', {
-    title: task.title,
-    body: task.due_date ? `Due ${task.due_date}` : 'Reminder',
-    taskId: id,
-  }).catch(() => {});
-  // Return the updateTask promise rather than swallowing it silently, same
-  // as fireWebNotification() above.
-  return clearReminderIfUnchanged(id, task.reminder_at!).then(() => {}, () => {});
+  try {
+    await invokeTauri('send_task_notification', { title: task.title, body: reminderBody(task), taskId: id });
+  } catch {
+    return;
+  }
+  await clearReminderIfUnchanged(id, task.reminder_at!).then(() => {}, () => {});
 }
 
 function scheduleTauriTimer(task: TaskDoc, staggerIndex = 0) {
@@ -505,9 +508,7 @@ async function snoozeTaskFromNotification(taskId: string): Promise<void> {
 
 export async function initNotificationListeners(): Promise<void> {
   if (isTauriPlatform()) {
-    // tauri-plugin-notification's own isPermissionGranted()/requestPermission()
-    // are hardcoded to return granted on desktop, but Windows' real per-app
-    // toggle is queryable directly -- see requestPermission()'s Tauri branch
+    // Reads Windows' per-app switch -- see requestPermission()'s Tauri branch
     // and check_desktop_notification_setting's own comment.
     await requestPermission();
     const { listen } = await import('@tauri-apps/api/event');

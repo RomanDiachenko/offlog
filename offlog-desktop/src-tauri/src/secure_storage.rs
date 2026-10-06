@@ -52,7 +52,12 @@ pub fn store_secret(path: &std::path::Path, user: &str, pass: &str) -> std::io::
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    std::fs::write(path, encrypted)
+    // Temp file + rename, like sync_host.rs's identity file: a write cut off
+    // half-way would leave a blob that fails to decrypt, and load_secret
+    // reads that as "no credentials".
+    let tmp = path.with_extension("enc.tmp");
+    std::fs::write(&tmp, encrypted)?;
+    std::fs::rename(&tmp, path)
 }
 
 /// Reads and decrypts `{user, pass}` from `path`. Returns `Ok(None)` if

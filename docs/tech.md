@@ -30,7 +30,7 @@ aren't obvious from the code.
 | Sync server | Any **CouchDB-protocol** server (CouchDB, or **NyxDB**) | Self-hosted, optional. The app is fully usable without one |
 | Android | **Capacitor 8** | Wraps the same `dist/` in a WebView |
 | Windows | **Tauri 2** (`offlog-desktop/`) | Wraps the same `dist/`, embeds a NyxDB sync host |
-| Notifications | `@capacitor/local-notifications` / Web Notification API | |
+| Notifications | `@capacitor/local-notifications` / Web Notification API / `tauri-winrt-notification` (Windows) | |
 | Biometrics | `capacitor-native-biometric` | Android only, opt-in alongside the PIN |
 | Privacy screen | `@capacitor/privacy-screen` | Opt-in; also blocks screenshots |
 | Clipboard / Haptics / Launcher | `@capacitor/clipboard`, `-haptics`, `-app-launcher` | |
@@ -828,6 +828,21 @@ install's "not asked yet" reads as `default`, not `denied`. On every return to t
 re-reads both grants and reschedules everything if the exact-alarm grant
 changed.
 
+**Windows** has no notification plugin. Reminders are JS `setTimeout` timers
+in the tray-resident app, plus the same 24-hour catch-up as the web, and the
+hourly housekeeping pass re-arms them, so they fire only while Offlog runs;
+after Quit they wait for the next start. At fire time `fireTauriNotification`
+reads Windows' per-app switch (`check_desktop_notification_setting`): while it
+is off the reminder keeps its `reminder_at` and the permission reads denied.
+The toast comes from the Rust command `send_task_notification`
+(tauri-winrt-notification), with the Reminder scenario so it stays on screen
+until acted on, and the reminder is cleared only after that command resolved.
+Done, Snooze 1h and a plain click come back as the `notification-action`
+event; a click restores and focuses the window. The press only reaches a
+running app: no COM activator is registered, so a toast acted on after Quit
+does nothing. Toasts are attributed to the AUMID `com.offlog.app`, which the
+installer's Start-menu shortcut registers.
+
 **Web** is best-effort: there is no push backend by design, so notifications
 use `setTimeout` while the tab is open, plus a catch-up on load that fires
 anything that came due in the last 24 hours (`CATCH_UP_WINDOW_MS`); an
@@ -964,6 +979,8 @@ originals and must never change:
 | stored sync credential (DPAPI) | `sync-secret.enc` | `sync-secret.dev.enc` |
 | WebView2 profile (IndexedDB, localStorage) | `%LOCALAPPDATA%\com.offlog.app\EBWebView` | `…\com.offlog.app\webview-dev\` |
 | log | `…\com.offlog.app\logs\Offlog.log` | `…\logs\Offlog-dev.log` |
+| single-instance lock | yes | none: the lock is keyed on the identifier alone, so a dev run would only surface the installed app |
+| login entry (tray "Start on login") | toggles and refreshes it | item disabled, never rewritten |
 
 The WebView2 split matters because both builds load the same
 `tauri.localhost` origin: without it a dev run reads and writes the
@@ -1021,7 +1038,41 @@ a second launch) show it as usual. Each release start rewrites an enabled
 entry, so an old one gains the flag and a moved install its new path; it
 skips that when Windows Settings' Startup apps switch has it off, since
 `enable()` would switch it back on, and debug builds never rewrite it. The
-uninstaller removes the entry; updates keep it.
+uninstaller removes the entry; updates keep it. An update restarts Offlog with
+the old process's arguments, so `installUpdate()` sets a marker
+(`markUpdateRelaunch`) that makes the next start reveal the window even
+after a login start. The tray item's checkmark is re-read from the registry
+when the menu opens and after every click, since Windows Settings can change
+it while Offlog runs.
+
+**Window placement** (tauri-plugin-window-state) restores size, position and
+maximized state, never visibility. The plugin writes its file only on a
+normal exit, which Offlog rarely has, so lib.rs also saves on close-to-tray,
+on Quit and (`save_window_state`) before an update installs. A tray
+left-click restores a minimized window rather than hiding it.
+
+**Global shortcut.** `Ctrl+Alt+O` is registered in `setup()` unless the file
+`global-shortcut-off` exists in the app config folder; Settings › Advanced ›
+Windows switches it (`set_global_shortcut_enabled`). The off switch exists
+because AltGr arrives as Ctrl+Alt, so on layouts with a letter on AltGr+O
+(Polish "ó") the shortcut swallows it.
+
+**Firewall.** NyxDB listens on `0.0.0.0` and the pairing server and mDNS run
+inside Offlog.exe, so a first start shows Windows Defender Firewall prompts for
+`nyxdb.exe` and `Offlog.exe`. The per-user install can't add allow rules, and
+after Cancel Windows doesn't ask again: phone sync and pairing then fail. The
+pairing error and the phone's "Can't reach" card name the firewall; the fix is
+Windows Security › Firewall & network protection › Allow an app through
+firewall, for both.
+
+**Sync host port.** The port is drawn once from Windows' dynamic range and
+saved. Each start `ensure_port_usable()` checks it still binds; when another
+program holds it (and nothing NyxDB-like answers there), it moves to a fresh
+port and saves it, keeping the password. Readiness is NyxDB's welcome document
+(`fetch_uuid`), never a bare TCP accept, so a foreign listener is never sent
+the password. `initTauriSyncDefaults()` re-reads the URL and credentials
+every start while the app follows its own host, so it follows a port move or
+a new identity.
 
 **Content Security Policy** (`tauri.conf.json`). `script-src 'self'` (the
 pre-paint theme script is same-origin); `style-src` allows `'unsafe-inline'`

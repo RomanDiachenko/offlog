@@ -7,22 +7,41 @@
   ],
   "permissions": [
     "core:default",
+    "core:window:allow-set-theme",
     "log:default",
-    "notification:default",
     "dialog:default",
-    "fs:default",
-    "fs:allow-write-text-file",
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [{ "path": "$APPDATA/auto-backups" }, { "path": "$APPDATA/auto-backups/**" }]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [{ "path": "$APPDATA/auto-backups" }]
+    },
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [{ "path": "$APPDATA/auto-backups" }]
+    },
+    {
+      "identifier": "fs:allow-stat",
+      "allow": [{ "path": "$APPDATA/auto-backups/**" }]
+    },
+    {
+      "identifier": "fs:allow-remove",
+      "allow": [{ "path": "$APPDATA/auto-backups/**" }]
+    },
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [{ "path": "$APPDATA/auto-backups/**" }]
+    },
     "fs:allow-write-file",
-    "fs:allow-mkdir",
-    "fs:allow-read-dir",
-    "fs:allow-remove",
-    "fs:allow-exists",
-    "fs:allow-stat",
     {
       "identifier": "fs:scope",
-      "allow": [
-        { "path": "$APPDATA/auto-backups" },
-        { "path": "$APPDATA/auto-backups/**" }
+      "deny": [
+        { "path": "$APPDATA/sync-host*.json" },
+        { "path": "$APPDATA/sync-secret*" },
+        { "path": "$APPDATA/nyxdb-data*/**" },
+        { "path": "$APPLOCALDATA/EBWebView/**" }
       ]
     },
     "updater:default",
