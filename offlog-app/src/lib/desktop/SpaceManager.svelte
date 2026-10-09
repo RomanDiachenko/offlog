@@ -317,7 +317,7 @@
     color: var(--muted); transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .icon-opt:hover { background: var(--hover); color: var(--text); }
-  .icon-opt.selected { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent-ink); }
+  .icon-opt.selected { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
   .icon-opt :global(svg) { width: 16px; height: 16px; }
 
   .name-btn {

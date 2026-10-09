@@ -154,7 +154,7 @@
 {#if __introReady}
 <div class="scrim" on:click={() => requestClose()} in:fade={scrimIn} out:fade={scrimOut}></div>
 
-<div class="panel" role="dialog" aria-modal="true" aria-label="Quick add task" use:trapFocus in:quickAddIn out:quickAddOut>
+<div class="panel glass" role="dialog" aria-modal="true" aria-label="Quick add task" use:trapFocus in:quickAddIn out:quickAddOut>
   <div class="panel-head">
     <div class="panel-title">Quick add task</div>
     <button
@@ -233,8 +233,8 @@
   .panel {
     position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
     width: min(480px, 95vw); z-index: 501;
-    background: var(--surface); border: 1px solid var(--border-strong);
-    border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,.28);
+    /* Surface, edge and shadow: app.css .glass. */
+    border-radius: 14px;
     padding: 16px 18px; display: flex; flex-direction: column; gap: 12px;
   }
 

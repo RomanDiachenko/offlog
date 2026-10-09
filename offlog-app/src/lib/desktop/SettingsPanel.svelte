@@ -1576,8 +1576,8 @@
   .nav-item svg { flex-shrink: 0; opacity: .8; }
   .nav-item span { flex: 1; }
   .nav-item:hover { background: var(--hover); }
-  .nav-item.active { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-ink); }
-  .nav-item.active svg { opacity: 1; }
+  .nav-item.active { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
+  .nav-item.active svg { opacity: 1; color: var(--accent); }
   .nav-badge, .detail-content :global(.nav-badge) {
     font-family: var(--mono); font-size: .62rem; font-weight: 700;
     background: var(--due-soon-bg); color: var(--due-soon-ink);
