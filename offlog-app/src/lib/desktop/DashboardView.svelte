@@ -26,6 +26,10 @@
   let pinnedExpanded = false;
 
   let data: Awaited<ReturnType<typeof getDashboardData>> | null = null;
+  // A task shows once, in its most pressing list: Pinned leaves out what
+  // Today and Overdue above already show.
+  $: shownAbove = new Set(data ? [...data.todayTasks.slice(0, TASK_CAP), ...data.overdueTasks.slice(0, TASK_CAP)].map(t => t._id) : []);
+  $: pinnedRest = data ? data.pinnedAll.filter(t => !shownAbove.has(t._id)) : [];
   let detailTask: TaskDoc | null = null;
   let detailProject: ProjectDoc | null = null;
   // See KanbanBoard.svelte's identical detailOpenSession for why this
@@ -227,11 +231,11 @@
             </section>
           {/if}
 
-          {#if data.pinnedTasks.length > 0}
+          {#if pinnedRest.length > 0}
             <section class="section">
               <div class="section-title pinned-title">Pinned</div>
               <div class="task-list">
-                {#each (pinnedExpanded ? data.pinnedTasks : data.pinnedTasks.slice(0, TASK_CAP)) as t (t._id)}
+                {#each (pinnedExpanded ? pinnedRest : pinnedRest.slice(0, TASK_CAP)) as t (t._id)}
                   <div
                     class="task-row"
                     role="button"
@@ -247,9 +251,9 @@
                   </div>
                 {/each}
               </div>
-              {#if data.pinnedTasks.length > TASK_CAP}
+              {#if pinnedRest.length > TASK_CAP}
                 <button class="view-all" on:click={() => pinnedExpanded = !pinnedExpanded}>
-                  {pinnedExpanded ? 'Show less' : `View all ${data.pinnedTasks.length}`}
+                  {pinnedExpanded ? 'Show less' : `View all ${pinnedRest.length}`}
                 </button>
               {/if}
             </section>
@@ -281,7 +285,7 @@
             </section>
           {/if}
 
-          {#if data.todayTasks.length === 0 && data.pinnedTasks.length === 0 && data.overdueTasks.length === 0}
+          {#if data.todayTasks.length === 0 && pinnedRest.length === 0 && data.overdueTasks.length === 0}
             <div class="all-good">All caught up — nothing due today, pinned, or overdue.</div>
           {/if}
         </div>

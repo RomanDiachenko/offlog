@@ -103,6 +103,7 @@ function mkData(extra: Partial<Data> = {}): Data {
     projCache: { 'project:1': 'Test Project' },
     totalTasks: 0, completedLast7Days: 0, busiestProjectName: null,
     ...extra,
+    pinnedAll: extra.pinnedAll ?? extra.pinnedTasks ?? [],
   } as Data;
 }
 
@@ -220,6 +221,19 @@ describe('DashboardView task sections', () => {
     expect(sectionRows(container, 'Overdue').titles).toEqual(['Late']);
     expect(container.querySelector('.all-good')).toBeNull();
     expect(container.querySelector('.task-proj')!.textContent).toContain('Test Project');
+  });
+
+  it('lists a pinned task once, in Today or Overdue when it is there', async () => {
+    const dueNow = mkTask('task:t', { title: 'Pinned and due', due_date: TODAY, pinned: true });
+    const late = mkTask('task:o', { title: 'Pinned and late', due_date: '2026-03-01', pinned: true });
+    const plain = mkTask('task:p', { title: 'Just pinned', pinned: true });
+    const { container } = await renderDash(mkData({
+      todayTasks: [dueNow], overdueTasks: [late], pinnedTasks: [dueNow, late, plain],
+    }));
+
+    expect(sectionRows(container, 'Pinned').titles).toEqual(['Just pinned']);
+    expect(sectionRows(container, 'Today').titles).toEqual(['Pinned and due']);
+    expect(sectionRows(container, 'Overdue').titles).toEqual(['Pinned and late']);
   });
 
   it('caps Today at six rows and links the rest to Agenda', async () => {
