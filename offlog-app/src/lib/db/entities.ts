@@ -1081,8 +1081,11 @@ export async function getAllDeletedTasks(): Promise<(TaskDoc & { project_name?: 
   return deleted.map(t => ({ ...t, project_name: projCache[t.project_id] }));
 }
 
+// Re-checked at write time: another device may have restored the task while
+// the confirm was open, and a hard delete of a live task replicates everywhere.
 export async function deleteForever(id: string): Promise<void> {
   const doc = await db.get<TaskDoc>(id);
+  if (!doc.deleted) throw new Error('Task is no longer in the Recycle bin');
   await db.remove(doc);
   invalidateTaskCache();
   await logPurge([doc]);

@@ -320,3 +320,49 @@ describe('tag rename/delete and orphan repair', () => {
     expect((await db.get<TaskDoc>('task:orphan')).space_id).toBe('space:unsorted');
   });
 });
+
+describe('audit 2026-10-09: data-safety fixes', () => {
+  it('Delete forever refuses a task another device restored meanwhile', async () => {
+    const { t } = await projectWithTask('Restored elsewhere');
+    await deleteTask(t._id!);
+    const doc = await db.get<TaskDoc>(t._id!);
+    await db.put({ ...doc, deleted: false }); // the restore arriving over sync
+    invalidateTaskCache();
+    await expect(deleteForever(t._id!)).rejects.toThrow();
+    expect((await db.get<TaskDoc>(t._id!)).deleted).toBe(false);
+  });
+
+  it('a single-project export carries the field definitions its values need', async () => {
+    const [field] = await addCustomFieldDef('Budget', 'number');
+    const { p, t } = await projectWithTask('Priced');
+    await updateTask(t._id!, { custom_values: { [field.id]: 40 } });
+    const exported = JSON.parse(JSON.stringify(await exportProjectDocs(p._id!)));
+    await db.remove(await db.get('meta:custom_fields'));
+    await importJSON(exported);
+    expect((await getCustomFieldDefs()).map(f => f.id)).toContain(field.id);
+  });
+
+  it('values for a field defined only on the losing side of a conflict are not orphans', async () => {
+    const { t } = await projectWithTask('Field value');
+    await db.bulkDocs([
+      { _id: 'meta:custom_fields', _rev: '1-aaaa', type: 'meta', fields: [{ id: 'field:phone', name: 'Phone', type: 'text' }] },
+      { _id: 'meta:custom_fields', _rev: '1-bbbb', type: 'meta', fields: [{ id: 'field:pc', name: 'PC', type: 'text' }] },
+    ] as never, { new_edits: false });
+    await updateTask(t._id!, { custom_values: { 'field:phone': 'a', 'field:pc': 'b' } });
+    const { issues } = await checkIntegrity();
+    expect(issues.filter(i => i.type === 'orphaned_custom_value')).toEqual([]);
+    expect(issues.some(i => i.type === 'conflict' && i.docId === 'meta:custom_fields')).toBe(true);
+  });
+
+  it('repair leaves missing-reference fixes alone while a sync is running', async () => {
+    const t = await createTask('project:not-arrived-yet', 'space:unsorted', 'col:x', 'Early arrival');
+    syncState.status = 'syncing';
+    try {
+      const r = await repairDatabase();
+      expect(r.skipped).toBeGreaterThan(0);
+      expect((await db.get<TaskDoc>(t._id!)).project_id).toBe('project:not-arrived-yet');
+    } finally { syncState.status = 'idle'; }
+    await repairDatabase();
+    expect((await db.get<TaskDoc>(t._id!)).project_id).not.toBe('project:not-arrived-yet');
+  });
+});

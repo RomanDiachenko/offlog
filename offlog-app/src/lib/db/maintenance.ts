@@ -5,7 +5,7 @@ import { db, currentSource, getAllTasksRaw, invalidateTaskCache, now, DEFAULT_CO
 import { getProjects, getCustomFieldDefs, createProject, tombstone } from './entities';
 // repairDatabase() re-scans for conflicts after rewriting docs. maintenance ->
 // sync is the one edge beyond core <- entities; sync never imports back.
-import { scanConflicts, conflictBearingRows } from './sync';
+import { scanConflicts, conflictBearingRows, syncState } from './sync';
 
 // ── Log retention ────────────────────────────────────────────────────────────
 // log: docs are append-only and never pruned by any other code path, so the
@@ -253,14 +253,38 @@ export function analyzeImport(docs: ImportedDoc[]): { toCreate: number; toSkip: 
 // the space it belongs to: including the space would silently duplicate
 // spaces on re-import. Attachments are inlined as base64, as in the full
 // backup: the task cache holds only stubs, which carry no bytes.
-export async function exportProjectDocs(projectId: string): Promise<Array<ProjectDoc | TaskDoc>> {
+// The custom-field definitions go along: without them the tasks' values
+// import as orphans that nothing shows and repair deletes. importJSON merges
+// them into the definitions already there by id.
+export async function exportProjectDocs(projectId: string): Promise<Array<ProjectDoc | TaskDoc | ImportedDoc>> {
   const project = await db.get<ProjectDoc>(projectId);
+  const fields = await db.get(CUSTOM_FIELDS_ID).then(d => [d as ImportedDoc], () => []);
   const ids = (await getAllTasksRaw()).filter(t => t.project_id === projectId && !t.deleted).map(t => t._id!);
-  if (!ids.length) return [project];
+  if (!ids.length) return [project, ...fields];
   const r = await db.allDocs<TaskDoc>({ keys: ids, include_docs: true, attachments: true, binary: false });
   const tasks = r.rows.flatMap(row => 'doc' in row && row.doc && !row.doc.deleted ? [row.doc] : []);
-  return [project, ...tasks];
+  return [project, ...fields, ...tasks];
 }
+
+// Field ids from every revision of the definitions doc, not only the winner:
+// while two devices' definitions are in conflict, the losing side's fields
+// are still real, and their values must not be reported or repaired as orphans.
+async function knownFieldIds(): Promise<Set<string>> {
+  const ids = new Set((await getCustomFieldDefs()).map(f => f.id));
+  try {
+    const doc = await db.get<{ _conflicts?: string[] }>(CUSTOM_FIELDS_ID, { conflicts: true });
+    for (const rev of doc._conflicts ?? []) {
+      const other = await db.get<{ fields?: { id: string }[] }>(CUSTOM_FIELDS_ID, { rev });
+      for (const f of other.fields ?? []) ids.add(f.id);
+    }
+  } catch { /* no definitions doc yet */ }
+  return ids;
+}
+
+// Repairs that act on a reference to something missing. During a sync the
+// "missing" project, status, field or linked task may simply not have
+// arrived yet, so these wait until it settles.
+const WAITS_FOR_SYNC = new Set<IntegrityIssue['type']>(['orphaned_project', 'orphaned_task', 'invalid_column', 'orphaned_custom_value', 'dangling_link']);
 
 // CSV export — every non-deleted task, one row each. Status/Priority resolve
 // to display names, not raw column_id / 1-2-3: CSV is a one-way, human-facing
@@ -313,7 +337,7 @@ export async function checkIntegrity(): Promise<{ issues: IntegrityIssue[]; chec
   const spaceIds = new Set(spaces.map(s => s._id));
   const projectIds = new Set(projects.map(p => p._id));
   const taskIds = new Set(tasks.map(t => t._id));
-  const fieldIds = new Set((await getCustomFieldDefs()).map(f => f.id));
+  const fieldIds = await knownFieldIds();
   const archivedProjectIds = new Set(projects.filter(p => p.archived).map(p => p._id));
   // archiveProject() leaves finished tasks (last status) as they are, so
   // only an unfinished task in an archived project is out of place.
@@ -409,7 +433,9 @@ export async function repairDatabase(known?: IntegrityIssue[]): Promise<{ fixed:
   const issues = known ?? (await checkIntegrity()).issues;
   let fixed = 0, skipped = 0;
 
+  const syncing = syncState.status === 'syncing';
   for (const issue of issues) {
+    if (syncing && WAITS_FOR_SYNC.has(issue.type)) { skipped++; continue; }
     try {
       if (issue.type === 'orphaned_task') {
         const doc = await db.get<TaskDoc>(issue.docId);
@@ -433,7 +459,7 @@ export async function repairDatabase(known?: IntegrityIssue[]): Promise<{ fixed:
         fixed++;
       } else if (issue.type === 'orphaned_custom_value') {
         const doc = await db.get<TaskDoc>(issue.docId);
-        const live = new Set((await getCustomFieldDefs()).map(f => f.id));
+        const live = await knownFieldIds();
         const custom_values = Object.fromEntries(
           Object.entries(doc.custom_values ?? {}).filter(([id]) => live.has(id)),
         );
