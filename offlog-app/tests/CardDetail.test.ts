@@ -139,11 +139,11 @@ describe('CardDetail save logic', () => {
 
   it('saves an edited title', async () => {
     const task = mkTask();
-    const { getByPlaceholderText, getByText } = render(CardDetail, { props: { task, project: mkProject() } });
+    const { getByPlaceholderText, getByText, getByLabelText } = render(CardDetail, { props: { task, project: mkProject() } });
 
     const titleInput = getByPlaceholderText('Task title') as HTMLTextAreaElement;
     await fireEvent.input(titleInput, { target: { value: 'Updated title' } });
-    await fireEvent.click(getByText('Save'));
+    await fireEvent.click(getByLabelText('Close'));
 
     // save() now flushes attachments/related/blocked-by before the main
     // updateTask call (all batched into Save, not immediate-write anymore),
@@ -156,39 +156,38 @@ describe('CardDetail save logic', () => {
   });
 
   it('a cleared title keeps the old one', async () => {
-    const { getByPlaceholderText, getByText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    const { getByPlaceholderText, getByText, getByLabelText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
     await fireEvent.input(getByPlaceholderText('Task title') as HTMLTextAreaElement, { target: { value: '   ' } });
-    await fireEvent.click(getByText('Save'));
+    await fireEvent.click(getByLabelText('Close'));
     await new Promise(r => setTimeout(r, 50));
     for (const [, changes] of updateTask.mock.calls) expect(changes).not.toHaveProperty('title');
   });
 
   it('writes only what was edited here, so changes made meanwhile elsewhere survive', async () => {
     const task = mkTask({ reminder_at: new Date(2030, 0, 1, 9, 0).toISOString(), column_id: 'col:idea' });
-    const { getByPlaceholderText, getByText } = render(CardDetail, { props: { task, project: mkProject() } });
+    const { getByPlaceholderText, getByText, getByLabelText } = render(CardDetail, { props: { task, project: mkProject() } });
     await fireEvent.input(getByPlaceholderText('Task title') as HTMLTextAreaElement, { target: { value: 'Renamed' } });
-    await fireEvent.click(getByText('Save'));
+    await fireEvent.click(getByLabelText('Close'));
     await waitFor(() => expect(updateTask).toHaveBeenCalledTimes(1));
     const [, changes] = updateTask.mock.calls[0];
     expect(Object.keys(changes)).toEqual(['title']);
   });
 
   it('reloads tasks after a successful save', async () => {
-    const { getByText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
-    await fireEvent.click(getByText('Save'));
+    const { getByText, getByLabelText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    await fireEvent.click(getByLabelText('Close'));
     await waitFor(() => expect(reloadTasks).toHaveBeenCalledTimes(1));
   });
 
   it('shows an error and keeps the card open if the save fails', async () => {
     updateTask.mockRejectedValueOnce(new Error('network down'));
-    const { getByText, getByPlaceholderText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    const { getByText, getByPlaceholderText, getByLabelText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
     await fireEvent.input(getByPlaceholderText('Task title') as HTMLTextAreaElement, { target: { value: 'Edited' } });
-    await fireEvent.click(getByText('Save'));
+    await fireEvent.click(getByLabelText('Close'));
     await waitFor(() => expect(showError).toHaveBeenCalledTimes(1));
-    // Still mounted with its Save button -- a failed save (unlike a
-    // successful one) must not requestClose(), so the user can retry
+    // Still open: a failed save must not close, so the user can retry
     // without losing whatever else they'd typed.
-    expect(getByText('Save')).toBeTruthy();
+    expect(getByPlaceholderText('Task title')).toBeTruthy();
   });
 
   it('shows an error instead of crashing if loading tags/fields/related tasks fails on open', async () => {
@@ -200,14 +199,14 @@ describe('CardDetail save logic', () => {
 
   it('sets due_date via the "Today" quick-shortcut and saves it as a bare date string', async () => {
     const task = mkTask();
-    const { getByText, container } = render(CardDetail, { props: { task, project: mkProject() } });
+    const { getByText, container, getByLabelText } = render(CardDetail, { props: { task, project: mkProject() } });
 
     // option C: Due date is a mandatory, always-visible field now (no
     // toggle) -- no need to open anything first to reach the shortcut.
     const todayShortcut = container.querySelector('.due-shortcut') as HTMLButtonElement;
     expect(todayShortcut?.textContent).toBe('Today');
     await fireEvent.click(todayShortcut);
-    await fireEvent.click(getByText('Save'));
+    await fireEvent.click(getByLabelText('Close'));
 
     await waitFor(() => expect(updateTask).toHaveBeenCalledTimes(1));
     const [, changes] = updateTask.mock.calls[0];
@@ -255,7 +254,7 @@ describe('CardDetail save logic', () => {
 
   it('toggling a checklist item\'s "done" state persists on save (Extras opened manually)', async () => {
     const task = mkTask({ checklist: [{ text: 'Step 1', done: false }] });
-    const { getByText, container } = render(CardDetail, { props: { task, project: mkProject() } });
+    const { getByText, container, getByLabelText } = render(CardDetail, { props: { task, project: mkProject() } });
 
     // Owner feedback, 2026-07-30: neither Extras nor any of its five
     // nested blocks auto-open just because they already have content --
@@ -267,7 +266,7 @@ describe('CardDetail save logic', () => {
     const checkbox = container.querySelector('.checklist-check') as HTMLButtonElement;
     expect(checkbox).toBeTruthy();
     await fireEvent.click(checkbox);
-    await fireEvent.click(getByText('Save'));
+    await fireEvent.click(getByLabelText('Close'));
 
     await waitFor(() => expect(updateTask).toHaveBeenCalledTimes(1));
     const [, changes] = updateTask.mock.calls[0];
@@ -285,7 +284,7 @@ describe('CardDetail batches related/blocked-by/attachments into Save', () => {
   it('does not link a related task until Save, then links it', async () => {
     const other = mkTask({ _id: 'task:2', title: 'Other task' });
     searchTasksForLinking.mockResolvedValue([other]);
-    const { container, getByText, getByPlaceholderText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    const { container, getByText, getByPlaceholderText, getByLabelText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
 
     await fireEvent.click(container.querySelector('.extras-toggle') as HTMLButtonElement);
     await openExtraBlock(container, 'Related');
@@ -296,7 +295,7 @@ describe('CardDetail batches related/blocked-by/attachments into Save', () => {
     // Picking a suggestion only edits the local list -- no write yet.
     expect(linkRelatedTask).not.toHaveBeenCalled();
 
-    await fireEvent.click(getByText('Save'));
+    await fireEvent.click(getByLabelText('Close'));
     await waitFor(() => expect(linkRelatedTask).toHaveBeenCalledWith('task:1', 'task:2'));
   });
 
@@ -312,7 +311,7 @@ describe('CardDetail batches related/blocked-by/attachments into Save', () => {
 
     expect(unlinkRelatedTask).not.toHaveBeenCalled();
 
-    await fireEvent.click(getByText('Save'));
+    await fireEvent.click(getByLabelText('Close'));
     await waitFor(() => expect(unlinkRelatedTask).toHaveBeenCalledWith('task:1', 'task:2'));
   });
 
@@ -320,7 +319,7 @@ describe('CardDetail batches related/blocked-by/attachments into Save', () => {
     const blocker = mkTask({ _id: 'task:2', title: 'Blocker task' });
     searchTasksForLinking.mockResolvedValue([blocker]);
     linkBlockedBy.mockRejectedValue(new Error('circular dependency'));
-    const { container, getByText, getByPlaceholderText, queryByText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    const { container, getByText, getByPlaceholderText, queryByText, getByLabelText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
 
     await fireEvent.click(container.querySelector('.extras-toggle') as HTMLButtonElement);
     await openExtraBlock(container, 'Blocked by');
@@ -328,7 +327,7 @@ describe('CardDetail batches related/blocked-by/attachments into Save', () => {
     await waitFor(() => expect(getByText('Blocker task')).toBeTruthy());
     await fireEvent.mouseDown(getByText('Blocker task'));
 
-    await fireEvent.click(getByText('Save'));
+    await fireEvent.click(getByLabelText('Close'));
     await waitFor(() => expect(showError).toHaveBeenCalled());
     expect(String(showError.mock.calls[0][0])).toContain('already block each other');
     // The invalid link doesn't linger in the list looking like it worked.
@@ -336,7 +335,7 @@ describe('CardDetail batches related/blocked-by/attachments into Save', () => {
   });
 
   it('does not attach a picked file until Save, then attaches it', async () => {
-    const { container, getByText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    const { container, getByText, getByLabelText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
 
     await fireEvent.click(container.querySelector('.extras-toggle') as HTMLButtonElement);
     await openExtraBlock(container, 'Attachments');
@@ -347,11 +346,11 @@ describe('CardDetail batches related/blocked-by/attachments into Save', () => {
     await waitFor(() => expect(container.textContent).toContain('notes.txt'));
     expect(addAttachment).not.toHaveBeenCalled();
 
-    await fireEvent.click(getByText('Save'));
+    await fireEvent.click(getByLabelText('Close'));
     await waitFor(() => expect(addAttachment).toHaveBeenCalledWith('task:1', expect.objectContaining({ filename: 'notes.txt' })));
   });
 
-  it('Cancel discards a picked-but-unsaved attachment, a related pick, and a removed link', async () => {
+  it('closing with × writes a picked attachment and a removed link', async () => {
     const other = mkTask({ _id: 'task:2', title: 'Other task' });
     getRelatedTasks.mockResolvedValue([other]);
     searchTasksForLinking.mockResolvedValue([]);
@@ -367,11 +366,10 @@ describe('CardDetail batches related/blocked-by/attachments into Save', () => {
     await fireEvent.change(input);
     await waitFor(() => expect(container.textContent).toContain('notes.txt'));
 
-    await fireEvent.click(getByText('Cancel'));
+    await fireEvent.click(getByLabelText('Close'));
 
-    expect(unlinkRelatedTask).not.toHaveBeenCalled();
-    expect(addAttachment).not.toHaveBeenCalled();
-    expect(updateTask).not.toHaveBeenCalled();
+    await waitFor(() => expect(unlinkRelatedTask).toHaveBeenCalled());
+    await waitFor(() => expect(addAttachment).toHaveBeenCalled());
   });
 });
 
@@ -384,7 +382,7 @@ describe('CardDetail Escape with a popover open', () => {
     // unwind this test's layer mid-test.
     await new Promise(r => setTimeout(r, 450));
     const back = vi.spyOn(window.history, 'back').mockImplementation(() => {});
-    const { container } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    const { container, getByLabelText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
     const trigger = container.querySelector('.cal-trigger') as HTMLButtonElement;
     await fireEvent.click(trigger);
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
@@ -394,30 +392,34 @@ describe('CardDetail Escape with a popover open', () => {
     expect(back).not.toHaveBeenCalled();
 
     await fireEvent.keyDown(document.body, { key: 'Escape' });
-    expect(back).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(back).toHaveBeenCalledTimes(1));
     await new Promise(r => setTimeout(r, 450));
     back.mockRestore();
   });
 });
 
-describe('CardDetail discard & delete', () => {
-  it('Cancel discards edits — nothing is written', async () => {
-    const { getByPlaceholderText, getByText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
-
-    await fireEvent.input(getByPlaceholderText('Task title'), { target: { value: 'Edited but abandoned' } });
-    await fireEvent.click(getByText('Cancel'));
-
-    expect(updateTask).not.toHaveBeenCalled();
-    expect(reloadTasks).not.toHaveBeenCalled();
+// Closing never throws an edit away, whichever way the editor is left, as on
+// the phone. Delete, archive, duplicate and skip are the exceptions.
+describe('CardDetail closing keeps edits & delete', () => {
+  it.each([
+    ['×', (u: ReturnType<typeof render>) => fireEvent.click(u.getByLabelText('Close'))],
+    ['Escape', () => fireEvent.keyDown(window, { key: 'Escape' })],
+    ['a click outside', (u: ReturnType<typeof render>) => fireEvent.click(u.container.querySelector('.overlay')!)],
+    ['the back gesture', () => { window.dispatchEvent(new PopStateEvent('popstate')); return Promise.resolve(true); }],
+  ])('closing with %s saves the edit', async (_how, close) => {
+    const utils = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    await fireEvent.input(utils.getByPlaceholderText('Task title'), { target: { value: 'Kept on close' } });
+    await close(utils);
+    await waitFor(() => expect(updateTask).toHaveBeenCalledWith('task:1', expect.objectContaining({ title: 'Kept on close' })));
   });
 
-  it('Escape discards edits — nothing is written', async () => {
-    const { getByPlaceholderText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
-
-    const input = getByPlaceholderText('Task title');
-    await fireEvent.input(input, { target: { value: 'Edited but escaped' } });
-    await fireEvent.keyDown(window, { key: 'Escape' });
-
+  it('deleting does not save the edits made before it', async () => {
+    confirmAction.mockResolvedValue(true);
+    const utils = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    await fireEvent.input(utils.getByPlaceholderText('Task title'), { target: { value: 'About to be deleted' } });
+    await openActionsMenuAndClickDelete(utils);
+    await waitFor(() => expect(deleteTask).toHaveBeenCalledWith('task:1'));
+    await new Promise(r => setTimeout(r, 50));
     expect(updateTask).not.toHaveBeenCalled();
   });
 
@@ -476,5 +478,17 @@ describe('CardDetail notes', () => {
     expect(getByText('Notes')).toBeTruthy();
     expect(container.querySelector('.notes-field .md-editor')).toBeTruthy();
     expect(container.querySelector('.extras-panel')).toBeNull();
+  });
+});
+
+describe('CardDetail pin', () => {
+  it('pins from the … menu and saves it on close', async () => {
+    const { getByLabelText, getByText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    await fireEvent.click(getByLabelText('More actions'));
+    await fireEvent.click(getByText('Pin to top'));
+    await fireEvent.click(getByLabelText('More actions'));
+    expect(getByText('Unpin')).toBeTruthy();
+    await fireEvent.click(getByLabelText('Close'));
+    await waitFor(() => expect(updateTask).toHaveBeenCalledWith('task:1', expect.objectContaining({ pinned: true })));
   });
 });

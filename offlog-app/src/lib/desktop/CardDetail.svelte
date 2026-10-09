@@ -56,13 +56,19 @@
   //
   // The duration is read HERE, at close time, so Reduce Motion is honoured
   // even if it was switched on after this modal opened.
+  // Every way out keeps what was typed, as on the phone. Done, ×, Escape and
+  // the scrim go through finish(), which stays open if a write fails; a back
+  // gesture closes straight away, so the close itself saves. Delete, archive,
+  // duplicate and skip set `leaving` first: their edits are not wanted.
+  let leaving = false;
   const requestClose = closeOnBack(() => {
+    if (!leaving) persist().then(reportErrors, () => reportErrors(['Could not save the task. Please try again.']));
     __introReady = false;
     setTimeout(() => dispatch('close'), exitMs.medium);
   });
 
   function onWindowKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape' && !e.defaultPrevented && isTopLayer(requestClose)) requestClose();
+    if (e.key === 'Escape' && !e.defaultPrevented && isTopLayer(requestClose)) finish();
   }
 
   const DUE_SHORTCUTS: { label: string; days: number; months?: number }[] = [
@@ -122,7 +128,7 @@
   $: if (showAttachmentsBlock) ensureThumbnails();
   let priority = task.priority;
   // CustomSelect only takes string values — priority stays 1|2|3 for
-  // save()/everything else, this is just a bound proxy for the picker.
+  // persist()/everything else, this is just a bound proxy for the picker.
   let priorityStr = String(priority);
   $: priority = (Number(priorityStr) || 1) as 1 | 2 | 3;
   const statusOptions = project.columns.map(col => ({ value: col.id, label: col.name }));
@@ -167,7 +173,7 @@
   let column_id = task.column_id;
   let tags: string[] = [...(task.tags ?? [])];
   let pinned = task.pinned ?? false;
-  // Flat, not nested/reorderable. Batched into save() like tags/custom
+  // Flat, not nested/reorderable. Batched into persist() like tags/custom
   // fields, not an immediate write per toggle — consistent with every
   // other field in this form.
   let checklist: { text: string; done: boolean }[] = (task.checklist ?? []).map(i => ({ ...i }));
@@ -181,7 +187,7 @@
   let saving = false;
   let showHistory = false;
 
-  // Task linking, non-directional "related to" only. Batched into save()
+  // Task linking, non-directional "related to" only. Batched into persist()
   // like every other field on this card -- add/remove just edit this local
   // list; the diff against originalRelatedIds is replayed as real
   // linkRelatedTask()/unlinkRelatedTask() calls when Save is actually
@@ -442,7 +448,7 @@
     return errors;
   }
 
-  // File attachments. Batched into save() like every other field -- a
+  // File attachments. Batched into persist() like every other field -- a
   // pending attachment carries its own base64 payload locally (already
   // downscaled/encoded by attachOneFile below) until Save actually writes
   // it, keyed by a temporary "pending:N" id that doubles as the #each key
@@ -596,8 +602,7 @@
     return errors;
   }
 
-  async function save() {
-    saving = true;
+  async function persist(): Promise<string[]> {
     const errors: string[] = [
       ...await flushAttachments(),
       ...await flushRelated(),
@@ -631,11 +636,21 @@
       errors.push('Could not save the rest of the task. Please try again.');
     }
     await reloadTasks();
+    return errors;
+  }
+
+  function reportErrors(errors: string[]) {
+    if (errors.length) showError(errors.length === 1 ? errors[0] : `${errors.length} things didn't save: ${errors.join(' ')}`);
+  }
+
+  async function finish() {
+    if (saving || leaving) return;
+    saving = true;
+    const errors = await persist();
     saving = false;
-    if (errors.length) {
-      showError(errors.length === 1 ? errors[0] : `${errors.length} things didn't save: ${errors.join(' ')}`);
-      return; // stay open so the user can see and fix what failed
-    }
+    // Stays open so the user can see and fix what failed.
+    if (errors.length) { reportErrors(errors); return; }
+    leaving = true;
     requestClose();
   }
 
@@ -644,6 +659,7 @@
     try {
       await deleteTask(task._id!);
       await reloadTasks();
+      leaving = true;
       requestClose();
     } catch (e) {
       showError('Could not delete task. Please try again.');
@@ -655,6 +671,7 @@
     try {
       await archiveTask(id);
       await reloadTasks();
+      leaving = true;
       requestClose();
     } catch {
       showError('Could not archive task. Please try again.');
@@ -667,6 +684,7 @@
     try {
       await duplicateTask(task._id!);
       await reloadTasks();
+      leaving = true;
       requestClose();
     } catch (e) {
       showError('Could not duplicate task. Please try again.');
@@ -683,6 +701,7 @@
     try {
       await skipRecurrence(task._id!);
       await reloadTasks();
+      leaving = true;
       requestClose();
     } catch (e) {
       showError('Could not skip to the next occurrence. Please try again.');
@@ -694,14 +713,43 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 {#if __introReady}
-<div class="overlay" on:click|self={() => requestClose()} in:fade={scrimIn} out:fade={scrimOut}>
+<div class="overlay" on:click|self={finish} in:fade={scrimIn} out:fade={scrimOut}>
   <div class="panel" use:trapFocus in:scale={centredIn} out:scale={centredOut}>
     <div class="panel-header">
       <textarea class="title-input" bind:value={title} placeholder="Task title" rows="1" on:input={(e) => { const t = e.currentTarget; t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }}></textarea>
-      <button class="pin-btn" class:pinned on:click={() => pinned = !pinned} title={pinned ? 'Unpin' : 'Pin task'} aria-label={pinned ? 'Unpin task' : 'Pin task'} aria-pressed={pinned}>
-        <PinStar size={15} filled={pinned} stroked />
+      <div class="menu-wrap">
+        <button type="button" class="menu-trigger" bind:this={menuTriggerEl} on:click={() => showActionsMenu = !showActionsMenu} aria-label="More actions" aria-expanded={showActionsMenu}>
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="3" cy="8" r=".9"/><circle cx="8" cy="8" r=".9"/><circle cx="13" cy="8" r=".9"/></svg>
+        </button>
+        {#if showActionsMenu}
+          <div class="actions-menu" bind:this={menuPanelEl} in:fly={popIn} out:fly={popOut}>
+            <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; pinned = !pinned; }}>
+              <PinStar size={14} filled={pinned} stroked />
+              {pinned ? 'Unpin' : 'Pin to top'}
+            </button>
+            <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; loadHistory(); }}>
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3l2 1.5"/></svg>
+              {showHistory ? 'Hide history' : 'Show history'}
+            </button>
+            <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; archive(); }}>
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2" width="11" height="3" rx="1"/><path d="M2.5 5v6.5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V5M5.5 8h3"/></svg>
+              Archive
+            </button>
+            <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; duplicate(); }}>
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="4.5" y="4.5" width="8" height="8" rx="1"/><path d="M9.5 4.5V2.5a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2"/></svg>
+              Duplicate
+            </button>
+            <div class="menu-divider"></div>
+            <button type="button" class="menu-item menu-item-danger" on:click={() => { showActionsMenu = false; softDelete(); }}>
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M2.5 3.5h9M5.5 3.5V2a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M3.5 3.5l.6 8a1 1 0 0 0 1 .9h3.8a1 1 0 0 0 1-.9l.6-8"/></svg>
+              Delete
+            </button>
+          </div>
+        {/if}
+      </div>
+      <button class="close-btn" on:click={finish} aria-label="Close">
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>
       </button>
-      <button class="close-btn" on:click={() => requestClose()} aria-label="Close">✕</button>
     </div>
     {#if duplicateTitleHint}<p class="dup-name-hint">{duplicateTitleHint}</p>{/if}
 
@@ -740,6 +788,13 @@
 
     <div class="section-divider"></div>
 
+    <div class="notes-field">
+      <span class="field-label">Notes</span>
+      <MarkdownEditor bind:value={body} placeholderText="Add notes…  **bold**, - list, # heading" />
+      {#if body.length > NOTES_SOFT_LIMIT}<div class="notes-counter">{body.length} characters</div>{/if}
+      {#if similarNotesHint}<p class="dup-name-hint">{similarNotesHint}</p>{/if}
+    </div>
+
     <div class="tags-field">
       <span class="field-label">Tags</span>
       <div class="tags-input-row">
@@ -775,12 +830,6 @@
       {/if}
     </div>
 
-    <div class="notes-field">
-      <span class="field-label">Notes</span>
-      <MarkdownEditor bind:value={body} placeholderText="Add notes…  **bold**, - list, # heading" />
-      {#if body.length > NOTES_SOFT_LIMIT}<div class="notes-counter">{body.length} characters</div>{/if}
-      {#if similarNotesHint}<p class="dup-name-hint">{similarNotesHint}</p>{/if}
-    </div>
 
     <div class="section-divider"></div>
 
@@ -842,40 +891,6 @@
       <svelte:component this={TaskHistoryPanelComp} taskId={task._id} />
     {/if}
 
-    <div class="actions">
-      <div class="menu-wrap">
-        <button type="button" class="menu-trigger" bind:this={menuTriggerEl} on:click={() => showActionsMenu = !showActionsMenu} aria-label="More actions" aria-expanded={showActionsMenu}>
-          <svg viewBox="0 0 14 14" width="16" height="16" fill="currentColor"><circle cx="3" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11" cy="7" r="1.3"/></svg>
-        </button>
-        {#if showActionsMenu}
-          <div class="actions-menu" bind:this={menuPanelEl} in:fly={popIn} out:fly={popOut}>
-            <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; loadHistory(); }}>
-              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3l2 1.5"/></svg>
-              {showHistory ? 'Hide history' : 'Show history'}
-            </button>
-            <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; archive(); }}>
-              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2" width="11" height="3" rx="1"/><path d="M2.5 5v6.5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V5M5.5 8h3"/></svg>
-              Archive
-            </button>
-            <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; duplicate(); }}>
-              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="4.5" y="4.5" width="8" height="8" rx="1"/><path d="M9.5 4.5V2.5a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2"/></svg>
-              Duplicate
-            </button>
-            <div class="menu-divider"></div>
-            <button type="button" class="menu-item menu-item-danger" on:click={() => { showActionsMenu = false; softDelete(); }}>
-              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M2.5 3.5h9M5.5 3.5V2a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M3.5 3.5l.6 8a1 1 0 0 0 1 .9h3.8a1 1 0 0 0 1-.9l.6-8"/></svg>
-              Delete
-            </button>
-          </div>
-        {/if}
-      </div>
-      <div class="right">
-        <button on:click={() => requestClose()}>Cancel</button>
-        <button class="save-btn" on:click={save} disabled={saving}>
-          {saving ? 'Saving…' : 'Save'}
-        </button>
-      </div>
-    </div>
   </div>
 </div>
 {/if}
@@ -909,7 +924,8 @@
     box-shadow: 0 20px 50px rgba(0,0,0,.18);
     overflow-y: auto;
   }
-  .panel-header { display: flex; gap: .4rem; align-items: flex-start; }
+  .panel-header { display: flex; gap: .15rem; align-items: flex-start; }
+  .panel-header .title-input { margin-right: .4rem; }
   .title-input {
     flex: 1; font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em;
     border: none; border-bottom: 1.5px solid transparent;
@@ -919,22 +935,14 @@
     font-family: inherit;
   }
   .title-input:focus { outline: none; border-bottom-color: var(--accent); }
-  .pin-btn {
-    background: none; border: none; cursor: pointer;
-    width: 26px; height: 26px; border-radius: var(--radius-sm);
-    color: var(--faint); padding: 0; display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
-  }
-  .pin-btn:hover { background: var(--hover); color: var(--accent); }
-  .pin-btn.pinned { color: var(--accent); }
 
   .close-btn {
-    background: var(--hover); border: none; cursor: pointer;
-    width: 26px; height: 26px; border-radius: var(--radius-sm);
-    font-size: .85rem; color: var(--muted); padding: 0;
+    background: none; border: none; cursor: pointer;
+    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm);
+    font-size: .85rem; color: var(--faint); padding: 0;
     flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
-  .close-btn:hover { background: var(--border-strong); color: var(--text); }
+  .close-btn:hover { background: var(--hover); color: var(--text); }
   .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
   .extras-panel :global(.reminder-field) { display: flex; flex-direction: column; gap: .35rem; }
   /* flex-wrap:wrap, not nowrap + horizontal scroll: a scrollbar on a
@@ -1344,29 +1352,22 @@
     font-family: 'Hanken Grotesk', sans-serif; font-size: .85rem; line-height: 1.5;
   }
   textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); }
-  .actions {
-    display: flex; justify-content: space-between; align-items: center;
-    padding-top: .6rem; border-top: 1px solid var(--border);
-  }
-  .right { display: flex; gap: .5rem; }
   button {
     padding: .38rem .8rem; border-radius: var(--radius-sm);
     border: 1px solid var(--border-strong); cursor: pointer;
     background: var(--surface); color: var(--text); font-size: .82rem; font-weight: 500;
   }
-  .save-btn { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .save-btn:disabled { opacity: .5; cursor: default; }
 
   .menu-wrap { position: relative; }
   .menu-trigger {
     display: flex; align-items: center; justify-content: center;
-    width: 32px; height: 32px; padding: 0;
-    background: none; border: 1px solid transparent; color: var(--muted);
+    width: 30px; height: 30px; padding: 0; flex-shrink: 0; border-radius: var(--radius-sm);
+    background: none; border: none; color: var(--faint);
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .menu-trigger:hover { background: var(--hover); color: var(--text); }
   .actions-menu {
-    position: absolute; bottom: calc(100% + 6px); left: 0;
+    position: absolute; top: calc(100% + 6px); right: 0;
     width: 200px; background: var(--surface); border: 1px solid var(--border-strong);
     border-radius: var(--radius-sm); box-shadow: 0 8px 24px rgba(0,0,0,.22);
     padding: .35rem; display: flex; flex-direction: column; z-index: 10;
