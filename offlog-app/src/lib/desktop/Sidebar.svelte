@@ -1013,8 +1013,9 @@
      practice. var(--hover) is the same flat neutral tint this row's
      :hover already uses, made permanent -- lighter than
      .project-row.active's bordered card, but still visible. */
-  .nav-btn.active { background: var(--hover); color: var(--text); font-weight: 700; }
-  .nav-btn.active svg { opacity: 1; }
+  /* The phone tab bar's selected pill: accent tint, accent icon. */
+  .nav-btn.active { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--text); font-weight: 700; }
+  .nav-btn.active svg { opacity: 1; color: var(--accent); }
 
   .spaces-divider { height: 1px; background: var(--border); margin: .5rem 0; }
   /* A full-width line reads heavier in the narrow 60px rail than in the
@@ -1094,9 +1095,8 @@
      --sidebar-bg have a near-zero lightness gap in light mode, so the
      card is otherwise invisible there. Kept at var(--border) with a light
      shadow so it doesn't become the boldest thing in the tree. */
-  .project-row.active {
-    background: var(--surface); border: 1px solid var(--border);
-    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+  .project-row.active, .project-row.active:hover {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
   }
 
   .project-btn {
