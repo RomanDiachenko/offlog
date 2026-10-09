@@ -964,9 +964,11 @@ pairing instead of disabling it for the session.
 5 s (`supervise_nyxdb()` in `lib.rs`). If NyxDB exits on its own it is
 restarted with the same binary, data dir, port and credentials, inside the
 original Job Object (`sync_host::respawn_nyxdb()`), then readiness and
-`ensure_database` run again. Backoff and the give-up rule are the pure
+`ensure_database` run again. Backoff and the rest rule are the pure
 `sync_host::RestartPolicy`: 2 s doubling to a 60 s cap, and the 5th exit
-within 5 minutes stops restarting for the session (logged as an error). A
+within 5 minutes pauses restarts for an hour (logged as an error), then the
+policy starts over: a tray session lasts weeks, and a burst's usual causes (a
+full disk, a file a scanner holds) clear on their own. A
 failed respawn counts as another exit. The pairing server and mDNS start
 once per session, the first time NyxDB is ready, never again on restart.
 Deliberate teardown — `terminate_nyxdb()` (tray Quit, `ExitRequested`) and

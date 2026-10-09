@@ -27,14 +27,6 @@ pub struct SyncHostInfo {
     pub password: String,
 }
 
-impl SyncHostInfo {
-    /// Not called yet -- kept for the frontend's config.ts integration.
-    #[allow(dead_code)]
-    pub fn url(&self) -> String {
-        format!("http://127.0.0.1:{}/offlog", self.port)
-    }
-}
-
 fn random_string(len: usize) -> String {
     const CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let mut rng = rand::rng();
@@ -290,8 +282,13 @@ pub fn retry_delay(attempt: u32) -> Duration {
 /// Crashes within this window count toward `MAX_CRASHES_IN_WINDOW`.
 pub const CRASH_WINDOW: Duration = Duration::from_secs(5 * 60);
 /// The crash that reaches this count within `CRASH_WINDOW` is not
-/// restarted: a sidecar that keeps dying would otherwise respawn forever.
+/// restarted at once: a sidecar that keeps dying would otherwise respawn
+/// in a tight loop.
 pub const MAX_CRASHES_IN_WINDOW: usize = 5;
+/// After that, one more try this much later, then the same policy afresh.
+/// The tray session can last weeks, and the usual causes of a burst (a
+/// full disk, a file held by a scanner) clear on their own.
+pub const REST_AFTER_CRASH_BURST: Duration = Duration::from_secs(60 * 60);
 
 /// Restart policy for an exited NyxDB sidecar. Pure: the caller passes the
 /// clock, so the window and backoff are testable without sleeping.
@@ -303,7 +300,8 @@ pub struct RestartPolicy {
 impl RestartPolicy {
     /// Records an exit at `now`. Returns how long to wait before restarting,
     /// or `None` when this exit is the `MAX_CRASHES_IN_WINDOW`th within
-    /// `CRASH_WINDOW` and the supervisor must give up.
+    /// `CRASH_WINDOW`: the supervisor rests `REST_AFTER_CRASH_BURST`, longer
+    /// than the window, so the crashes before it no longer count.
     pub fn record_crash(&mut self, now: Instant) -> Option<Duration> {
         self.recent.retain(|t| now.saturating_duration_since(*t) < CRASH_WINDOW);
         self.recent.push(now);
@@ -313,6 +311,7 @@ impl RestartPolicy {
         Some(restart_delay(self.recent.len() - 1))
     }
 
+    #[cfg(test)]
     pub fn crashes_in_window(&self) -> usize {
         self.recent.len()
     }
@@ -497,5 +496,18 @@ mod tests {
             assert!(p.record_crash(t0 + step * i).is_some());
         }
         assert_eq!(p.record_crash(t0 + step * 4), None);
+    }
+
+    #[test]
+    fn after_resting_the_next_crash_counts_as_a_first_one() {
+        let t0 = Instant::now();
+        let mut p = RestartPolicy::default();
+        for i in 0..4 {
+            assert!(p.record_crash(t0 + Duration::from_secs(i)).is_some());
+        }
+        assert_eq!(p.record_crash(t0 + Duration::from_secs(4)), None);
+        assert!(REST_AFTER_CRASH_BURST > CRASH_WINDOW);
+        let after_rest = t0 + Duration::from_secs(4) + REST_AFTER_CRASH_BURST;
+        assert_eq!(p.record_crash(after_rest), Some(Duration::from_secs(2)));
     }
 }

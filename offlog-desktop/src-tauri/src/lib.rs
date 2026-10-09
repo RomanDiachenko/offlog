@@ -326,8 +326,9 @@ const SUPERVISE_POLL: Duration = Duration::from_secs(5);
 // Restarts NyxDB if it exits mid-session, with the same binary, data dir,
 // port and credentials (so paired phones and the app's own sync URL keep
 // working), inside the original Job. Backoff and the give-up limit are
-// sync_host::RestartPolicy. Returns on quit, on giving up, or if the
-// Child has been taken by terminate_nyxdb().
+// sync_host::RestartPolicy; after a burst of crashes it rests an hour and
+// tries again. Returns on quit, or if the Child has been taken by
+// terminate_nyxdb().
 fn supervise_nyxdb(
     app_handle: &tauri::AppHandle,
     binary: &std::path::Path,
@@ -357,15 +358,21 @@ fn supervise_nyxdb(
         if NYXDB_STOPPING.load(Ordering::SeqCst) {
             return;
         }
-        let Some(delay) = policy.record_crash(Instant::now()) else {
-            log::error!(
-                "sync_host: NyxDB exited ({status}) {} times within {} s; not restarting again, sync host unavailable until Offlog restarts",
-                policy.crashes_in_window(),
-                sync_host::CRASH_WINDOW.as_secs()
-            );
-            return;
+        let delay = match policy.record_crash(Instant::now()) {
+            Some(delay) => {
+                log::warn!("sync_host: NyxDB exited ({status}); restarting in {} s", delay.as_secs());
+                delay
+            }
+            None => {
+                log::error!(
+                    "sync_host: NyxDB exited ({status}) {} times within {} s; trying again in {} min",
+                    sync_host::MAX_CRASHES_IN_WINDOW,
+                    sync_host::CRASH_WINDOW.as_secs(),
+                    sync_host::REST_AFTER_CRASH_BURST.as_secs() / 60
+                );
+                sync_host::REST_AFTER_CRASH_BURST
+            }
         };
-        log::warn!("sync_host: NyxDB exited ({status}); restarting in {} s", delay.as_secs());
         std::thread::sleep(delay);
 
         let Some(job) = app_handle.try_state::<win32job::Job>() else { return };
