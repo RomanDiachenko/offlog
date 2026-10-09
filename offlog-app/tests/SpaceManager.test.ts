@@ -11,13 +11,14 @@ const createSpace = vi.fn().mockResolvedValue(undefined);
 const updateSpace = vi.fn().mockResolvedValue(undefined);
 const deleteSpace = vi.fn().mockResolvedValue(undefined);
 const reorderSpaces = vi.fn().mockResolvedValue(undefined);
+const findSpacesByName = vi.fn().mockResolvedValue([]);
 vi.mock('../src/lib/db', () => ({
   getSpaces: (...a: unknown[]) => getSpaces(...a),
   createSpace: (...a: unknown[]) => createSpace(...a),
   updateSpace: (...a: unknown[]) => updateSpace(...a),
   deleteSpace: (...a: unknown[]) => deleteSpace(...a),
   reorderSpaces: (...a: unknown[]) => reorderSpaces(...a),
-  findSpacesByName: vi.fn().mockResolvedValue([]),
+  findSpacesByName: (...a: unknown[]) => findSpacesByName(...a),
   subscribe: vi.fn().mockReturnValue(() => {}),
 }));
 
@@ -215,5 +216,20 @@ describe('SpaceManager create and reorder', () => {
     await fireEvent.click(getAllByLabelText('Move down')[0]);
 
     await waitFor(() => expect(showError).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe('SpaceManager rename', () => {
+  it('hints when another space already has the new name', async () => {
+    const home = mkSpace({ _id: 'space:home', name: 'Home', position: 2 });
+    findSpacesByName.mockImplementation(async (name: string, exclude?: string) =>
+      name.toLowerCase() === 'home' && exclude !== 'space:home' ? [home] : []);
+    const { getByText, container, findByText } = await renderWith([UNSORTED, mkSpace(), home]);
+
+    await fireEvent.click(getByText('Work'));
+    await fireEvent.input(container.querySelector('.name-input') as HTMLInputElement, { target: { value: 'Home' } });
+
+    expect(await findByText('A space named "Home" already exists.')).toBeTruthy();
+    expect(findSpacesByName).toHaveBeenLastCalledWith('Home', 'space:work');
   });
 });

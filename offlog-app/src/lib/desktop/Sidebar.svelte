@@ -390,6 +390,20 @@
   let editingProjectId: string | null = null;
   let editName = '', editSpace = '';
   function startEditProject(p: ProjectDoc) { editingProjectId = p._id; editName = p.name; editSpace = p.space_id; }
+  // Same nudge as creating: a rename can make a duplicate just as easily.
+  let editDupHint = '', editDupSeq = 0;
+  async function checkEditDuplicate(id: string, name: string, current: string) {
+    const n = name.trim(), mine = ++editDupSeq;
+    if (!n || n === current) { editDupHint = ''; return; }
+    try {
+      const matches = await findProjectsByName(n, id);
+      if (mine !== editDupSeq) return;
+      const where = [...new Set(matches.map(p => $spaces.find(s => s._id === p.space_id)?.name ?? 'another space'))];
+      editDupHint = matches.length ? `A project named "${n}" already exists in ${where.join(', ')}.` : '';
+    } catch { editDupHint = ''; }
+  }
+  $: editingProject = $projects.find(p => p._id === editingProjectId);
+  $: if (editingProject) checkEditDuplicate(editingProject._id, editName, editingProject.name); else editDupHint = '';
   async function saveEditProject(p: ProjectDoc) {
     const name = editName.trim();
     if (!name) return;
@@ -603,6 +617,7 @@
                 <!-- svelte-ignore a11y-autofocus -->
                 <input autofocus class="new-project-input" bind:value={editName} aria-label="Project name" enterkeyhint="done"
                   on:keydown={(e) => { if (e.key === 'Enter') saveEditProject(project); if (e.key === 'Escape') { e.stopPropagation(); editingProjectId = null; } }} />
+                {#if editDupHint}<p class="dup-name-hint">{editDupHint}</p>{/if}
                 {#if $spaces.length > 1}
                   <CustomSelect options={$spaces.map(sp => ({ value: sp._id, label: sp.name }))} bind:value={editSpace} />
                 {/if}

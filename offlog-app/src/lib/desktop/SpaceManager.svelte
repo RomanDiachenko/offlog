@@ -86,6 +86,18 @@
   }
 
   function startEdit(s: SpaceDoc) { editingId = s._id; editingName = s.name; }
+  // Same nudge as adding: a rename can make a duplicate just as easily.
+  let editDupHint = '', editDupSeq = 0;
+  async function checkEditDuplicate(id: string, name: string, current: string) {
+    const n = name.trim(), mine = ++editDupSeq;
+    if (!n || n === current) { editDupHint = ''; return; }
+    try {
+      const matches = await findSpacesByName(n, id);
+      if (mine === editDupSeq) editDupHint = matches.length ? `A space named "${n}" already exists.` : '';
+    } catch { editDupHint = ''; }
+  }
+  $: editingSpace = items.find(s => s._id === editingId);
+  $: if (editingSpace) checkEditDuplicate(editingSpace._id, editingName, editingSpace.name); else editDupHint = '';
 
   async function saveEdit(s: SpaceDoc) {
     const name = editingName.trim();
@@ -207,6 +219,7 @@
           <button class="delete-btn" on:click={() => remove(s)} title="Delete space" aria-label="Delete space">×</button>
         {/if}
       </div>
+      {#if editingId === s._id && editDupHint}<p class="dup-name-hint">{editDupHint}</p>{/if}
     {/each}
 
     {#if adding}

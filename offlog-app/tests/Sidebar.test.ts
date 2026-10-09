@@ -10,13 +10,14 @@ const createProject = vi.fn().mockResolvedValue(undefined);
 const createProjectFromTemplate = vi.fn().mockResolvedValue(undefined);
 const deleteProject = vi.fn().mockResolvedValue(undefined);
 const updateProject = vi.fn().mockResolvedValue(undefined);
+const findProjectsByName = vi.fn().mockResolvedValue([]);
 vi.mock('../src/lib/db', () => ({
   default: {},
   createProject: (...a: unknown[]) => createProject(...a),
   createProjectFromTemplate: (...a: unknown[]) => createProjectFromTemplate(...a),
   deleteProject: (...a: unknown[]) => deleteProject(...a),
   updateProject: (...a: unknown[]) => updateProject(...a),
-  findProjectsByName: vi.fn().mockResolvedValue([]),
+  findProjectsByName: (...a: unknown[]) => findProjectsByName(...a),
   getStorageBreakdown: vi.fn().mockResolvedValue(null),
   subscribe: vi.fn().mockReturnValue(() => {}),
   syncState: { status: 'idle', lastSynced: null, error: null, retryCount: 0, conflictCount: 0, listeners: new Set() },
@@ -307,5 +308,20 @@ describe('Sidebar navigation and preferences', () => {
 
     await waitFor(() =>
       expect(JSON.parse(localStorage.getItem('offlog_sidebar_expanded_spaces')!)).toEqual([]));
+  });
+});
+
+describe('Sidebar project rename', () => {
+  it('hints when the new name is already taken, excluding the project itself', async () => {
+    const other = mkProject({ _id: 'project:2', name: 'Groceries' });
+    findProjectsByName.mockImplementation(async (name: string, exclude?: string) =>
+      name.toLowerCase() === 'groceries' && exclude !== 'project:2' ? [other] : []);
+    const { getByLabelText, findByText } = await renderTree([mkProject({ name: 'Draft' }), other]);
+
+    await fireEvent.click(getByLabelText('Rename or move Draft'));
+    await fireEvent.input(getByLabelText('Project name'), { target: { value: 'Groceries' } });
+
+    expect(await findByText('A project named "Groceries" already exists in Work.')).toBeTruthy();
+    expect(findProjectsByName).toHaveBeenLastCalledWith('Groceries', 'project:1');
   });
 });
