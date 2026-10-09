@@ -7,7 +7,7 @@
   import { PRIORITY_LABEL } from '../constants';
   import { today, loadFocusLock, saveFocusLock, type FocusLock } from '../focusLock';
   import { onNewDay } from '../today';
-  import { actions, showToast } from './nav';
+  import { actions, showToast, memo } from './nav';
   import { rankPicker, type Reason } from '../shared/focusRank';
   import { I } from './icons';
   import TopBar from './TopBar.svelte';
@@ -23,7 +23,11 @@
   let locked: TaskDoc[] = [];
   let suggested: { task: Row; reason: Reason }[] = [];
   let rest: Row[] = [];
-  let selected: string[] = [];
+  // Picks not yet committed live on the stack entry, so opening a task
+  // and coming back keeps them.
+  const mem = memo({ selected: [] as string[] });
+  let selected: string[] = mem.selected;
+  $: mem.selected = selected;
   let showAll = false;
   let loaded = false;
 

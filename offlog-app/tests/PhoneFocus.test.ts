@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, fireEvent, waitFor } from '@testing-library/svelte';
+import { render, fireEvent, waitFor, cleanup } from '@testing-library/svelte';
 import type { ProjectDoc, TaskDoc } from '../src/lib/types';
 
 const getOpenTasksForFocusPicker = vi.fn();
@@ -22,7 +22,7 @@ import { rankPicker } from '../src/lib/shared/focusRank';
 import { projects, showError } from '../src/lib/store';
 import { localDateStr } from '../src/lib/utils';
 import { get, type Writable } from 'svelte/store';
-import { toast } from '../src/lib/phone/nav';
+import { toast, push, stack } from '../src/lib/phone/nav';
 
 const KEY = 'offlog_focus_lock';
 const TODAY = localDateStr(new Date());
@@ -78,6 +78,18 @@ describe('phone Focus', () => {
     await findByText('0 of 2 done');
     expect(getAllByText('Reset')).toHaveLength(1);
     expect(container.querySelectorAll('.bar i')).toHaveLength(2);
+  });
+
+  it('picks not yet committed survive opening a task and coming back', async () => {
+    push({ k: 'focus' });
+    const first = render(FocusScreen);
+    await first.findAllByText('Taxes');
+    await fireEvent.click(first.getAllByText('Taxes')[0]);
+    cleanup();
+    const again = render(FocusScreen);
+    await again.findAllByText('Taxes');
+    expect([...again.container.querySelectorAll('.meter .chip')].map(x => x.textContent)).toEqual(['Taxes']);
+    stack.set([{ k: 'home' }]);
   });
 
   it('the chip of a pick takes it back out', async () => {
