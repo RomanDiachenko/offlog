@@ -469,3 +469,12 @@ describe('CardDetail archive', () => {
     expect(unarchiveTask).toHaveBeenCalledWith('task:1');
   });
 });
+
+describe('CardDetail notes', () => {
+  it('shows the notes editor without opening Extras', () => {
+    const { getByText, container } = render(CardDetail, { props: { task: mkTask({ body: 'Tile delivery moved' }), project: mkProject() } });
+    expect(getByText('Notes')).toBeTruthy();
+    expect(container.querySelector('.notes-field .md-editor')).toBeTruthy();
+    expect(container.querySelector('.extras-panel')).toBeNull();
+  });
+});

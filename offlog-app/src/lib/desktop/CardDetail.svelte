@@ -22,7 +22,7 @@
   import RelatedBlock from './carddetail/RelatedBlock.svelte';
   import BlockedByBlock from './carddetail/BlockedByBlock.svelte';
   import AttachmentsBlock from './carddetail/AttachmentsBlock.svelte';
-  import NotesBlock from './carddetail/NotesBlock.svelte';
+  import MarkdownEditor from '../shared/MarkdownEditor.svelte';
   import { isoToLocalInput, dateFromToday, dueDateToReminderInput, formatExtrasSummary, blobToBase64, base64ToBlob, downscaleImage, openAttachmentFile } from '../shared/taskHelpers';
   import { today } from '../today';
   import { offerUndo, shortTitle } from '../undoToast';
@@ -221,11 +221,12 @@
 
   // Only the due date *value* is mandatory (joining Status/Priority/
   // Tags); Repeat and Reminder live in Extras along with Checklist/Custom
-  // fields/Related/Notes, each as its own compact block. Extras always
+  // fields/Related, each as its own compact block. Notes sit under the
+  // title, always open: they are what the person wrote, not an extra. Extras always
   // starts collapsed, regardless of what is already filled in underneath
   // -- never auto-open it just because it has content.
   let showExtras = false;
-  // Each of the five blocks inside Extras has its own collapse, under the
+  // Each of the blocks inside Extras has its own collapse, under the
   // same never-auto-open rule as the outer Extras toggle: each stays
   // collapsed until clicked, regardless of whether it has content.
   let showRepeatReminder = false;
@@ -234,7 +235,6 @@
   let showRelatedBlock = false;
   let showBlockedByBlock = false;
   let showAttachmentsBlock = false;
-  let showNotesBlock = false;
   // Cap how many custom fields show by default — a project with a dozen
   // fields defined shouldn't turn every card into a long form. Anything
   // past the cap is one click away, not hidden entirely.
@@ -242,7 +242,7 @@
   let showAllFields = false;
   $: visibleFields = showAllFields ? customFields : customFields.slice(0, VISIBLE_FIELD_CAP);
 
-  $: extrasSummaryLines = formatExtrasSummary(reminder_at, recurrence, recurrenceInterval, recurrenceWeekdaysOnly, checklist, relatedTasks, blockingTasks, unresolvedBlockers.length, attachments, body);
+  $: extrasSummaryLines = formatExtrasSummary(reminder_at, recurrence, recurrenceInterval, recurrenceWeekdaysOnly, checklist, relatedTasks, blockingTasks, unresolvedBlockers.length, attachments, '');
 
   // Delete/Archive/Duplicate/history all live in one "⋯" menu — same
   // click-outside-closes pattern CustomSelect.svelte uses, not a new
@@ -775,6 +775,13 @@
       {/if}
     </div>
 
+    <div class="notes-field">
+      <span class="field-label">Notes</span>
+      <MarkdownEditor bind:value={body} placeholderText="Add notes…  **bold**, - list, # heading" />
+      {#if body.length > NOTES_SOFT_LIMIT}<div class="notes-counter">{body.length} characters</div>{/if}
+      {#if similarNotesHint}<p class="dup-name-hint">{similarNotesHint}</p>{/if}
+    </div>
+
     <div class="section-divider"></div>
 
     <div class="collapsible-section">
@@ -825,10 +832,6 @@
           <AttachmentsBlock
             bind:showAttachmentsBlock {attachments} {thumbnailUrls} {attachmentBusy}
             {attachmentError} {openAttachment} {removeAttachment} {onFilesPicked}
-          />
-
-          <NotesBlock
-            bind:showNotesBlock bind:body {similarNotesHint} {NOTES_SOFT_LIMIT}
           />
 
         </div>
@@ -1213,8 +1216,8 @@
   .section-chevron, .extras-panel :global(.section-chevron) { color: var(--faint); flex-shrink: 0; transition: transform var(--dur-small) var(--ease-standard), color var(--dur-hover) var(--ease-hover); }
   .section-chevron.open, .extras-panel :global(.section-chevron.open) { transform: rotate(90deg); }
   .section-toggle:hover .section-chevron { color: var(--text); }
-  .extras-panel :global(.notes-wrap) { display: block; }
-  .extras-panel :global(.notes-counter) {
+  .notes-field { display: flex; flex-direction: column; gap: .3rem; }
+  .notes-counter {
     font-family: var(--mono); font-size: .68rem; color: var(--faint);
     text-align: right; margin-top: 3px;
   }
