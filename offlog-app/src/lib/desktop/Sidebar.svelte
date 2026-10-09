@@ -30,7 +30,7 @@
   // want different widths/collapse state.
   const WIDTH_KEY = 'offlog_sidebar_width';
   const COLLAPSED_KEY = 'offlog_sidebar_collapsed';
-  const DEFAULT_WIDTH = 224;
+  const DEFAULT_WIDTH = 248;
   const MIN_WIDTH = 180;
   const MAX_WIDTH = 420;
   const COLLAPSED_WIDTH = 60;
@@ -631,21 +631,30 @@
                 <button class="project-btn" on:click={() => goToProject(project)}>
                   {project.name}
                 </button>
-                <button class="proj-pin-btn proj-edit-btn" title="Rename or move project" aria-label="Rename or move {project.name}" on:click|stopPropagation={() => startEditProject(project)}>
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>
-                </button>
-                <button
-                  class="proj-pin-btn"
-                  class:pinned={project.pinned}
-                  title={project.pinned ? 'Unpin project' : 'Pin project'}
-                  aria-label="{project.pinned ? 'Unpin' : 'Pin'} {project.name}"
-                  on:click|stopPropagation={() => toggleProjectPin(project)}
-                >
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill={project.pinned ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 17v5"/><path d="M9 3h6l-.5 6.5L17 12v2H7v-2l2.5-2.5L9 3Z"/>
-                  </svg>
-                </button>
-                <button class="proj-delete-btn" title="Delete project" aria-label="Delete project {project.name}" on:click={() => doDeleteProject(project._id, project.name)}>×</button>
+                <!-- Laid over the row's right edge, not beside the name: hidden
+                     buttons that kept their width made every long name wrap. -->
+                <div class="proj-actions">
+                  <button class="proj-pin-btn proj-edit-btn" title="Rename or move project" aria-label="Rename or move {project.name}" on:click|stopPropagation={() => startEditProject(project)}>
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>
+                  </button>
+                  <button
+                    class="proj-pin-btn"
+                    class:pinned={project.pinned}
+                    title={project.pinned ? 'Unpin project' : 'Pin project'}
+                    aria-label="{project.pinned ? 'Unpin' : 'Pin'} {project.name}"
+                    on:click|stopPropagation={() => toggleProjectPin(project)}
+                  >
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill={project.pinned ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 17v5"/><path d="M9 3h6l-.5 6.5L17 12v2H7v-2l2.5-2.5L9 3Z"/>
+                    </svg>
+                  </button>
+                  <button class="proj-delete-btn" title="Delete project" aria-label="Delete project {project.name}" on:click={() => doDeleteProject(project._id, project.name)}>×</button>
+                </div>
+                {#if project.pinned}
+                  <span class="proj-pinned-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 3h6l-.5 6.5L17 12v2H7v-2l2.5-2.5L9 3Z"/></svg>
+                  </span>
+                {/if}
               </div>
               {/if}
             {/each}
@@ -1063,12 +1072,24 @@
   .proj-pin-btn:focus-visible, .proj-delete-btn:focus-visible { opacity: 1; }
 
   .project-row {
-    display: flex; align-items: center;
+    display: flex; align-items: center; position: relative;
     border-radius: var(--radius-sm);
     padding-right: .3rem;
     transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
-  .project-row:hover { background: var(--hover); box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+  .project-row:hover, .project-row:focus-within { background: var(--hover); box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+  .proj-actions {
+    position: absolute; top: 0; bottom: 0; right: 0;
+    display: flex; align-items: center; padding: 0 .3rem;
+    visibility: hidden;
+  }
+  /* The name fades out under the buttons rather than sitting behind a box. */
+  .project-row:hover .project-btn, .project-row:focus-within .project-btn {
+    mask-image: linear-gradient(to right, black calc(100% - 92px), transparent calc(100% - 70px));
+  }
+  .project-row:hover .proj-actions, .project-row:focus-within .proj-actions { visibility: visible; }
+  .proj-pinned-mark { display: flex; color: var(--accent); padding: 0 .35rem; flex-shrink: 0; }
+  .project-row:hover .proj-pinned-mark, .project-row:focus-within .proj-pinned-mark { visibility: hidden; }
   /* A var(--surface) card needs an explicit border: --surface and
      --sidebar-bg have a near-zero lightness gap in light mode, so the
      card is otherwise invisible there. Kept at var(--border) with a light
@@ -1216,6 +1237,10 @@
   @media (hover: none) {
     .proj-delete-btn { opacity: .7; }
     .proj-pin-btn:not(.pinned) { opacity: .7; }
+    /* No hover to reveal the overlay: the buttons sit inline instead. */
+    .proj-actions { position: static; visibility: visible; padding: 0; }
+    .project-row .project-btn { mask-image: none; }
+    .proj-pinned-mark { display: none; }
   }
 
   /* Short viewports (landscape phone) — tighten spacing so the project

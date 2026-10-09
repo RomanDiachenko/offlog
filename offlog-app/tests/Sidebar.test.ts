@@ -325,3 +325,13 @@ describe('Sidebar project rename', () => {
     expect(findProjectsByName).toHaveBeenLastCalledWith('Groceries', 'project:1');
   });
 });
+
+describe('Sidebar project row', () => {
+  it('keeps a pinned project marked while its hover buttons are hidden', async () => {
+    const { container } = await renderTree([mkProject({ name: 'Pinned one', pinned: true }), mkProject({ _id: 'project:2', name: 'Plain one', position: 1 })]);
+    const rows = [...container.querySelectorAll('.project-row')];
+    expect(rows[0].querySelector('.proj-pinned-mark')).toBeTruthy();
+    expect(rows[1].querySelector('.proj-pinned-mark')).toBeNull();
+    expect(rows[1].querySelector('.proj-actions [aria-label="Delete project Plain one"]')).toBeTruthy();
+  });
+});
