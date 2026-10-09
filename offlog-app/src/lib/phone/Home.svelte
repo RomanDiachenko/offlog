@@ -216,7 +216,7 @@
 
 <style>
   .home { position: absolute; inset: 0; overflow: hidden; }
-  .scr { position: absolute; inset: 0; overflow-y: auto; padding: 0 16px 96px; scrollbar-width: none; }
+  .scr { position: absolute; inset: 0; overflow-y: auto; padding: 0 16px calc(96px + var(--tab-h, 0px)); scrollbar-width: none; }
   .scr::-webkit-scrollbar { display: none; }
   button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
 

@@ -43,6 +43,9 @@
   // height left; hide them. The WebView resizes (adjustResize), so a large
   // drop from the tallest height seen at this width means the keyboard.
   let kb = false;
+  // The tab bar floats over the screens (glass needs something passing
+  // behind it); screens add this much room at the end so nothing hides.
+  let tabH = 0;
   onMount(() => {
     const vv = window.visualViewport;
     let tallest = 0, width = 0, lastH = 0;
@@ -122,7 +125,7 @@
   });
 </script>
 
-<div class="phone-shell" class:kb>
+<div class="phone-shell" class:kb style:--tab-h="{kb ? 0 : tabH}px">
   <div class="screens" bind:this={screensEl}>
     {#key key}
       <div class="screen" class:flush={top.k === 'home'} class:board={top.k === 'project'} in:screenIn={{ kind: $arrival }} out:screenOut={{ kind: $arrival }}>
@@ -181,7 +184,7 @@
   <!-- Out of the layout while the keyboard is up (it covers this space);
        rises back in as the keyboard goes down. -->
   {#if !kb}
-  <nav class="tabbar" aria-label="Main" in:fly={keyboardBarIn}>
+  <nav class="tabbar glass" aria-label="Main" in:fly={keyboardBarIn} bind:offsetHeight={tabH}>
     {#each TABS as t}
       <button class="tb" class:on={$tab === t} aria-current={$tab === t ? 'page' : undefined} on:click={() => switchTab(t)}>
         <span class="pill">
@@ -202,10 +205,10 @@
     padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
   .phone-shell :global(svg.i) { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
   .screens { position: relative; flex: 1; min-height: 0; overflow: hidden; }
-  .screen { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; padding: 0 16px 96px; background: var(--bg); scrollbar-width: none; }
+  .screen { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; padding: 0 16px calc(96px + var(--tab-h, 0px)); background: var(--bg); scrollbar-width: none; }
   .screen::-webkit-scrollbar { display: none; }
   .screen.flush { padding: 0; overflow: hidden; }
-  .screen.board { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .screen.board { padding: 0; display: flex; flex-direction: column; overflow: hidden; bottom: var(--tab-h, 0px); }
 
   .fab {
     position: absolute; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); z-index: 10;
@@ -239,9 +242,10 @@
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
   .tabbar {
-    flex-shrink: 0; display: flex; justify-content: space-around; align-items: flex-start;
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;
+    display: flex; justify-content: space-around; align-items: flex-start;
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
-    background: var(--surface); border-top: 1px solid var(--border);
+    border-width: 1px 0 0; box-shadow: none;
   }
   .tb { transition: color var(--dur-medium) var(--ease-standard); display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; font: inherit; font-size: var(--p-fs-xs); font-weight: 600; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer; }
   .tb:active .pill { background: var(--col-bg); }
@@ -257,10 +261,12 @@
   @media (orientation: landscape) and (max-height: 500px) {
     .phone-shell { flex-direction: row; }
     .tabbar {
+      position: static;
       order: -1; flex-direction: column; justify-content: center; align-items: center; gap: 12px; width: 80px;
       padding: calc(8px + env(safe-area-inset-top, 0px)) 0 calc(8px + env(safe-area-inset-bottom, 0px));
-      border-top: 0; border-right: 1px solid var(--border);
+      border-width: 0 1px 0 0;
     }
+    .phone-shell { --tab-h: 0px !important; }
     .fab { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
     .snack { left: 12px; right: 84px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); max-width: 560px; }
     .screen:not(.flush):not(.board) { padding-inline: max(16px, calc((100% - 680px) / 2)); }
