@@ -144,7 +144,7 @@ describe('GlobalSearch matching', () => {
 
     await typeQuery(container, 'report');
 
-    await waitFor(() => expect(showError).toHaveBeenCalledWith('Search failed. Please try again.'));
+    await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not search. Please try again.'));
     expect(container.querySelector('.spinner')).toBeNull();
   });
 });

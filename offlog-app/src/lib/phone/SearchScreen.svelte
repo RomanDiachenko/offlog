@@ -53,7 +53,7 @@
       const r = await searchAllTasks(query.trim());
       if (my === seq) results = r;
     } catch {
-      showError('Search failed. Please try again.');
+      showError('Could not search. Please try again.');
     }
   }
   $: run(q);

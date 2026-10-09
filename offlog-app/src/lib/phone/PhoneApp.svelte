@@ -154,7 +154,7 @@
     {/key}
   </div>
 
-  {#if !kb && !$modalOpen && top.k !== 'settings' && top.k !== 'set' && top.k !== 'task' && top.k !== 'statuses'}<button class="fab" in:scale={keyboardFabIn} class:lift={!!$toast} class:away={fabAway} aria-hidden={fabAway || undefined} tabindex={fabAway ? -1 : undefined} on:click={() => actions.quickAdd()} aria-label="Add a task">{@html I.plus}</button>{/if}
+  {#if !kb && !$modalOpen && top.k !== 'settings' && top.k !== 'set' && top.k !== 'task' && top.k !== 'statuses'}<button class="fab" in:scale={keyboardFabIn} class:lift={!!$toast} class:away={fabAway} aria-hidden={fabAway || undefined} tabindex={fabAway ? -1 : undefined} on:click={() => actions.quickAdd()} aria-label="Add task">{@html I.plus}</button>{/if}
 
   {#if qa}
     {#key qaSession}

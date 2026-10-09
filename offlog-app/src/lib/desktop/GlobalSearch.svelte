@@ -67,7 +67,7 @@
           selectedIdx = 0;
         } catch {
           results = [];
-          showError('Search failed. Please try again.');
+          showError('Could not search. Please try again.');
         } finally {
           searching = false;
         }

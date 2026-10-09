@@ -160,7 +160,7 @@ describe('phone Agenda', () => {
     const empty = [...container.querySelectorAll('.days button')].find(b => b.getAttribute('aria-label')!.endsWith(', 0 due'))!;
     await fireEvent.click(empty);
     expect(getByText('Nothing due.')).toBeTruthy();
-    await fireEvent.click(getByText('Add a task'));
+    await fireEvent.click(getByText('Add task'));
     expect(add).toHaveBeenCalledWith(get(agendaDay));
     expect(get(agendaDay)).not.toBe(day(1));
   });

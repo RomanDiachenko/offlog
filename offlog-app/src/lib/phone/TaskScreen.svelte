@@ -402,6 +402,13 @@
     go(on);
     return { update: go };
   }
+  // Overflow cue: the bar's far edge fades while more statuses sit past it.
+  let stFade = false;
+  function fadeCheck(bar: HTMLElement) {
+    const set = () => { stFade = bar.scrollLeft + bar.clientWidth < bar.scrollWidth - 1; };
+    set(); bar.addEventListener('scroll', set, { passive: true });
+    return { destroy: () => bar.removeEventListener('scroll', set) };
+  }
   $: fieldsSet = fields.filter(f => { const v = task?.custom_values?.[f.id]; return v !== null && v !== undefined && v !== ''; }).length;
   $: files = task?.attachments?.length ?? 0;
   $: steps = task?.checklist ?? [];
@@ -459,7 +466,7 @@
 
   {#if project && project.columns.length > 1}
     <!-- The last status is done: picking it fills the ring like finishing. -->
-    <div class="stbar" role="group" aria-label="Status">
+    <div class="stbar" class:fade-end={stFade} use:fadeCheck role="group" aria-label="Status">
       {#each project.columns as c (c.id)}
         <button class:on={c.id === task.column_id} aria-pressed={c.id === task.column_id} use:centre={c.id === task.column_id} on:click={() => setStatus(c.id)}>{c.name}</button>
       {/each}
@@ -605,6 +612,8 @@
     position: sticky; top: 0; z-index: 3; margin: 0 -16px; padding: 0 16px; background: var(--bg); box-shadow: 0 1px 0 transparent;
     transition: background var(--dur-small-out) var(--ease-standard), box-shadow var(--dur-small-out) var(--ease-standard);
   }
+  /* Sideways the page's gutter widens (PhoneApp): the bar spans just the column. */
+  @media (orientation: landscape) and (max-height: 500px) { .tbar { margin-inline: 0; padding-inline: 0; } }
   .tbar.stuck { background: var(--surface); box-shadow: 0 1px 0 var(--border); transition-duration: var(--dur-small); }
   .tbar :global(h1) { font-size: var(--p-fs-xl); opacity: 0; transition: opacity var(--dur-small-out) var(--ease-accelerate); }
   .tbar.stuck :global(h1) { opacity: 1; transition: opacity var(--dur-small) var(--ease-decelerate); }
@@ -619,13 +628,17 @@
   /* 5px padding: room inside the scroll clip for the selected glow. */
   .stbar { display: flex; gap: 3px; overflow-x: auto; scrollbar-width: none; margin: 0 0 12px; padding: 5px; border-radius: 14px; background: var(--col-bg); scroll-behavior: smooth; }
   .stbar::-webkit-scrollbar { display: none; }
+  .stbar.fade-end {
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 48px), transparent);
+    mask-image: linear-gradient(to right, black calc(100% - 48px), transparent);
+  }
   .stbar button { flex: 1 0 auto; min-width: 72px; padding: 8px 12px; border: 0; border-radius: 9px; background: none; cursor: pointer; white-space: nowrap;
     font: inherit; font-size: var(--p-fs-s); font-weight: 600; color: var(--muted); transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover); }
   .stbar button.on { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
   .vals .p-k > span { display: flex; align-items: center; gap: 6px; }
   .vals .p-k.late, .vals .p-k.today { font-weight: 600; }
   .vals .p-k.late { color: var(--overdue-ink); }
-  .vals .p-k.today { color: var(--due-soon-ink); }
+  .vals .p-k.today { color: var(--accent-ink); }
   .vals .p-k.empty, .vals .add { color: var(--faint); }
   .vals .add { color: var(--accent); font-weight: 600; }
   .vals .add .p-ico { color: var(--accent); }

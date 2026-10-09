@@ -125,7 +125,7 @@
   {:else}
     {#if loaded}
       <Empty title={EMPTY[kind].title} text={EMPTY[kind].text}>
-        {#if kind !== 'pinned'}<button class="p-tbtn" on:click={() => actions.quickAdd()}>Add a task</button>{/if}
+        {#if kind !== 'pinned'}<button class="p-tbtn" on:click={() => actions.quickAdd()}>Add task</button>{/if}
       </Empty>
     {/if}
   {/each}

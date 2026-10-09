@@ -297,7 +297,7 @@
   }
 </script>
 
-<Sheet bind:this={sheet} label="Add a task" on:close>
+<Sheet bind:this={sheet} label="Add task" on:close>
   <!-- One column capped at the sheet's own room: the compose row and chips
        stay put; only the help or the panel below them scrolls. -->
   <div class="qa-root">

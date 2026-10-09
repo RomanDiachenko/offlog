@@ -333,7 +333,7 @@
       const { ok, skipped } = await importJSON(docs);
       importStatus = `Done — ${ok} imported, ${skipped} skipped`;
     } catch {
-      importStatus = 'Import failed. Please try again.';
+      importStatus = 'Could not import. Please try again.';
     }
     importBusy = false;
     setTimeout(() => { importStatus = ''; }, 4000);
@@ -402,8 +402,8 @@
       maintRemainingIssues = remainingIssues;
     } catch {
       const running = maintSteps.find(s => s.status === 'running');
-      if (running) setMaintStep(running.key, { status: 'error', note: 'Failed — please try again' });
-      showError('Maintenance failed partway through. Please try again.');
+      if (running) setMaintStep(running.key, { status: 'error', note: 'Could not finish. Please try again.' });
+      showError('Could not finish maintenance. Please try again.');
     } finally {
       maintRunning = false;
       maintCancelled = false;

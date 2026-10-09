@@ -49,13 +49,23 @@
   .sub { font-size: var(--p-fs-s); color: var(--faint); margin: -6px 2px 16px; display: flex; align-items: center; gap: 6px; }
   /* Without a panel the wrappers drop out of layout. */
   .wrap-stage:not(.stage), .wrap-stage:not(.stage) > div { display: contents; }
+  /* Sticks to the top of the screen's scroller, so Back and the screen's
+     actions stay in reach and the list passes under the glass. */
   .stage {
+    position: sticky; top: 0; z-index: 3;
     margin: 0 -16px 14px; padding: 10px 12px 6px;
     background:
       radial-gradient(70% 120% at 10% 0%, color-mix(in srgb, var(--space, var(--accent)) 10%, transparent), transparent 70%),
-      radial-gradient(50% 100% at 90% 10%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 70%);
+      radial-gradient(50% 100% at 90% 10%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 70%),
+      linear-gradient(var(--bg) 10px, transparent 10px);
   }
   .head { padding: 2px 10px 2px 14px; }
   .head .sub { margin-bottom: 12px; }
   .head h1.root { margin-left: 0; }
+  /* Sideways, a page keeps a centred column with a wider gutter (PhoneApp),
+     so the stage stays inside it; a project screen keeps the 16px gutter. */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .stage { margin-inline: 0; padding-inline: 0; }
+    :global(.screen.board) .stage { margin-inline: -16px; padding-inline: 12px; }
+  }
 </style>

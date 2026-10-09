@@ -39,6 +39,10 @@
   const showPill = (smooth: boolean) =>
     pills?.querySelector('.on')?.scrollIntoView?.({ inline: 'nearest', block: 'nearest', behavior: smooth && !prefersReducedMotion() ? 'smooth' : 'auto' });
   onMount(() => showPill(false));
+  // Overflow cue: the row's far edge fades while more pills sit past it.
+  let fadeEnd = false;
+  function updateFade() { fadeEnd = !!pills && pills.scrollLeft + pills.clientWidth < pills.scrollWidth - 1; }
+  onMount(() => { updateFade(); const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateFade); if (ro && pills) ro.observe(pills); return () => ro?.disconnect(); });
   async function go(i: number, at = 0) {
     if (i < 0 || i >= cols.length || i === ci) return;
     dir = i > ci ? 1 : -1;
@@ -94,7 +98,7 @@
   function touchCancel() { tracking = false; axis = null; dx = 0; }
 </script>
 
-<div class="pills" bind:this={pills} role="tablist" aria-label="Statuses">
+<div class="pills" class:fade-end={fadeEnd} bind:this={pills} on:scroll={updateFade} role="tablist" aria-label="Statuses">
   {#each cols as c, i (c.id)}
     <button role="tab" aria-selected={i === ci} class:on={i === ci} class:last={cols.length > 1 && i === cols.length - 1} on:click={() => go(i)}>{c.name} <i>{counts[c.id]}</i></button>
   {/each}
@@ -118,7 +122,7 @@
                 <p class="hint"><span class="tick">{@html I.check}</span>Tick a task to finish it.</p>
               {:else}
                 <p>Nothing in {col.name}.</p>
-                <button class="p-tbtn" on:click={() => actions.quickAdd()}>Add a task</button>
+                <button class="p-tbtn" on:click={() => actions.quickAdd()}>Add task</button>
               {/if}
             </div>
           {/each}
@@ -132,6 +136,10 @@
   /* Block padding: room inside the scroll clip for the selected pill's glow. */
   .pills { display: flex; gap: 6px; margin: -4px -16px 4px; padding: 8px 16px; overflow-x: auto; scrollbar-width: none; }
   .pills::-webkit-scrollbar { display: none; }
+  .pills.fade-end {
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 56px), transparent);
+    mask-image: linear-gradient(to right, black calc(100% - 56px), transparent);
+  }
   .pills button {
     position: relative; flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 8px 13px; min-height: 36px; border-radius: 999px; border: 0; cursor: pointer;
     font: inherit; font-size: var(--p-fs-s); font-weight: 600; background: var(--surface); color: var(--muted);

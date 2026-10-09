@@ -422,8 +422,8 @@ describe('phone settings pages', () => {
       const { getByText } = render(SettingsPage, { page: 'advanced' });
       await fireEvent.click(getByText('Check and repair'));
       await fireEvent.click(getByText('Run'));
-      await waitFor(() => expect(showError).toHaveBeenCalledWith('Maintenance failed partway through. Please try again.'));
-      expect(getByText('Failed — please try again')).toBeTruthy();
+      await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not finish maintenance. Please try again.'));
+      expect(getByText('Could not finish. Please try again.')).toBeTruthy();
     });
   });
 

@@ -151,7 +151,7 @@
   {:else}
     <div class="none">
       <p class="p-empty">Nothing due.</p>
-      <button class="p-tbtn" on:click={() => actions.quickAdd(selected)}>Add a task</button>
+      <button class="p-tbtn" on:click={() => actions.quickAdd(selected)}>Add task</button>
     </div>
   {/each}
 {:else if loaded && !all.length}
@@ -159,7 +159,7 @@
 {:else}
   {#if todayCount || lateCount}
     <button class="today-row" on:click={() => switchTab('today')}>
-      <span class="n" aria-hidden="true">{todayCount}</span>
+      {#if todayCount}<span class="n" aria-hidden="true">{todayCount}</span>{/if}
       <span class="lbl">Today{#if lateCount}<span class="late">{' · '}{lateCount} overdue</span>{/if}</span>{@html I.chev}
     </button>
   {/if}
@@ -190,7 +190,7 @@
   .today-row .n { min-width: 26px; height: 26px; padding: 0 7px; box-sizing: border-box; border-radius: 13px; background: var(--accent); color: var(--on-accent); font-size: var(--p-fs-s); font-weight: 700; display: flex; align-items: center; justify-content: center; }
   .today-row:active { transform: scale(.98); }
   .today-row .lbl { flex: 1; }
-  .today-row .late { color: var(--danger); font-weight: 600; }
+  .today-row .late { color: var(--overdue-ink); font-weight: 600; }
   .today-row :global(svg) { width: 16px; height: 16px; color: var(--faint); }
   .month {
     padding: 8px 8px 6px; margin-bottom: 6px; overflow: hidden;
@@ -200,7 +200,7 @@
   .mc { display: flex; align-items: center; gap: 4px; }
   .ml { font-weight: 700; font-size: var(--p-fs-l); }
   .mc .p-tbtn { font-size: var(--p-fs-s); }
-  .month .nav { width: 40px; height: 40px; flex: none; border-radius: 50%; color: var(--muted); }
+  .month .nav { width: 44px; height: 44px; flex: none; border-radius: 50%; color: var(--muted); }
   .month .nav:active { background: var(--col-bg); }
   .wds, .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
   .wd { font-size: var(--p-fs-xs); font-weight: 600; color: var(--faint); text-align: center; padding: 4px 0; }

@@ -238,8 +238,8 @@
   .lrow:active { background: var(--col-bg); }
   .lrow .t { flex: 1; min-width: 0; display: flex; flex-direction: column; font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
   .pj { font-size: var(--p-fs-s); color: var(--faint); font-weight: 400; margin-top: 1px; }
-  .lrow.picked { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent-ink); }
-  .lrow.picked:active { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
+  .lrow.picked { background: var(--sel-fill); }
+  .lrow.picked:active { background: color-mix(in srgb, var(--text) 12%, transparent); }
   .why { font-weight: 600; color: var(--faint); }
   .why.pinned { color: var(--accent-ink); }
   .why.overdue { color: var(--overdue-ink); }

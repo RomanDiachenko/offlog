@@ -270,8 +270,8 @@
   .chk.on::after, .picked .box::after { transform: rotate(45deg) scale(1); opacity: 1; transition: transform var(--dur-small) var(--ease-decelerate), opacity var(--dur-small) var(--ease-decelerate); }
   /* The fill and tick wait for the loop (phone.css .p-loop) to close. */
   .chk.on, .chk.on::after { transition-delay: var(--dur-large); }
-  .row.picked { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent-ink); }
-  .row.picked:active { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
+  .row.picked { background: var(--sel-fill); }
+  .row.picked:active { background: color-mix(in srgb, var(--text) 12%, transparent); }
   /* The tab bar under the screen already clears the gesture area. */
   .bulkbar {
     position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 11;

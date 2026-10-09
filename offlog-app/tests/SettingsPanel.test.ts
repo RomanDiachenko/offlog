@@ -329,7 +329,7 @@ describe('SettingsPanel restore failure', () => {
     await fireEvent.click(await findByText(/^Import 1 item$/));
     await new Promise(r => setTimeout(r, 0));
 
-    expect(showError).toHaveBeenCalledWith('Import failed. Please try again.');
+    expect(showError).toHaveBeenCalledWith('Could not import. Please try again.');
   });
 });
 

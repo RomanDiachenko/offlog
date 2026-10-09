@@ -57,11 +57,11 @@
 <style>
   .month { background: var(--surface); border-radius: 16px; box-shadow: var(--p-shadow); padding: 8px 8px 6px; }
   .mh { display: flex; align-items: center; justify-content: space-between; padding: 0 2px 4px; font-weight: 700; font-size: var(--p-fs-l); }
-  .nav { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: none; color: var(--muted); cursor: pointer; }
+  .nav { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: none; color: var(--muted); cursor: pointer; }
   .nav:active { background: var(--col-bg); }
   .grid { display: grid; grid-template-columns: repeat(7, 1fr); }
   .wd { text-align: center; font-size: var(--p-fs-xs); font-weight: 600; color: var(--faint); padding: 4px 0; }
-  .day { height: 42px; display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; cursor: pointer; font: inherit; color: var(--text); }
+  .day { height: 44px; display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; cursor: pointer; font: inherit; color: var(--text); }
   .day span { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--p-fs-m); font-variant-numeric: tabular-nums;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover); }
   .day.out { color: var(--faint); }

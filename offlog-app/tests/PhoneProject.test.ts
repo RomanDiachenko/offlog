@@ -177,11 +177,11 @@ describe('phone Project screen — board', () => {
     const spy = vi.spyOn(actions, 'quickAdd').mockImplementation(() => {});
     const { getByRole, getByText, queryByText } = setup({}, tasks.slice(0, 3));
     await fireEvent.click(getByRole('tab', { name: 'Doing 0' }));
-    await fireEvent.click(getByText('Add a task'));
+    await fireEvent.click(getByText('Add task'));
     expect(spy).toHaveBeenCalled();
     await fireEvent.click(getByRole('tab', { name: 'Done 0' }));
     expect(getByText('Tick a task to finish it.')).toBeTruthy();
-    expect(queryByText('Add a task')).toBeNull();
+    expect(queryByText('Add task')).toBeNull();
   });
 
   it('+ adds to the status on show, but never to the last one: a task added there would be born finished', async () => {
@@ -194,7 +194,7 @@ describe('phone Project screen — board', () => {
 
   it('a one-status project still offers Add a task when empty', () => {
     const r = setup({ columns: [{ id: 'col:todo', name: 'To do' }] }, []);
-    expect(r.getByText('Add a task')).toBeTruthy();
+    expect(r.getByText('Add task')).toBeTruthy();
   });
 
   it('the last status pill is marked as the done one; there are no page dots', () => {
