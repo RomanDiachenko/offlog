@@ -616,11 +616,12 @@
   .note { margin: 0 2px 16px; }
   .note :global(.md-editor), div.note:focus-within :global(.md-editor) { border: 0; border-radius: 0; background: none; min-height: 0; }
   .note :global(.cm-content) { font-size: var(--p-fs-m); padding: 4px 0; }
-  .stbar { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin: 0 0 12px; padding: 3px; border-radius: 12px; background: var(--col-bg); scroll-behavior: smooth; }
+  /* 5px padding: room inside the scroll clip for the selected glow. */
+  .stbar { display: flex; gap: 3px; overflow-x: auto; scrollbar-width: none; margin: 0 0 12px; padding: 5px; border-radius: 14px; background: var(--col-bg); scroll-behavior: smooth; }
   .stbar::-webkit-scrollbar { display: none; }
   .stbar button { flex: 1 0 auto; min-width: 72px; padding: 8px 12px; border: 0; border-radius: 9px; background: none; cursor: pointer; white-space: nowrap;
     font: inherit; font-size: var(--p-fs-s); font-weight: 600; color: var(--muted); transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover); }
-  .stbar button.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .stbar button.on { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
   .vals .p-k > span { display: flex; align-items: center; gap: 6px; }
   .vals .p-k.late, .vals .p-k.today { font-weight: 600; }
   .vals .p-k.late { color: var(--overdue-ink); }
