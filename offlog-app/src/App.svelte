@@ -632,7 +632,8 @@
         </div>
       {:else if Desktop && $activeProject}
       <div class="view-fade" in:fade={viewIn} out:fade={viewOut}>
-        <header class="board-header">
+        <div class="fluid-stage" style:--space={activeSpace ? soften(activeSpace.color) : 'var(--accent)'}>
+        <header class="board-header fluid">
           <button class="hamburger" on:click={() => sidebarOpen = true} aria-label="Menu">
             <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
               <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
@@ -694,6 +695,7 @@
             {/each}
           </div>
         </header>
+        </div>
 
         {#if currentView === 'kanban'}
           <svelte:component
@@ -890,6 +892,26 @@
     display: flex; align-items: center; gap: 16px;
     padding: 16px 24px 14px;
     border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  /* Fluid: a floating glass panel over a faint light of the space color. */
+  .fluid-stage {
+    flex-shrink: 0; padding: 14px 18px 6px;
+    background:
+      radial-gradient(60% 140% at 12% 0%, color-mix(in srgb, var(--space) 8%, transparent), transparent 70%),
+      radial-gradient(45% 120% at 88% 10%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 70%);
+  }
+  .board-header.fluid {
+    border: 1px solid color-mix(in srgb, var(--on-hero) 10%, transparent); border-radius: 18px;
+    background: color-mix(in srgb, var(--surface) 55%, transparent);
+    backdrop-filter: blur(22px) saturate(160%);
+    box-shadow: 0 8px 30px rgba(0,0,0,.18), inset 0 1px 0 color-mix(in srgb, var(--on-hero) 8%, transparent);
+    padding: 12px 18px;
+  }
+  .board-header.fluid .search-filter-group, .board-header.fluid .view-seg { background: transparent; border-color: transparent; }
+  /* Emphasis by light, not a filled button. */
+  .board-header.fluid .view-btn.active {
+    background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--text);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 18px color-mix(in srgb, var(--accent) 40%, transparent);
   }
 
   /* Hamburger — hidden on desktop, shown on mobile */
