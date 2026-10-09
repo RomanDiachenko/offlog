@@ -2117,6 +2117,20 @@ describe('clearLocalSeedBeforeFirstPair()', () => {
     await expect(db.get('project:draft')).resolves.toBeTruthy();
   });
 
+  it.each([
+    ['an icon on a seeded space', 'space:work', { icon: 'briefcase' }],
+    ['Draft pinned', 'project:draft', { pinned: true }],
+    ['Draft archived', 'project:draft', { archived: true }],
+  ])('leaves the seed alone after %s', async (_label, id, change) => {
+    await seedIfEmpty();
+    const doc = await db.get<Record<string, unknown>>(id);
+    await db.put({ ...doc, ...change });
+
+    await clearLocalSeedBeforeFirstPair();
+
+    expect(await db.get<Record<string, unknown>>(id)).toMatchObject(change);
+  });
+
   it('leaves the seed alone when the user made their own project and there are no tasks', async () => {
     await seedIfEmpty();
     const [space] = await getSpaces();

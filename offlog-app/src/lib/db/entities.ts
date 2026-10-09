@@ -96,16 +96,22 @@ export interface PristineDoc {
   space_id?: string;
   default_view?: ProjectDoc['default_view'];
   columns?: Column[];
+  icon?: string;
+  pinned?: boolean;
+  archived?: boolean;
 }
 
 export const SEED_IDS = ['space:unsorted', 'space:personal', 'space:work', 'project:draft'];
 
+// Every field a person can change counts: one that is left out here makes
+// that edit look untouched, and pairing then throws it away.
 export const PRISTINE_DEFAULTS: Record<string, (doc: PristineDoc) => boolean> = {
-  'space:unsorted': (d) => d.name === 'Unsorted' && d.color === '#6B7280' && d.position === 0,
-  'space:personal': (d) => d.name === 'Personal' && d.color === '#10B981' && d.position === 1,
-  'space:work':     (d) => d.name === 'Work' && d.color === '#3B82F6' && d.position === 2,
+  'space:unsorted': (d) => d.name === 'Unsorted' && d.color === '#6B7280' && d.position === 0 && !d.icon,
+  'space:personal': (d) => d.name === 'Personal' && d.color === '#10B981' && d.position === 1 && !d.icon,
+  'space:work':     (d) => d.name === 'Work' && d.color === '#3B82F6' && d.position === 2 && !d.icon,
   'project:draft':  (d) => d.name === 'Draft' && d.space_id === 'space:unsorted' && d.position === 0
-                         && d.default_view === 'kanban' && JSON.stringify(d.columns) === JSON.stringify(DEFAULT_COLS),
+                         && d.default_view === 'kanban' && JSON.stringify(d.columns) === JSON.stringify(DEFAULT_COLS)
+                         && !d.pinned && !d.archived,
 };
 
 export async function seedIfEmpty() {
