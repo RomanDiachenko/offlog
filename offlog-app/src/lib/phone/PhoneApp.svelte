@@ -170,7 +170,7 @@
   <!-- A keyed each, not {#if}{#key}: a key block inside an {#if} drops its
        outro when the {#if} closes, so the snackbar would vanish on timeout. -->
   {#each $toast ? [$toast] : [] as t (t.id)}
-    <div class="snack" in:fly={swap ? snackSwapIn : snackIn} out:fly={swap ? snackSwapOut : snackOut}>
+    <div class="snack glass" in:fly={swap ? snackSwapIn : snackIn} out:fly={swap ? snackSwapOut : snackOut}>
       <span class="msg">{t.text}</span>
       {#if t.undo}<button on:click={() => { const u = t.undo; toast.set(null); u?.(); }}>Undo</button>
       {:else if t.action}<button on:click={() => { const a = t.action; toast.set(null); a?.run(); }}>{t.action.label}</button>{/if}
@@ -214,7 +214,8 @@
     position: absolute; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); z-index: 10;
     width: 56px; height: 56px; border-radius: 20px; border: 0; padding: 0; cursor: pointer;
     background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,.18);
+    /* The one accent object on screen, with the Fluid glow under it. */
+    box-shadow: 0 4px 12px rgba(0,0,0,.18), 0 0 18px var(--glow);
     /* translate rides with the snackbar (its timings: rises decelerating,
        drops accelerating); scale is the press. Separate properties, so a
        press is never slowed to the lift's pace. */
@@ -232,12 +233,12 @@
   .snack {
     position: absolute; left: 12px; right: 12px; bottom: calc(72px + env(safe-area-inset-bottom, 0px)); z-index: 20;
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    background: var(--inverse-surface); color: var(--on-inverse); border-radius: 12px; padding: 4px 4px 4px 16px; min-height: 52px;
-    font-size: var(--p-fs-m); line-height: 1.35; box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    color: var(--text); border-radius: 12px; padding: 4px 4px 4px 16px; min-height: 52px;
+    font-size: var(--p-fs-m); line-height: 1.35;
   }
   .msg { min-width: 0; padding: 8px 0; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .snack button { transition: background var(--dur-hover) var(--ease-hover); font: inherit; font-weight: 700; color: var(--inverse-accent); background: none; border: 0; min-height: 44px; padding: 0 14px; border-radius: 8px; cursor: pointer; flex-shrink: 0; }
-  .snack button:active { background: color-mix(in srgb, var(--on-inverse) 12%, transparent); }
+  .snack button { transition: background var(--dur-hover) var(--ease-hover); font: inherit; font-weight: 700; color: var(--accent-ink); background: none; border: 0; min-height: 44px; padding: 0 14px; border-radius: 8px; cursor: pointer; flex-shrink: 0; }
+  .snack button:active { background: var(--press); }
 
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 

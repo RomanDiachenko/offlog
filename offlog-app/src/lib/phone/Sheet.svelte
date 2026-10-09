@@ -94,7 +94,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
   <div class="psheet-scrim" class:raised on:click={requestClose} in:fade={scrimIn} out:fade={scrimOut}></div>
   <div
-    class="psheet" class:raised class:dragging class:kbjump={kbJump} role="dialog" aria-modal="true" aria-label={label || title || 'Sheet'} tabindex="-1" bind:this={panel}
+    class="psheet glass" class:raised class:dragging class:kbjump={kbJump} role="dialog" aria-modal="true" aria-label={label || title || 'Sheet'} tabindex="-1" bind:this={panel}
     style:transform={dragY || kbOff ? `translateY(${dragY + kbOff}px)` : null}
     use:trapFocus
     in:sheetIn
@@ -115,8 +115,8 @@
   .psheet {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 651; outline: none;
     max-height: 88dvh; overflow-y: auto; overscroll-behavior: contain;
-    background: var(--bg); color: var(--text); border-radius: 22px 22px 0 0;
-    box-shadow: 0 -10px 30px rgba(0,0,0,.2);
+    color: var(--text); border-radius: 22px 22px 0 0;
+    border-width: 1px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,.2);
     padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px));
     transition: transform var(--dur-medium) var(--ease-standard);
   }
@@ -124,9 +124,9 @@
   .psheet.raised { z-index: 701; }
   .psheet.dragging, .psheet.kbjump { transition: none; }
   /* The handle and title stay put while a tall sheet scrolls. */
-  .grab-zone { position: sticky; top: 0; z-index: 1; background: var(--bg); padding: 10px 0 12px; touch-action: none; cursor: grab; }
+  .grab-zone { position: sticky; top: 0; z-index: 1; padding: 10px 0 12px; touch-action: none; cursor: grab; }
   .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--border-strong); margin: 0 auto; }
-  h2 { position: sticky; top: 27px; z-index: 1; background: var(--bg); margin: 0 -4px 8px; padding: 0 8px 4px; font-size: var(--p-fs-xl); font-weight: 700; }
+  h2 { position: sticky; top: 27px; z-index: 1; margin: 0 -4px 8px; padding: 0 8px 4px; font-size: var(--p-fs-xl); font-weight: 700; }
   /* Sideways, a sheet keeps a phone's width, centred. */
   @media (orientation: landscape) and (max-height: 500px) {
     .psheet { left: max(0px, calc((100% - 600px) / 2)); right: max(0px, calc((100% - 600px) / 2)); max-height: 94dvh; }
