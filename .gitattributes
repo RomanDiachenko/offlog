@@ -1,0 +1,9 @@
+# One line ending everywhere: LF, in the repository and in the working copy,
+# whatever core.autocrlf says. Git for Windows ships autocrlf=true, which
+# checked files out as CRLF and warned "LF will be replaced by CRLF" every
+# time a tool (npx cap sync, an editor, a script) wrote a file with LF.
+* text=auto eol=lf
+
+# cmd.exe needs CRLF to run a batch file reliably.
+*.bat text eol=crlf
+*.cmd text eol=crlf
