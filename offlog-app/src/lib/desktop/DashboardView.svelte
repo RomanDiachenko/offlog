@@ -4,11 +4,17 @@
   import { getDashboardData, getStorageBreakdown, getTaskById, subscribe } from '../db';
   import { reloadTasks, showError } from '../store';
   import { PRIORITY_COLOR } from '../constants';
-  import { dueLabelLong } from '../utils';
+  import { dueLabelLong, fmtDay, dayOf, daysDiff } from '../utils';
   import { today, onNewDay } from '../today';
   import type { TaskDoc, ProjectDoc } from '../types';
   import CardDetail from './CardDetail.svelte';
   import { loadFocusLock, type FocusLock } from '../focusLock';
+
+  // Today and tomorrow by name; anything later by its day.
+  function nextDueLabel(due: string, day: string): string {
+    const days = daysDiff(due, day);
+    return days === 0 ? 'Due today' : days === 1 ? 'Due tomorrow' : `Next due ${fmtDay(dayOf(due), { weekday: true })}`;
+  }
 
   const dispatch = createEventDispatcher<{ openProject: string; menu: void; focus: void; search: void; agenda: void }>();
 
@@ -155,7 +161,8 @@
           <div class="section-title">Projects</div>
           <div class="project-grid">
             {#each data.allProjects as proj (proj._id)}
-              {@const stats = data.byProject[proj._id] ?? { total: 0, pinned: 0, overdue: 0 }}
+              {@const stats = data.byProject[proj._id] ?? { total: 0, open: 0, pinned: 0, overdue: 0, nextDue: null }}
+              {@const done = stats.total - stats.open}
               {@const space = data.allSpaces.find(s => s._id === proj.space_id)}
               <div
                 class="proj-card"
@@ -169,9 +176,17 @@
                     <span class="space-dot" style="background:{soften(space.color)}"></span>
                     <span class="space-name">{space.name}</span>
                   {/if}
-                  <span class="task-count" title="{stats.total} task{stats.total === 1 ? '' : 's'}">{stats.total}</span>
                 </div>
                 <div class="proj-name">{proj.name}</div>
+                {#if stats.total}
+                  <div class="progress" aria-hidden="true"><span style="width:{Math.round(done / stats.total * 100)}%"></span></div>
+                  <div class="proj-meta">
+                    <span>{done} of {stats.total} done</span>
+                    {#if stats.nextDue}<span>{nextDueLabel(stats.nextDue, $today)}</span>{/if}
+                  </div>
+                {:else}
+                  <div class="proj-meta"><span>No tasks yet</span></div>
+                {/if}
                 <div class="proj-stats">
                   {#if stats.pinned}<span class="stat pinned-stat">{stats.pinned} pinned</span>{/if}
                   {#if stats.overdue}<span class="stat overdue-stat">{stats.overdue} overdue</span>{/if}
@@ -412,16 +427,6 @@
 
   .proj-card-top { display: flex; align-items: center; gap: 6px; }
   .space-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  /* Task count in the card's top-right corner, same pill language as
-     the Board's column-header count. margin-left:auto rather than a spacer
-     div, so it works whether or not the space-dot/name are present. */
-  .task-count {
-    margin-left: auto; flex-shrink: 0;
-    display: inline-flex; align-items: center; justify-content: center;
-    min-width: 20px; height: 20px; padding: 0 .4rem;
-    font-family: var(--mono); font-size: .68rem; font-weight: 600;
-    color: var(--muted); background: var(--hover); border-radius: 20px;
-  }
   /* Wrap, never truncate. min-width:0 is required for a flex child to wrap
      instead of overflowing its row (flex items default to a content-based
      min-width). The grid's grid-auto-rows: minmax(130px, auto) absorbs the
@@ -441,6 +446,9 @@
     padding: 3px 8px; border-radius: 20px; background: var(--hover);
     white-space: nowrap;
   }
+  .progress { height: 4px; border-radius: 4px; background: var(--hover); overflow: hidden; }
+  .progress span { display: block; height: 100%; border-radius: 4px; background: var(--success); }
+  .proj-meta { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
   .pinned-stat { color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 14%, transparent); }
   .overdue-stat { color: color-mix(in srgb, var(--danger) 82%, var(--text)); background: color-mix(in srgb, var(--danger) 14%, transparent); }
 

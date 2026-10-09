@@ -54,9 +54,10 @@ export async function getDashboardData() {
   const tasks = all.filter(d => !d.deleted && !d.archived && activeProjectIds.has(d.project_id));
   const today = localDateStr(new Date());
 
-  const byProject: Record<string, { total: number; open: number; pinned: number; overdue: number; lastColId: string }> = {};
+  // nextDue: the earliest due date, today or later, among open tasks.
+  const byProject: Record<string, { total: number; open: number; pinned: number; overdue: number; nextDue: string | null; lastColId: string }> = {};
   for (const p of allProjects) {
-    byProject[p._id] = { total: 0, open: 0, pinned: 0, overdue: 0, lastColId: p.columns.at(-1)?.id ?? '' };
+    byProject[p._id] = { total: 0, open: 0, pinned: 0, overdue: 0, nextDue: null, lastColId: p.columns.at(-1)?.id ?? '' };
   }
   for (const t of tasks) {
     if (!byProject[t.project_id]) continue;
@@ -64,6 +65,8 @@ export async function getDashboardData() {
     if (t.column_id !== byProject[t.project_id].lastColId) byProject[t.project_id].open++;
     if (t.pinned && t.column_id !== byProject[t.project_id].lastColId) byProject[t.project_id].pinned++;
     if (t.due_date && t.due_date < today && t.column_id !== byProject[t.project_id].lastColId) byProject[t.project_id].overdue++;
+    const s = byProject[t.project_id];
+    if (t.due_date && t.due_date >= today && t.column_id !== s.lastColId && (!s.nextDue || t.due_date < s.nextDue)) s.nextDue = t.due_date;
   }
 
   // Excludes done tasks (last column) like overdueTasks/todayTasks below --

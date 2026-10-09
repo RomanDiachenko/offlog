@@ -427,6 +427,19 @@ describe('"done" is positional (column_id === last column)', () => {
     expect(due.map(t => t._id)).not.toContain(task._id);
   });
 
+  it('getDashboardData gives each project its earliest open due date from today on', async () => {
+    await seedSpace();
+    const project = await createProject('space:unsorted', 'Next Due');
+    const [first] = project.columns, last = project.columns.at(-1)!;
+    const day = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return localDateStr(d); };
+    const mk = async (title: string, due: string, col = first.id) => updateTask((await createTask(project._id, 'space:unsorted', col, title))._id!, { due_date: due });
+    await mk('Overdue', day(-2));
+    await mk('Done sooner', day(1), last.id);
+    await mk('Later', day(9));
+    await mk('Next', day(3));
+    expect((await getDashboardData()).byProject[project._id].nextDue).toBe(day(3));
+  });
+
   it('getDashboardData excludes a completed task from the overdue list and count', async () => {
     await seedSpace();
     const project = await createProject('space:unsorted', 'Test Project');

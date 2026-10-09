@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, cleanup, waitFor } from '@testing-library/svelte';
 import { writable } from 'svelte/store';
 import type { ProjectDoc, SpaceDoc, TaskDoc } from '../src/lib/types';
+import { localDateStr, fmtDay } from '../src/lib/utils';
 
 // The Daily Brief reads Focus's lock, which is keyed by today's date, and
 // the overdue rows render a date label — both pinned to a fixed clock.
@@ -267,19 +268,32 @@ describe('DashboardView task sections', () => {
 });
 
 describe('DashboardView project cards', () => {
-  it('shows each project\'s totals and opens it on click', async () => {
+  it('shows each project\'s progress and opens it on click', async () => {
     const openProject = vi.fn();
     const { container } = await renderDash(mkData({
-      byProject: { 'project:1': { total: 7, pinned: 2, overdue: 3, lastColId: 'col:done' } },
+      byProject: { 'project:1': { total: 7, open: 4, pinned: 2, overdue: 3, nextDue: localDateStr(new Date()), lastColId: 'col:done' } },
     }), { openProject: (e) => openProject(e.detail) });
 
     const card = container.querySelector('.proj-card') as HTMLElement;
-    expect(card.querySelector('.task-count')!.textContent).toBe('7');
+    expect(card.querySelector('.proj-meta')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('3 of 7 done Due today');
+    expect((card.querySelector('.progress span') as HTMLElement).style.width).toBe('43%');
     expect(card.querySelector('.pinned-stat')!.textContent).toBe('2 pinned');
     expect(card.querySelector('.overdue-stat')!.textContent).toBe('3 overdue');
 
     await fireEvent.click(card);
     expect(openProject).toHaveBeenCalledWith('project:1');
+  });
+
+  it('names a later due date by its day, and an empty project as such', async () => {
+    const later = new Date(); later.setDate(later.getDate() + 5);
+    const { container } = await renderDash(mkData({
+      byProject: { 'project:1': { total: 2, open: 2, pinned: 0, overdue: 0, nextDue: localDateStr(later), lastColId: 'col:done' } },
+    }));
+    expect(container.querySelector('.proj-meta')!.textContent).toContain('Next due ' + fmtDay(later, { weekday: true }));
+
+    cleanup();
+    const empty = await renderDash(mkData({ byProject: { 'project:1': { total: 0, open: 0, pinned: 0, overdue: 0, nextDue: null, lastColId: 'col:done' } } }));
+    expect(empty.container.querySelector('.proj-meta')!.textContent).toBe('No tasks yet');
   });
 
   it('omits the pinned and overdue stats when they are zero', async () => {
