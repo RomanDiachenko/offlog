@@ -1015,7 +1015,10 @@ key derived the same way — see [security.md §1](security.md#1-connecting-a-ph
 for the full protocol and its honest limits. There are no fixed username/password
 constants, because nothing could match a per-install random password.
 The pairing server logs only outcomes — "succeeded" and a running count of
-rejected requests — never the code, proof, nonce or response.
+rejected requests — never the code, proof, nonce or response. Each request
+runs on its own thread, at most 8 at once (more get 503); a request that
+hasn't finished within 10 s gives its place back, so clients that drop
+mid-request can't lock pairing until a restart.
 The phone keeps the computer's uuid (to find it again after an address
 change) and its announced name (`offlog_paired_host_name`, display only:
 the Sync page's phone ↔ computer card). Phones paired before the name was

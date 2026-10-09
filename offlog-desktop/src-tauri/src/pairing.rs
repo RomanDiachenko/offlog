@@ -184,7 +184,11 @@ pub fn spawn_server(state: Arc<PairingState>, uuid: String, app_handle: tauri::A
 
     // Each request on its own thread, so a client that never finishes its
     // body cannot stall pairing for everyone else; the cap bounds how many
-    // such clients can hold a thread at once.
+    // such clients can hold a thread at once. tiny_http has no read timeout,
+    // so a client that stalls mid-body would hold its slot forever and, after
+    // MAX_IN_FLIGHT of them, refuse every pairing until restart: a watchdog
+    // gives the slot back after REQUEST_DEADLINE. The stuck thread itself
+    // stays blocked until the socket dies.
     let in_flight = Arc::new(std::sync::atomic::AtomicUsize::new(0));
     std::thread::spawn(move || {
         for request in server.incoming_requests() {
@@ -193,11 +197,16 @@ pub fn spawn_server(state: Arc<PairingState>, uuid: String, app_handle: tauri::A
                 let _ = request.respond(Response::empty(503).with_header(cors_header()));
                 continue;
             }
-            in_flight.fetch_add(1, Ordering::SeqCst);
-            let (state, uuid, app_handle, in_flight) = (state.clone(), uuid.clone(), app_handle.clone(), in_flight.clone());
+            let slot = Slot::take(in_flight.clone());
+            let (state, uuid, app_handle) = (state.clone(), uuid.clone(), app_handle.clone());
+            let watchdog = slot.clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(REQUEST_DEADLINE);
+                watchdog.release();
+            });
             std::thread::spawn(move || {
                 handle_pair_request(request, &state, &uuid, &app_handle);
-                in_flight.fetch_sub(1, Ordering::SeqCst);
+                slot.release();
             });
         }
     });
@@ -207,6 +216,29 @@ pub fn spawn_server(state: Arc<PairingState>, uuid: String, app_handle: tauri::A
 
 const MAX_BODY: usize = 4096;
 const MAX_IN_FLIGHT: usize = 8;
+// A real pairing body is ~200 bytes and arrives in milliseconds.
+const REQUEST_DEADLINE: std::time::Duration = std::time::Duration::from_secs(10);
+
+// One request's share of the in-flight count. Released by whichever comes
+// first, the handler finishing or the deadline; never twice.
+#[derive(Clone)]
+struct Slot {
+    in_flight: Arc<std::sync::atomic::AtomicUsize>,
+    released: Arc<std::sync::atomic::AtomicBool>,
+}
+
+impl Slot {
+    fn take(in_flight: Arc<std::sync::atomic::AtomicUsize>) -> Self {
+        in_flight.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        Slot { in_flight, released: Arc::new(std::sync::atomic::AtomicBool::new(false)) }
+    }
+
+    fn release(&self) {
+        if !self.released.swap(true, std::sync::atomic::Ordering::SeqCst) {
+            self.in_flight.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+        }
+    }
+}
 // Outcome logging only: never log the code, proof, nonce or anything from
 // the request body or response.
 static REJECTED: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
@@ -295,6 +327,21 @@ fn handle_pair_request(mut request: tiny_http::Request, state: &PairingState, uu
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_slot_is_given_back_once_whether_the_handler_or_the_deadline_comes_first() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        let in_flight = Arc::new(AtomicUsize::new(0));
+        let a = Slot::take(in_flight.clone());
+        let b = Slot::take(in_flight.clone());
+        assert_eq!(in_flight.load(Ordering::SeqCst), 2);
+        let watchdog = a.clone();
+        watchdog.release(); // the deadline passes first
+        a.release(); // the stalled handler finally ends
+        assert_eq!(in_flight.load(Ordering::SeqCst), 1);
+        b.release();
+        assert_eq!(in_flight.load(Ordering::SeqCst), 0);
+    }
 
     #[test]
     fn derive_key_is_deterministic_and_domain_separated() {
