@@ -28,74 +28,46 @@ $Root = Split-Path -Parent $PSScriptRoot   # offlog-desktop/
 
 Write-Host "== Offlog dev-env reset ==" -ForegroundColor Cyan
 
-# Stale pre-NyxDB debug CouchDB copies from before the swap, if this
-# machine still has one sitting around -- safe to delete outright.
-$staleDevCouch = Join-Path $Root "src-tauri\target\debug\couchdb-dev"
-if (Test-Path $staleDevCouch) {
-    Remove-Item -Recurse -Force $staleDevCouch
-    Write-Host "Removed stale pre-NyxDB debug CouchDB copy: $staleDevCouch"
-}
-$staleDevCouchOld = Join-Path $Root "src-tauri\target\debug\couchdb"
-if (Test-Path $staleDevCouchOld) {
-    Remove-Item -Recurse -Force $staleDevCouchOld
-    Write-Host "Removed stale pre-E2 debug CouchDB copy: $staleDevCouchOld"
+# Every removal goes through here, so one that fails (a file a running dev
+# build holds open) is collected and reported at the end rather than
+# stopping the script halfway or being passed over with "Done."
+$failed = New-Object System.Collections.Generic.List[string]
+function Remove-Path([string]$Path, [string]$What) {
+    if (-not (Test-Path $Path)) { return }
+    try {
+        Remove-Item -Recurse -Force $Path -ErrorAction Stop
+        Write-Host "Removed $What`: $Path"
+    } catch {
+        Write-Host "Couldn't remove $What`: $Path" -ForegroundColor Yellow
+        $failed.Add($Path)
+    }
 }
 
-# This machine's Tauri app-data dir -- sync-host.dev.json (debug) and,
-# with -IncludeRelease, sync-host.json (release) + logs.
+# Stale pre-NyxDB debug CouchDB copies from before the swap, if this
+# machine still has one sitting around -- safe to delete outright.
+Remove-Path (Join-Path $Root "src-tauri\target\debug\couchdb-dev") "stale pre-NyxDB debug CouchDB copy"
+Remove-Path (Join-Path $Root "src-tauri\target\debug\couchdb") "stale pre-E2 debug CouchDB copy"
+
+# This machine's Tauri app-data dir -- the debug files always, the release
+# ones only with -IncludeRelease.
 $roaming = Join-Path $env:APPDATA "com.offlog.app"
 $local = Join-Path $env:LOCALAPPDATA "com.offlog.app"
-$devConfig = Join-Path $roaming "sync-host.dev.json"
-if (Test-Path $devConfig) {
-    Remove-Item -Force $devConfig
-    Write-Host "Removed debug sync-host config: $devConfig"
-}
-$devSecret = Join-Path $roaming "sync-secret.dev.enc"
-if (Test-Path $devSecret) {
-    Remove-Item -Force $devSecret
-    Write-Host "Removed debug stored sync credential: $devSecret"
-}
-$devData = Join-Path $roaming "nyxdb-data-dev"
-if (Test-Path $devData) {
-    Remove-Item -Recurse -Force $devData
-    Write-Host "Removed debug NyxDB data: $devData"
-}
+Remove-Path (Join-Path $roaming "sync-host.dev.json") "debug sync-host config"
+Remove-Path (Join-Path $roaming "sync-secret.dev.enc") "debug stored sync credential"
+Remove-Path (Join-Path $roaming "nyxdb-data-dev") "debug NyxDB data"
 # Stale pre-swap CouchDB data dirs, if any -- distinct names from
 # NyxDB's own ("nyxdb-data[-dev]" above), never reused (sled can't read
 # CouchDB's on-disk format).
-$staleCouchDevData = Join-Path $roaming "couchdb-data-dev"
-if (Test-Path $staleCouchDevData) {
-    Remove-Item -Recurse -Force $staleCouchDevData
-    Write-Host "Removed stale pre-NyxDB debug CouchDB data: $staleCouchDevData"
-}
+Remove-Path (Join-Path $roaming "couchdb-data-dev") "stale pre-NyxDB debug CouchDB data"
 if ($IncludeRelease) {
-    $releaseConfig = Join-Path $roaming "sync-host.json"
-    if (Test-Path $releaseConfig) {
-        Remove-Item -Force $releaseConfig
-        Write-Host "Removed release sync-host config: $releaseConfig"
-    }
-    $releaseData = Join-Path $roaming "nyxdb-data"
-    if (Test-Path $releaseData) {
-        Remove-Item -Recurse -Force $releaseData
-        Write-Host "Removed release NyxDB data: $releaseData"
-    }
-    $staleCouchData = Join-Path $roaming "couchdb-data"
-    if (Test-Path $staleCouchData) {
-        Remove-Item -Recurse -Force $staleCouchData
-        Write-Host "Removed stale pre-NyxDB release CouchDB data: $staleCouchData"
-    }
+    Remove-Path (Join-Path $roaming "sync-host.json") "release sync-host config"
+    Remove-Path (Join-Path $roaming "sync-secret.enc") "release stored sync credential"
+    Remove-Path (Join-Path $roaming "nyxdb-data") "release NyxDB data"
+    Remove-Path (Join-Path $roaming "couchdb-data") "stale pre-NyxDB release CouchDB data"
 }
 # Debug builds' own WebView2 profile (IndexedDB/PouchDB, localStorage).
 # The release profile is $local\EBWebView and is never touched here.
-$devWebview = Join-Path $local "webview-dev"
-if (Test-Path $devWebview) {
-    try {
-        Remove-Item -Recurse -Force $devWebview -ErrorAction Stop
-        Write-Host "Removed debug WebView2 profile: $devWebview"
-    } catch {
-        Write-Host "Couldn't remove $devWebview (is a dev build still running?)" -ForegroundColor Yellow
-    }
-}
+Remove-Path (Join-Path $local "webview-dev") "debug WebView2 profile"
 # Only the logs folder, never recursively across $local: WebView2 keeps
 # IndexedDB journals as *.log files under EBWebView\, and deleting those
 # loses the installed app's recent writes. Debug builds write
@@ -106,15 +78,22 @@ if (Test-Path $logDir) {
     if ($IncludeRelease) { $patterns += @("Offlog.log", "Offlog_*.log") }
     foreach ($p in $patterns) {
         Get-ChildItem $logDir -Filter $p -File -ErrorAction SilentlyContinue |
-            ForEach-Object { try { Remove-Item -Force $_.FullName -ErrorAction Stop } catch {} }
+            ForEach-Object { Remove-Path $_.FullName "log" }
     }
-    Write-Host "Cleared $($patterns -join ', ') under: $logDir"
 }
 
 Write-Host ""
-Write-Host "Done. Still manual (can't be scripted from here):" -ForegroundColor Yellow
+if ($failed.Count) {
+    Write-Host "Partial reset -- these could not be removed (is a dev build still running?):" -ForegroundColor Red
+    $failed | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+} else {
+    Write-Host "Done." -ForegroundColor Green
+}
+Write-Host "Still manual (can't be scripted from here):" -ForegroundColor Yellow
 Write-Host "  - Browser/web PouchDB: open DevTools console on the app and run"
 Write-Host "      new PouchDB('offlog').destroy().then(() => localStorage.clear())"
 Write-Host "    then reload."
 Write-Host "  - Android: adb shell pm clear com.offlog.app.debug  (debug build)"
 Write-Host "    or uninstall/reinstall via Android Studio for a true fresh install."
+if ($failed.Count) { exit 1 }
+exit 0
