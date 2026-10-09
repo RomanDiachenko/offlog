@@ -9,6 +9,46 @@ pass 22 and maintenance.md's scoping note.
 
 ---
 
+## 29th run — 2026-10-10 (on `main`, after the Fluid UI redesign)
+
+Ran after the Fluid redesign, aimed at what that change could break:
+three independent UX/consistency/a11y audits (desktop, phone, cross-shell)
+plus the Phase 1 sweep. Gates green by exit code before and after
+(check, zero-warning build, vitest, cargo build with zero warnings).
+Fixed: glass stayed see-through under High contrast (a specificity loss to
+the see-through rule) and inside other glass; quick add and phone sheets
+sat as thin glass over a dimming scrim (quick add solid again, sheets 88%);
+desktop selections had no `aria-current`/`aria-pressed`; the sidebar lit a
+project beside Dashboard/Focus/Agenda; quick add ignored the open project;
+Agenda's Mark done had no Undo; Escape missed the card ⋯ menu, Filters and
+List's View menu, and closed the whole editor over its own ⋯ menu; the
+editor was not announced as a dialog; calendars marked today and the
+selected day the opposite way on each shell; scroll containers clipped
+the selection glow; glowing pills transitioned box-shadow; "Add a task"
+and "… failed" wording. Removed code the redesign orphaned
+(`bandColours`, `wantsLightInk`, the band status-bar tint, `--on-hero`).
+npm audit 0 (prod and dev), no `.env.local` value in `dist/`, no new
+`{@html}` sink.
+Size: dist 1.8 MB apparent (2.0 MB on disk), unchanged by the redesign;
+the growth since v6.5.0's 1.1 MB is v6.10.0 (+0.4 MB) and v6.11.0's lazily
+loaded note editor (+0.5 MB, never on the startup path). Installer and APK
+not measured (owner builds).
+Left for the owner (design calls, not fixes): hold on a List row selects
+while on a Board card it opens the menu; no visible cue for the card menu;
+the phone project ⋯ sheet's sub-views have no Back; a new snackbar replaces
+a pending Undo; phone Settings lists Reminders/App lock twice and Sync
+once; the desktop Board clips the Done status at 1366px; the board header
+swaps its search/⌘ icons between Board and List; desktop Settings has no ×
+and says Save on tabs that apply live; pinned cards show only a 1px
+border; sync errors are colour-only in the sidebar; History rows read
+"Archived on …"; the command palette cannot open a project; the desktop
+bulk bar is an accent tint where the phone's is inverse; the phone's
+"Sync failed" text "Cannot reach sync server" is also a matching key in
+discovery.ts and SyncPage, so it was left worded as is. No version bump:
+nothing is released without the owner.
+
+---
+
 ## 28th run — 2026-10-09 (on `main`, after v6.11.0)
 
 A full product audit plus the pass, in six aims: the Phase 1 checklist,
