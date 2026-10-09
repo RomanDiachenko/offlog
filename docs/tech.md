@@ -954,7 +954,7 @@ random port and admin password, saves them to
 configured entirely by environment variables — no config file. A Windows Job
 Object (`JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`) ties that process to the app's
 lifetime on every exit path, including a crash. The binary is built by
-`scripts/fetch-nyxdb-win.ps1` from a pinned tag and is not committed.
+`scripts/fetch-nyxdb-win.ps1` from a pinned tag, checked against its commit id and built `--locked`, and is not committed.
 
 `sync-host.json` is the host's identity; regenerating it breaks every
 paired phone. It is written via temp file + rename. A file that won't

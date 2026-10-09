@@ -2,9 +2,12 @@
 # host (archive/history.md, Track E / E1). NyxDB (github.com/hrach-gevorgyan/
 # nyxdb) doesn't publish prebuilt Windows release binaries the way
 # CouchDB's Neighbourhoodie installer does -- this script clones a
-# pinned tag and builds it from source with cargo instead. Pinned to one
-# exact tag so this never silently builds different code later -- bump
-# $Ref deliberately, in its own commit, when upgrading.
+# pinned tag and builds it from source with cargo instead. Pinned to the
+# tag's commit, not just its name: a tag can be moved to other code, a
+# commit id cannot. Bump $Ref and $Commit together, deliberately, in their
+# own commit (`git ls-remote --tags <repo> <tag>^{}` prints the commit).
+# --locked builds the dependency versions NyxDB's Cargo.lock records, never
+# newer ones resolved at build time.
 #
 # Output is NOT committed to git (~5MB) -- see offlog-desktop/.gitignore.
 # Re-run any time vendor/nyxdb-win/ is missing or after bumping $Ref: the
@@ -16,6 +19,7 @@
 $ErrorActionPreference = "Stop"
 
 $Ref = "v0.1.5"
+$Commit = "2837b1b7aba0a155b580e57ad5d206cdd36704ce"
 $RepoUrl = "https://github.com/hrach-gevorgyan/nyxdb.git"
 
 $Root = Split-Path -Parent $PSScriptRoot
@@ -42,17 +46,17 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-$actualTag = (git -C $TempClone describe --tags --exact-match 2>$null)
-if ($actualTag -ne $Ref) {
-    Write-Error "Checked-out ref ($actualTag) does not match pinned tag ($Ref) -- refusing to build."
+$actualCommit = (git -C $TempClone rev-parse HEAD)
+if ($actualCommit -ne $Commit) {
+    Write-Error "$Ref now points at $actualCommit, not the pinned $Commit -- refusing to build."
     exit 1
 }
-Write-Host "Confirmed checkout is exactly $Ref."
+Write-Host "Confirmed checkout is exactly $Ref ($Commit)."
 
 Write-Host "Building NyxDB (release)..."
 Push-Location $TempClone
 try {
-    cargo build --release
+    cargo build --release --locked
     if ($LASTEXITCODE -ne 0) {
         Write-Error "cargo build failed with exit code $LASTEXITCODE"
         exit 1
