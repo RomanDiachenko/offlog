@@ -99,7 +99,7 @@
   </button>
 
   {#if open}
-    <div class="cs-panel" class:placement-up={placement === 'up'} bind:this={panelEl} role="listbox" tabindex="-1" on:keydown={onPanelKey} in:fly={popIn} out:fly={popOut}>
+    <div class="cs-panel glass" class:placement-up={placement === 'up'} bind:this={panelEl} role="listbox" tabindex="-1" on:keydown={onPanelKey} in:fly={popIn} out:fly={popOut}>
       {#each grouped as [group, opts] (group)}
         {#if group}<div class="cs-group-label">{group}</div>{/if}
         {#each opts as o (o.value)}
@@ -140,8 +140,7 @@
 
   .cs-panel {
     position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 20;
-    background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    box-shadow: 0 12px 32px rgba(0,0,0,.22); overflow-y: auto;
+    border-radius: var(--radius-sm); overflow-y: auto;
     /* Exactly 7 options visible before scrolling: .cs-option is ~30px
        tall (.4rem padding top/bottom + .85rem text), 1px gap between
        each, plus this panel's own .3rem padding — 7*30 + 6*1 + 2*4.8. */

@@ -127,7 +127,7 @@
     {#if activeFilters > 0}<span class="filter-count">{activeFilters}</span>{/if}
   </button>
   {#if showFilterMenu}
-    <div class="col-menu filter-menu" style="top:{menuPos.top}px; left:{menuPos.left}px;" in:fly={popIn} out:fly={popOut}>
+    <div class="col-menu filter-menu glass" style="top:{menuPos.top}px; left:{menuPos.left}px;" in:fly={popIn} out:fly={popOut}>
       <div class="menu-label">Status</div>
       <CustomSelect options={statusOptions} bind:value={filterCol} />
 
@@ -218,8 +218,7 @@
   .menu-divider { height: 1px; background: var(--border); margin: 8px -6px 0; }
   .col-menu {
     position: fixed; z-index: 210;
-    background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    box-shadow: 0 12px 32px rgba(0,0,0,.18); padding: 6px; min-width: 150px;
+    border-radius: var(--radius-sm); padding: 6px; min-width: 150px;
     display: flex; flex-direction: column; gap: 2px;
     max-height: min(70vh, 420px); overflow-y: auto;
   }

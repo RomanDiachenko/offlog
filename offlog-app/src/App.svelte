@@ -833,7 +833,7 @@
 {#if $undoToasts.length}
   <div class="toast-stack">
     {#each $undoToasts as t (t.key)}
-      <div class="toast" in:toastIn out:toastOut>
+      <div class="toast glass" in:toastIn out:toastOut>
         <span class="toast-msg">{t.msg}</span>
         <button class="toast-undo" on:click={() => runUndo(t.key)}>Undo</button>
         <button class="toast-close" on:click={() => dismissUndo(t.key)} aria-label="Dismiss">✕</button>
@@ -1077,10 +1077,9 @@
   }
   .toast {
     display: flex; align-items: center; gap: 10px;
-    background: var(--text); color: var(--bg);
+    color: var(--text);
     padding: 11px 14px; border-radius: 10px;
     font-size: 13.5px; font-weight: 500;
-    box-shadow: 0 4px 20px rgba(0,0,0,.25);
     pointer-events: all;
     white-space: nowrap;
   }

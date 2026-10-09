@@ -524,7 +524,7 @@
                custom-field columns), even though it visually "should"
                float above everything. Fixed + JS-computed coordinates
                escapes that ancestor clipping entirely. -->
-          <div class="col-menu col-menu--fixed" style="top:{colMenuPos.top}px; left:{colMenuPos.left}px;">
+          <div class="col-menu col-menu--fixed glass" style="top:{colMenuPos.top}px; left:{colMenuPos.left}px;">
             <label class="col-menu-item select-rows-item">
               Select rows
               <button class="toggle-mini" class:on={selectionMode} on:click={toggleSelectionMode} role="switch" aria-checked={selectionMode} aria-label="Toggle row selection">
@@ -808,8 +808,7 @@
   .menu-divider { height: 1px; background: var(--border); margin: 8px -6px 0; }
   .col-menu {
     position: absolute; top: calc(100% + 6px); right: 0; z-index: 20;
-    background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    box-shadow: 0 12px 32px rgba(0,0,0,.18); padding: 6px; min-width: 150px;
+    border-radius: var(--radius-sm); padding: 6px; min-width: 150px;
     display: flex; flex-direction: column; gap: 2px;
     max-height: min(70vh, 420px); overflow-y: auto;
   }

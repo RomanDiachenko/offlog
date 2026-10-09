@@ -663,7 +663,7 @@
                   <svg viewBox="0 0 14 14" width="13" height="13" fill="currentColor"><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="11" cy="7" r="1.2"/></svg>
                 </button>
                 {#if openCardMenu === task._id}
-                  <div class="card-menu" bind:this={cardMenuPanelEl} on:click|stopPropagation on:keydown|stopPropagation in:fly={popIn} out:fly={popOut}>
+                  <div class="card-menu glass" bind:this={cardMenuPanelEl} on:click|stopPropagation on:keydown|stopPropagation in:fly={popIn} out:fly={popOut}>
                     <button type="button" class="card-menu-item" on:click={() => { openCardMenu = null; togglePin(task); }}>
                       <PinStar size={12} filled={task.pinned} stroked />
                       {task.pinned ? 'Unpin' : 'Pin'}
@@ -942,8 +942,7 @@
   .card-menu-trigger:hover { background: var(--hover); color: var(--text); }
   .card-menu {
     position: absolute; top: calc(100% + 2px); right: 0;
-    width: 168px; background: var(--surface); border: 1px solid var(--border-strong);
-    border-radius: var(--radius-sm); box-shadow: 0 8px 24px rgba(0,0,0,.22);
+    width: 168px; border-radius: var(--radius-sm);
     padding: .3rem; display: flex; flex-direction: column; z-index: 10;
   }
   .card-menu-item {

@@ -282,15 +282,15 @@ body {
   /* Fluid glass: floating chrome only (bars, menus, sheets, toasts), never
      content. Text sits on it, so the fill stays mostly opaque. Light values
      here; body.dark below overrides. */
-  --glass-fill:  color-mix(in srgb, var(--surface) 68%, transparent);
+  --glass-fill:  color-mix(in srgb, var(--surface) 38%, transparent);
   --glass-solid: color-mix(in srgb, var(--surface) 96%, var(--bg));
   --glass-edge:  color-mix(in srgb, var(--text) 9%, transparent);
   --glass-hi:    color-mix(in srgb, var(--surface) 70%, transparent);
-  --glass-blur:  blur(16px) saturate(150%);
+  --glass-blur:  blur(10px) saturate(115%);
   --glow:        color-mix(in srgb, var(--accent) 14%, transparent);
 }
 body.dark {
-  --glass-fill: color-mix(in srgb, var(--surface) 62%, transparent);
+  --glass-fill: color-mix(in srgb, var(--surface) 50%, transparent);
   --glass-edge: color-mix(in srgb, var(--text) 10%, transparent);
   --glass-hi:   color-mix(in srgb, var(--text) 7%, transparent);
   --glow:       color-mix(in srgb, var(--accent) 18%, transparent);

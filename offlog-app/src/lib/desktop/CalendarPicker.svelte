@@ -164,7 +164,7 @@
   </button>
 
   {#if open}
-    <div class="cal-popover" bind:this={popoverEl} style={popoverStyle} in:fly={popIn} out:fly={popOut}>
+    <div class="cal-popover glass" bind:this={popoverEl} style={popoverStyle} in:fly={popIn} out:fly={popOut}>
       {#if shortcuts}
       <div class="cal-chips" role="group" aria-label="Shortcuts">
         {#each SHORTCUTS as s (s.label)}
@@ -238,8 +238,7 @@
      absolute positioning would be clipped by scrollable ancestors. */
   .cal-popover {
     position: fixed; z-index: 220;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-    box-shadow: 0 12px 36px rgba(0,0,0,.18); padding: 12px; width: 318px;
+    border-radius: 14px; padding: 12px; width: 318px;
     /* Sits inside field labels; none of their lettering applies here. */
     text-transform: none; letter-spacing: normal; font-family: 'Hanken Grotesk', sans-serif;
   }

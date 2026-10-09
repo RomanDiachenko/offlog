@@ -722,7 +722,7 @@
           <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="3" cy="8" r=".9"/><circle cx="8" cy="8" r=".9"/><circle cx="13" cy="8" r=".9"/></svg>
         </button>
         {#if showActionsMenu}
-          <div class="actions-menu" bind:this={menuPanelEl} in:fly={popIn} out:fly={popOut}>
+          <div class="actions-menu glass" bind:this={menuPanelEl} in:fly={popIn} out:fly={popOut}>
             <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; pinned = !pinned; }}>
               <PinStar size={14} filled={pinned} stroked />
               {pinned ? 'Unpin' : 'Pin to top'}
@@ -1368,8 +1368,7 @@
   .menu-trigger:hover { background: var(--hover); color: var(--text); }
   .actions-menu {
     position: absolute; top: calc(100% + 6px); right: 0;
-    width: 200px; background: var(--surface); border: 1px solid var(--border-strong);
-    border-radius: var(--radius-sm); box-shadow: 0 8px 24px rgba(0,0,0,.22);
+    width: 200px; border-radius: var(--radius-sm);
     padding: .35rem; display: flex; flex-direction: column; z-index: 10;
   }
   .menu-item {
