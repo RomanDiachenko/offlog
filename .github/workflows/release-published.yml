@@ -9,8 +9,14 @@ on:
   release:
     types: [published]
 
+# actions: write is what `gh workflow run` needs to start pages.yml; this
+# job reads and writes nothing else.
 permissions:
   actions: write
+
+concurrency:
+  group: release-published
+  cancel-in-progress: true
 
 jobs:
   website:

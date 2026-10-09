@@ -16,9 +16,11 @@ const from = /(\n\s*)this\.onBackPressedCallback\.setEnabled\(enabled\);\s*\n(\s
 const method = src.slice(src.indexOf('toggleBackButtonHandler('), src.indexOf('getAppLanguage('));
 if (/runOnUiThread/.test(method)) process.exit(0);
 const m = src.match(from);
+// Fails the install rather than warning: a warning scrolls past in CI, and
+// the release APK would quietly exit the app on Back again.
 if (!m) {
-  console.warn('patch-capacitor-app: toggleBackButtonHandler changed upstream; check whether this patch is still needed.');
-  process.exit(0);
+  console.error('patch-capacitor-app: toggleBackButtonHandler changed upstream and the patch no longer applies. Check whether @capacitor/app now runs it on the UI thread, then update or remove this script.');
+  process.exit(1);
 }
 const out = src.replace(from,
   '\n        getActivity().runOnUiThread(() -> {\n            this.onBackPressedCallback.setEnabled(enabled);\n            call.resolve();\n        });');

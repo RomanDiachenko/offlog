@@ -414,11 +414,15 @@ from reaching you.
 - **Each automation has the minimum permissions it needs** — almost all
   of them read-only. The exceptions are the one that publishes releases
   (and even inside it, the steps that only run tests are narrowed back to
-  read-only) and the code scanners, which may upload their results.
+  read-only), the code scanners, which may upload their results, the
+  website deploy, which may publish offlog.io, and the one-step trigger
+  that refreshes the website when a release is published.
 - **One install-time patch.** `npm install` runs
   `scripts/patch-capacitor-app.js`, which edits one line of the
   `@capacitor/app` plugin's Android source so Back reaches the app. It is
-  in this repo, idempotent, and touches nothing else.
+  in this repo, idempotent, and touches nothing else. If the plugin's code
+  changes so the patch no longer applies, the install fails instead of
+  shipping without it.
 - **Nothing publishes without the tests passing on the exact released
   code.** The release process re-runs the version check, type check and
   full test suite against the tagged commit before it builds anything.

@@ -325,8 +325,11 @@ One PouchDB database, `offlog`. The `_id` prefix is the document type.
 - **Done is positional.** A task is complete when its `column_id` is the
   project's **last** column. There is no `done` boolean, so a task can never
   disagree with the column it sits in.
-- **Soft delete.** Tasks get `deleted: true` and are never removed. A real
-  removal would replicate as an absence and lose the history.
+- **Soft delete.** Deleting a task sets `deleted: true`; it sits in the
+  Recycle bin and keeps its history. A real removal replicates as a
+  tombstone, so only the paths CLAUDE.md lists remove a task: Delete forever,
+  Empty, and retention, which clears tasks binned more than 3 months ago
+  (`TASK_RETENTION_MONTHS` in `db/maintenance.ts`).
 - **Archive.** `archived: true` hides a task from normal views; restorable.
   Archiving a *project* cascades onto its open tasks and marks each
   `archivedWithProject: true`, so un-archiving restores exactly those and
@@ -334,7 +337,9 @@ One PouchDB database, `offlog`. The `_id` prefix is the document type.
   from before the flag existed cannot be identified and stay archived.
 - **Ordering** uses fractional positions, so inserting between two tasks
   never renumbers the rest.
-- **History is best-effort and excerpted.** Every mutation attempts a `log:`
+- **History is best-effort, excerpted and kept 6 months**
+  (`LOG_RETENTION_MONTHS`; the prune runs at most weekly from the hourly
+  housekeeping). Every mutation attempts a `log:`
   doc via `logChange()`, which never rejects: a failed log write is a
   `console.warn` (error name only), and the action still resolves, because
   its data write has already landed. Strings longer than 120 characters in
@@ -769,7 +774,7 @@ Changing `--accent` or `--hero-base` also means updating `capacitor.config.ts`'s
 `splashBg` = `--hero-base`, and the `colorWidget*` set) and
 `values-night/colors.xml` (`splashBg` and the `colorWidget*` set only), and
 `resources/generate-icons.cjs`'s `BRAND` (currently `#575fca`). The widget
-colours mirror `--text`/`--muted`/`--accent`, with `colorWidgetBg` on `--bg`
+colours mirror `--text`/`--accent`, with `colorWidgetBg` on `--bg`
 in light and `--surface` in dark; `colorWidgetSurface` is a widget-only
 shade. `generate-icons.cjs` and `generate-splash.cjs` need `sharp`, which is not
 a dependency: run `npm i --no-save sharp` in `offlog-app/` first.

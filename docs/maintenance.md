@@ -142,9 +142,11 @@ don't grow this list with generic-audit filler.
     repointed at new code. Dependabot updates SHAs and the comment
     together.
   - **Token permissions** — every workflow declares least privilege.
-    Only `release.yml` (release assets) and the two CodeQL workflows
-    (`security-events: write`, to upload results) widen beyond
-    `contents: read`, and each must say why inline.
+    Only `release.yml` (release assets), the two CodeQL workflows
+    (`security-events: write`, to upload results), `pages.yml`
+    (`pages`/`id-token: write`, to deploy offlog.io) and
+    `release-published.yml` (`actions: write`, to start `pages.yml`) widen
+    beyond `contents: read`, and each must say why inline.
   - **Dangerous workflows** — no `pull_request_target`, and nothing from
     `github.event.*` interpolated into a `run:` block (script injection).
   - **Binary artifacts** — nothing executable committed beyond Android's

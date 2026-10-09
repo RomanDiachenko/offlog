@@ -25,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # deploy-pages publishes the site (pages) and proves this run's
+      # identity to Pages with an OIDC token (id-token). Nothing else.
       pages: write
       id-token: write
     environment:
