@@ -73,7 +73,7 @@
   /* Fixed (not overridden in body.dark) — --success is bright in BOTH
      themes, unlike --accent/--overdue-ink/--faint which swap light↔dark
      lightness per theme, so it needs a text color that doesn't swap
-     either. Used by DeadlinesView.svelte's success-colored badge. */
+     either. Used by AgendaView.svelte's success-colored badge. */
   --ink-fixed-dark: #181a20;
   --danger: #bd4138;
   --success: #5abe73;

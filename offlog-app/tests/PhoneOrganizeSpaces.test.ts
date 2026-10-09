@@ -163,7 +163,7 @@ describe('phone Organize → Spaces', () => {
     await waitFor(() => expect(updateSpace).toHaveBeenCalledWith('space:a', { color: TAG_PALETTE[14] }));
     await fireEvent.click(r.getByLabelText('Icon rocket'));
     await waitFor(() => expect(updateSpace).toHaveBeenCalledWith('space:a', { icon: 'rocket' }));
-    const custom = r.getByLabelText('Any colour') as HTMLInputElement;
+    const custom = r.getByLabelText('Any color') as HTMLInputElement;
     await fireEvent.change(custom, { target: { value: '#123456' } });
     await waitFor(() => expect(updateSpace).toHaveBeenCalledWith('space:a', { color: '#123456' }));
   });

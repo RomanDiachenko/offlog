@@ -694,7 +694,7 @@
   <div class="panel" use:trapFocus in:scale={centredIn} out:scale={centredOut}>
     <div class="panel-header">
       <textarea class="title-input" bind:value={title} placeholder="Task title" rows="1" on:input={(e) => { const t = e.currentTarget; t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }}></textarea>
-      <button class="pin-btn" class:pinned on:click={() => pinned = !pinned} title={pinned ? 'Unpin' : 'Pin task'}>
+      <button class="pin-btn" class:pinned on:click={() => pinned = !pinned} title={pinned ? 'Unpin' : 'Pin task'} aria-label={pinned ? 'Unpin task' : 'Pin task'} aria-pressed={pinned}>
         <PinStar size={15} filled={pinned} stroked />
       </button>
       <button class="close-btn" on:click={() => requestClose()} aria-label="Close">✕</button>

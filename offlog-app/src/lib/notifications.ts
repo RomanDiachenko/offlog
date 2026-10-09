@@ -117,13 +117,6 @@ export async function requestExactAlarmPermission(): Promise<void> {
 }
 
 const isNative = () => !!window.Capacitor?.isNativePlatform?.();
-// Desktop (Tauri) is neither Capacitor-native nor a plain browser — it
-// embeds a real WebView2, but that WebView has no default handler for the
-// browser Notification permission-prompt flow: Notification.requestPermission()
-// silently resolves to "denied" with no OS prompt ever shown. tauri-plugin-
-// notification talks to real Windows toast notifications instead,
-// sidestepping WebView2's permission model entirely — same reasoning as
-// why Android needs @capacitor/local-notifications instead of the web API.
 // Deterministic 32-bit integer id from a task's string id — Capacitor's
 // local-notifications plugin requires numeric ids.
 function numericId(taskId: string): number {
@@ -134,15 +127,15 @@ function numericId(taskId: string): number {
   return Math.abs(h) || 1;
 }
 
-// Bare-called from Enable buttons with no local error handling, so a
-// plugin-call rejection is caught here instead of becoming an unhandled
-// rejection -- 'denied' is the safe fallback state.
 // Android's "not asked yet" is not "blocked": a fresh install must read as
 // 'default' so nothing says Blocked before Offlog has ever asked.
 function displayState(display: string): PermissionState {
   return display === 'granted' ? 'granted' : display === 'denied' ? 'denied' : 'default';
 }
 
+// Bare-called from Enable buttons with no local error handling, so a
+// plugin-call rejection is caught here instead of becoming an unhandled
+// rejection -- 'denied' is the safe fallback state.
 export async function requestPermission(): Promise<PermissionState> {
   try {
     if (isNative()) {
@@ -154,6 +147,9 @@ export async function requestPermission(): Promise<PermissionState> {
       if (state === 'granted') rescheduleAll().catch(() => {});
       return state;
     }
+    // Not the web Notification API on desktop: WebView2 has no handler for
+    // its prompt, so requestPermission() silently resolves "denied". Toasts
+    // go through the send_task_notification command instead.
     if (isTauriPlatform()) {
       // Windows has no prompt to request, only a per-app switch -- read it
       // (see check_desktop_notification_setting's own comment).

@@ -1,8 +1,9 @@
-// Focus picker ranking, the same scoring and round-robin as FocusView.svelte:
+// Focus picker ranking for both shells (desktop FocusView, phone FocusScreen):
 // pinned and late outrank due-soon, which outranks priority alone, and the
 // suggestions are drawn one per reason bucket in turn so they spread across
 // reasons instead of collapsing to "the three latest tasks".
-import type { TaskDoc } from '../../types';
+import type { TaskDoc } from '../types';
+import { daysDiff } from '../utils';
 
 export type Reason = 'pinned' | 'overdue' | 'due_soon' | 'priority';
 export const REASON_ORDER: Reason[] = ['pinned', 'overdue', 'due_soon', 'priority'];
@@ -10,7 +11,7 @@ export const REASON_ORDER: Reason[] = ['pinned', 'overdue', 'due_soon', 'priorit
 export function scoreAndReason(t: TaskDoc, today: string): { s: number; reason: Reason } {
   if (t.pinned) return { s: 1000, reason: 'pinned' };
   if (t.due_date) {
-    const days = Math.floor((new Date(t.due_date).getTime() - new Date(today).getTime()) / 86400000);
+    const days = daysDiff(t.due_date, today);
     if (days < 0) return { s: 500 + Math.min(-days, 30), reason: 'overdue' };
     if (days === 0) return { s: 400, reason: 'due_soon' };
     if (days <= 3) return { s: 200 - days * 10, reason: 'due_soon' };

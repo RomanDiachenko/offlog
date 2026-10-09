@@ -8,6 +8,7 @@
   import { hapticToggle } from '../haptics';
   import { today, loadFocusLock, saveFocusLock, type FocusLock } from '../focusLock';
   import { onNewDay } from '../today';
+  import { rankPicker, type Reason as SuggestReason } from '../shared/focusRank';
 
   const dispatch = createEventDispatcher<{ menu: void; search: void }>();
 
@@ -20,58 +21,18 @@
   let lock: FocusLock | null = loadFocusLock();
   let lockedTasks: TaskDoc[] = [];
   let pickerTasks: (TaskDoc & { project_name?: string })[] = [];
-  type SuggestReason = 'pinned' | 'overdue' | 'due_soon' | 'priority';
   const SUGGEST_LABEL: Record<SuggestReason, string> = {
     pinned: 'Pinned', overdue: 'Overdue', due_soon: 'Due soon', priority: 'High priority',
   };
   let suggestedReasons = new Map<string, SuggestReason>();
   let selected: string[] = [];
 
-  // Rank the picker so the top of the list is a genuine "what to commit to"
-  // suggestion, not just a recency dump: pinned and overdue outrank
-  // due-soon, which outranks priority alone. Equal-score tasks are
-  // shuffled against each other (no fixed alphabetical/insertion bias).
-  // The reason a task made the cut is surfaced as a colored label — "why"
-  // matters more than "that" when deciding what to commit to.
-  function scoreAndReason(t: TaskDoc): { s: number; reason: SuggestReason } {
-    if (t.pinned) return { s: 1000, reason: 'pinned' };
-    if (t.due_date) {
-      const days = Math.floor((new Date(t.due_date).getTime() - new Date(today()).getTime()) / 86400000);
-      if (days < 0) return { s: 500 + Math.min(-days, 30), reason: 'overdue' };
-      if (days === 0) return { s: 400, reason: 'due_soon' };
-      if (days <= 3) return { s: 200 - days * 10, reason: 'due_soon' };
-    }
-    return { s: (t.priority ?? 1) * 20, reason: 'priority' };
-  }
-
-  const BUCKET_ORDER: SuggestReason[] = ['pinned', 'overdue', 'due_soon', 'priority'];
-
-  // Round-robin across reason buckets (best-first within each bucket) so
-  // the daily 3 suggestions are a genuine spread — "what's overdue AND
-  // what's pinned AND what's next" — instead of collapsing to "the 3 most
-  // overdue tasks" whenever overdue items dominate the raw score.
-  function rankPicker(tasks: (TaskDoc & { project_name?: string })[]) {
-    const withScore = tasks.map(t => ({ t, ...scoreAndReason(t), r: Math.random() }));
-    const buckets: Record<SuggestReason, typeof withScore> = { pinned: [], overdue: [], due_soon: [], priority: [] };
-    withScore.forEach(x => buckets[x.reason].push(x));
-    BUCKET_ORDER.forEach(reason => buckets[reason].sort((a, b) => b.s - a.s || b.r - a.r));
-
-    suggestedReasons = new Map();
-    const cursors: Record<SuggestReason, number> = { pinned: 0, overdue: 0, due_soon: 0, priority: 0 };
-    while (suggestedReasons.size < MAX_COMMIT) {
-      let pickedAny = false;
-      for (const reason of BUCKET_ORDER) {
-        if (suggestedReasons.size >= MAX_COMMIT) break;
-        const bucket = buckets[reason];
-        if (cursors[reason] < bucket.length) {
-          suggestedReasons.set(bucket[cursors[reason]].t._id!, reason);
-          cursors[reason]++;
-          pickedAny = true;
-        }
-      }
-      if (!pickedAny) break; // every bucket exhausted, fewer than MAX_COMMIT open tasks exist
-    }
-    suggestedReasons = new Map(suggestedReasons); // trigger Svelte reactivity
+  // Scoring and the round-robin spread across reasons are shared with the
+  // phone (shared/focusRank.ts). The reason a task made the cut is shown as
+  // a colored label -- "why" matters more than "that" when committing.
+  function arrangePicker<T extends TaskDoc>(tasks: T[]): T[] {
+    const { suggested, rest } = rankPicker(tasks, today(), MAX_COMMIT);
+    suggestedReasons = new Map(suggested.map(x => [x.task._id!, x.reason]));
 
     // The suggested notes must land near the top of the board but spread
     // across roughly the first 10 cards, not stacked as a consecutive
@@ -79,15 +40,12 @@
     // several non-suggested pinned tasks can list before the overdue
     // bucket's suggested pick. So: build a "top window" of up to 10 slots,
     // place the suggested picks at evenly-spaced slots within it (in their
-    // round-robin pick order — the Map's insertion order), fill the gaps
+    // round-robin pick order), fill the gaps
     // with the rest in bucket-major order, then append the leftovers.
-    const byBucket = BUCKET_ORDER.flatMap(reason => buckets[reason].map(x => x.t));
-    const byId = new Map(byBucket.map(t => [t._id!, t]));
-    const suggestedFirst = [...suggestedReasons.keys()].map(id => byId.get(id)!).filter(Boolean);
-    const rest = byBucket.filter(t => !suggestedReasons.has(t._id!));
+    const suggestedFirst = suggested.map(x => x.task);
 
     const windowSize = Math.min(10, suggestedFirst.length + rest.length);
-    const window: (TaskDoc | null)[] = new Array(windowSize).fill(null);
+    const window: (T | null)[] = new Array(windowSize).fill(null);
     suggestedFirst.forEach((t, i) => {
       const ideal = Math.round(i * (windowSize - 1) / Math.max(1, suggestedFirst.length - 1 || 1));
       let slot = Math.min(windowSize - 1, ideal);
@@ -96,7 +54,7 @@
     });
     let ri = 0;
     for (let i = 0; i < windowSize; i++) if (!window[i]) window[i] = rest[ri++];
-    return [...(window.filter((t): t is TaskDoc => !!t)), ...rest.slice(ri)];
+    return [...(window.filter((t): t is T => !!t)), ...rest.slice(ri)];
   }
   let detailTask: TaskDoc | null = null;
   let detailProject: ProjectDoc | null = null;
@@ -114,7 +72,7 @@
     lockedTasks = fetched.filter((t): t is TaskDoc => !!t && !t.deleted && !t.archived);
   }
 
-  async function loadPicker() { pickerTasks = rankPicker(await getOpenTasksForFocusPicker()); }
+  async function loadPicker() { pickerTasks = arrangePicker(await getOpenTasksForFocusPicker()); }
 
   async function refresh() {
     lock = loadFocusLock();

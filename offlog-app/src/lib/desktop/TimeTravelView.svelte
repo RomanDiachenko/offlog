@@ -5,7 +5,7 @@
   import { getRecentLogs, getTaskById, clearLogs, subscribe } from '../db';
   import { projects, showError } from '../store';
   import { describeLog, fmt, entityLabel, ACTION_LABEL } from '../logFormat';
-  import { ACTION_COLOR, fmtDay } from '../utils';
+  import { ACTION_COLOR, fmtDay, localDateStr } from '../utils';
   import { closeOnBack, isTopLayer } from '../modalStack';
   import { confirmAction } from '../confirm';
   import { trapFocus } from '../focusTrap';
@@ -89,10 +89,7 @@
   // Local calendar date, not a raw ISO slice: ts is stored UTC (db.ts's
   // now()), so slicing the string groups late-evening entries into
   // "tomorrow" for anyone west of UTC.
-  function dayKey(ts: string): string {
-    const d = new Date(ts);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
+  const dayKey = (ts: string) => localDateStr(new Date(ts));
 
   const todayKey = dayKey(new Date().toISOString());
   const yesterdayDate = new Date();

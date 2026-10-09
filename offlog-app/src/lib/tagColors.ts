@@ -137,5 +137,5 @@ export function bandColours(hex: string, ink: { light: string; dark?: string; mi
 const PALETTE_NAMES = ['Red', 'Vermilion', 'Orange', 'Amber', 'Yellow', 'Lime', 'Chartreuse', 'Spring green', 'Green', 'Mint', 'Emerald', 'Teal', 'Cyan', 'Sky', 'Blue', 'Cornflower', 'Indigo', 'Blue-violet', 'Violet', 'Purple', 'Fuchsia', 'Magenta', 'Pink', 'Rose'];
 export function colourName(hex: string): string {
   const i = TAG_PALETTE.findIndex(c => c.toLowerCase() === hex.trim().toLowerCase());
-  return i >= 0 ? PALETTE_NAMES[i] : 'Custom colour';
+  return i >= 0 ? PALETTE_NAMES[i] : 'Custom color';
 }

@@ -160,8 +160,8 @@
           <span style:background={soften(c)}></span>
         </button>
       {/each}
-      <label class="custom" class:on={custom} title="Any colour">
-        <input type="color" value={color} aria-label="Any colour" on:change={e => setColor(e.currentTarget.value)} />
+      <label class="custom" class:on={custom} title="Any color">
+        <input type="color" value={color} aria-label="Any color" on:change={e => setColor(e.currentTarget.value)} />
         <span class:pick={!custom} style:background={custom ? soften(color) : null}></span>
       </label>
     </div>

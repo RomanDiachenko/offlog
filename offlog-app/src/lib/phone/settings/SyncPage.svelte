@@ -17,6 +17,7 @@
   import { push } from '../nav';
   import { I } from '../icons';
   import { runSyncNow, syncing } from './syncNow';
+  import { fmtConflictValue, conflictFieldLabel } from '../../shared/conflictFormat';
 
   const isAndroid = window.Capacitor?.getPlatform?.() === 'android';
   const isTauri = isTauriCheck();
@@ -246,34 +247,6 @@
     }
   }
 
-  function fmtConflictValue(field: string, v: unknown): string {
-    if (v === undefined || v === null || v === '') return '—';
-    if (field === 'columns' && Array.isArray(v)) return v.map(c => (c as { name?: string })?.name ?? '?').join(' → ') || '—';
-    if (field === 'checklist' && Array.isArray(v)) {
-      if (!v.length) return '—';
-      const done = v.filter(i => (i as { done?: boolean })?.done).length;
-      const texts = v.map(i => (i as { text?: string })?.text ?? '').filter(Boolean);
-      return `${v.length} item${v.length === 1 ? '' : 's'}, ${done} done — ${texts.join(', ')}`;
-    }
-    if (field === 'custom_values' && typeof v === 'object') {
-      const pairs = Object.entries(v as Record<string, unknown>).map(([id, val]) => `${conflictFieldNames[id] ?? 'deleted field'}: ${val ?? '—'}`);
-      return pairs.length ? pairs.join(', ') : '—';
-    }
-    if ((field === 'related' || field === 'blocked_by') && Array.isArray(v)) return v.length ? `${v.length} task${v.length === 1 ? '' : 's'}` : '—';
-    if (Array.isArray(v)) return v.length ? v.map(x => typeof x === 'object' ? JSON.stringify(x) : String(x)).join(', ') : '—';
-    if (typeof v === 'object') return JSON.stringify(v);
-    const str = String(v);
-    return str.length > 120 ? str.slice(0, 120) + '…' : str;
-  }
-  const CONFLICT_FIELD_LABELS: Record<string, string> = {
-    title: 'Title', name: 'Name', body: 'Notes', priority: 'Priority',
-    due_date: 'Due date', reminder_at: 'Reminder', tags: 'Tags',
-    column_id: 'Status', checklist: 'Checklist', custom_values: 'Fields',
-    related: 'Related', blocked_by: 'Blocked by', pinned: 'Pinned',
-    archived: 'Archived', deleted: 'In trash', position: 'Order',
-    columns: 'Statuses', color: 'Color', icon: 'Icon', default_view: 'Default view',
-  };
-  const conflictFieldLabel = (f: string) => CONFLICT_FIELD_LABELS[f] ?? f;
 </script>
 
 <TopBar title="Sync" />
@@ -467,7 +440,7 @@
                     <button class="p-tbtn" on:click={() => resolve(c, v)}>Keep this</button>
                   </div>
                   {#each c.differing as f}
-                    <div class="cfield"><span class="cfname">{conflictFieldLabel(f)}</span><span>{fmtConflictValue(f, v.doc[f])}</span></div>
+                    <div class="cfield"><span class="cfname">{conflictFieldLabel(f)}</span><span>{fmtConflictValue(f, v.doc[f], conflictFieldNames)}</span></div>
                   {/each}
                 </div>
               {/each}

@@ -11,7 +11,7 @@
   import { confirmAction } from '../confirm';
   import CardDetail from './CardDetail.svelte';
   import PinStar from './PinStar.svelte';
-  import { filterTasks, dueLabel, type CustomFieldFilter } from '../utils';
+  import { filterTasks, dueLabel, daysDiff, type CustomFieldFilter } from '../utils';
   import { today } from '../today';
   import { hapticToggle, hapticDragStart, hapticDragDrop } from '../haptics';
   import { resolveTagColor, soften } from '../tagColors';
@@ -376,13 +376,13 @@
 
   // Color-graded due date: red/urgent -> amber/soon -> neutral, not a
   // binary overdue/not. The "soon" threshold (<=3 days) must stay in
-  // step with FocusView.svelte's due_soon bucket so the two views agree
+  // step with shared/focusRank.ts's due_soon bucket so the two views agree
   // on what counts as soon.
   // A finished task (last status -- done is positional) has no deadline
   // left, so it gets no urgency colour however long ago its date was.
   function dueDateClass(task: TaskDoc, today: string): 'overdue' | 'soon' | '' {
     if (!task.due_date || task.column_id === project.columns.at(-1)?.id) return '';
-    const days = Math.round((new Date(`${task.due_date}T00:00:00`).getTime() - new Date(`${today}T00:00:00`).getTime()) / 86_400_000);
+    const days = daysDiff(task.due_date, today);
     if (days < 0) return 'overdue';
     if (days <= 3) return 'soon';
     return '';

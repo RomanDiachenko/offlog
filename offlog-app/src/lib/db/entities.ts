@@ -1048,8 +1048,10 @@ export async function undoDelete(id: string): Promise<void> {
   // as an inconsistency until someone runs maintenance.
   let archived = current.archived ?? false;
   let archivedWithProject = current.archivedWithProject ?? false;
+  let projName: string | undefined;
   try {
     const proj = await db.get<ProjectDoc>(current.project_id);
+    projName = proj.name;
     if (proj.columns.length && !proj.columns.some(c => c.id === column_id)) {
       column_id = proj.columns[0].id;
     }
@@ -1058,8 +1060,6 @@ export async function undoDelete(id: string): Promise<void> {
 
   await db.put({ ...current, deleted: false, column_id, archived, archivedWithProject, updated_at: now(), source: currentSource() });
   invalidateTaskCache();
-  let projName: string | undefined;
-  try { projName = (await db.get<ProjectDoc>(current.project_id)).name; } catch {}
   await logChange(id, 'update', 'deleted', true, false, { task_title: current.title, project_name: projName });
   // Deliberately no _undoListeners notify here (unlike deleteTask above) --
   // that listener is showUndoToast(), which pulls the single most-recently-

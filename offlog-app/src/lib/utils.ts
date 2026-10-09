@@ -83,7 +83,7 @@ export function daysSinceWeekStart(d: Date, mondayStart: boolean): number {
 
 // `today` is a parameter so a component can pass the reactive `$today`
 // store (today.ts) and re-render when the date rolls over.
-function daysDiff(due: string, today = TODAY()): number {
+export function daysDiff(due: string, today = TODAY()): number {
   return Math.round((new Date(due + 'T00:00:00').getTime() - new Date(today + 'T00:00:00').getTime()) / 86400000);
 }
 

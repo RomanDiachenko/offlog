@@ -8,7 +8,7 @@
   import { today, loadFocusLock, saveFocusLock, type FocusLock } from '../focusLock';
   import { onNewDay } from '../today';
   import { actions, showToast } from './nav';
-  import { rankPicker, type Reason } from './focus/rank';
+  import { rankPicker, type Reason } from '../shared/focusRank';
   import { I } from './icons';
   import TopBar from './TopBar.svelte';
   import TaskCard from './TaskCard.svelte';

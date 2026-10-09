@@ -86,7 +86,7 @@ const ISSUE_LABELS: Record<string, [string, string]> = {
   invalid_column:        ['task on a status that no longer exists', 'tasks on a status that no longer exists'],
   no_columns:            ['project with no statuses', 'projects with no statuses'],
   conflict:              ['unresolved sync conflict', 'unresolved sync conflicts'],
-  orphaned_custom_value: ['task holding values from a deleted custom field', 'tasks holding values from a deleted custom field'],
+  orphaned_custom_value: ['task holding values from a deleted field', 'tasks holding values from a deleted field'],
   dangling_link:         ['task linked to a task that no longer exists', 'tasks linked to tasks that no longer exist'],
   unarchived_in_archived:['active task inside an archived project', 'active tasks inside an archived project'],
   attachment_mismatch:   ['task whose attachment list does not match its files', 'tasks whose attachment lists do not match their files'],

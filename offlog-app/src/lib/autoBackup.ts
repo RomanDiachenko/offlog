@@ -119,7 +119,7 @@ export async function runAutoBackupIfDue(): Promise<void> {
     else if (isTauri()) await runTauri(json, now);
     localStorage.setItem(LAST_RUN_KEY, now.toISOString());
   } catch (err) {
-    console.warn('autoBackup: failed, will retry next launch', err);
+    console.warn('autoBackup: failed, will retry at the next hourly housekeeping', err);
   }
 }
 

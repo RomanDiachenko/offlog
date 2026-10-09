@@ -369,7 +369,7 @@ export async function checkIntegrity(): Promise<{ issues: IntegrityIssue[]; chec
     // sit in the doc -- and in every sync payload -- forever.
     const staleFields = Object.keys(t.custom_values ?? {}).filter(id => !fieldIds.has(id));
     if (staleFields.length) {
-      issues.push({ type: 'orphaned_custom_value', docId: t._id!, description: `Task "${t.title}" has ${staleFields.length} value(s) for deleted custom field(s)` });
+      issues.push({ type: 'orphaned_custom_value', docId: t._id!, description: `Task "${t.title}" has ${staleFields.length} value(s) for deleted field(s)` });
     }
 
     // pruneOldDeletedTasks() hard-deletes trashed tasks after 3 months, so

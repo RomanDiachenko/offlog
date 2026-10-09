@@ -7,7 +7,7 @@
   import { showError } from '../../store';
   import { describeLog, fmt, entityLabel, ACTION_LABEL } from '../../logFormat';
   import { confirmAction } from '../../confirm';
-  import { fmtDay } from '../../utils';
+  import { fmtDay, localDateStr } from '../../utils';
   import TopBar from '../TopBar.svelte';
   import { actions } from '../nav';
 
@@ -45,9 +45,7 @@
 
   // Local calendar day: ts is stored in UTC, so slicing the ISO string would
   // put late-evening changes under tomorrow west of UTC.
-  function dayKey(d: Date): string {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
+  const dayKey = localDateStr;
   const todayKey = dayKey(new Date());
   const y = new Date(); y.setDate(y.getDate() - 1);
   const yesterdayKey = dayKey(y);

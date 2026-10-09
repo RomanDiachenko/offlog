@@ -18,7 +18,7 @@ vi.mock('../src/lib/store', async () => {
 });
 
 import FocusScreen from '../src/lib/phone/FocusScreen.svelte';
-import { rankPicker } from '../src/lib/phone/focus/rank';
+import { rankPicker } from '../src/lib/shared/focusRank';
 import { projects, showError } from '../src/lib/store';
 import { localDateStr } from '../src/lib/utils';
 import { get, type Writable } from 'svelte/store';
