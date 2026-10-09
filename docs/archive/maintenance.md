@@ -9,6 +9,36 @@ pass 22 and maintenance.md's scoping note.
 
 ---
 
+## 28th run — 2026-10-09 (on `main`, after v6.11.0)
+
+A full product audit plus the pass, in six aims: the Phase 1 checklist,
+data integrity, long-uptime stability, security and supply chain,
+phone/desktop parity, and docs drift. Gates green before and after.
+Fixed: a new status was appended after "done" on desktop (finished tasks
+reopened); the board's per-status Add task skipped date/#tag/!priority
+words and was offered on the done status; overlapping sync starts left a
+second live replication running and could override Pause; a remote
+PouchDB instance leaked per restart; desktop reminders stalled through
+sleep and could fire twice; Delete forever could hard-delete a task
+another device had restored; conflicting custom-field definitions led
+repair to delete values; repair acted on references not yet synced;
+status writes overwrote statuses added by sync meanwhile; project exports
+dropped field definitions; a cleared desktop title saved blank; the phone
+under-reported storage; hover-only controls were unreachable on tablets
+and by keyboard; the NyxDB supervisor stayed down for good after a crash
+burst (now rests an hour). Plus the conflict view's raw dates, wording,
+screen-reader names, duplicated helpers merged into `shared/`, workflow
+permission reasons, a fail-loud install patch and tech.md drift.
+Left as proposals (`[RISKY]`): pruning trusts the local clock; the
+pristine-default check ignores a space icon and Draft's pin/archive;
+restore does not check `_id` prefix against `type`. Not done: the
+pairing server's missing read timeout, `reset-dev-env.ps1` reporting a
+partial reset as done, NyxDB fetched by tag without `--locked`.
+Size: dist 2.0 MB, installer 5.53 MB (CodeMirror and the phone shell);
+APK not measured.
+
+---
+
 ## 27th run — 2026-10-02 (on `redesign/full`, before its merge to `main`)
 
 Run before the redesign branch merges, in the three differently-aimed

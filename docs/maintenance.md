@@ -4,10 +4,10 @@ A scheduled audit routine, tailored to this repo. **Not a feature
 session:** external behaviour must stay identical. Read this whole file
 before touching code.
 
-**Current pointer** — last pass: **27th run** (2026-10-02, on
-`redesign/full`, see [archive/maintenance.md](archive/maintenance.md)):
-three cycles; fixes committed on `redesign/full`. Next pass due:
-**2027-01-02, or on the next bug hit in daily use, whichever comes first.**
+**Current pointer** — last pass: **28th run** (2026-10-09, on `main`,
+see [archive/maintenance.md](archive/maintenance.md)): six-aim audit;
+fixes committed on `main`, unreleased. Next pass due: **2027-01-09, or on
+the next bug hit in daily use, whichever comes first.**
 
 This pointer is the only tracker state in this file. Past passes are
 narrated in
