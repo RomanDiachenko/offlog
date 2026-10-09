@@ -70,7 +70,7 @@ beforeEach(async () => {
   reorderColumns.mockImplementation((_p, c) => { stored = c; return ok(c); });
   getProjects.mockImplementation(async () => [{ ...project, columns: stored }]);
   removeColumn.mockImplementation((_p, id) => ok(cols.filter(c => c.id !== id)));
-  addColumn.mockImplementation((_p, name) => ok([...cols, { id: 'col:new', name }]));
+  addColumn.mockImplementation((_p, name) => ok([...cols.slice(0, -1), { id: 'col:new', name }, ...cols.slice(-1)]));
   archiveColumnTasks.mockResolvedValue(undefined);
   updateTask.mockResolvedValue(undefined);
 });
@@ -225,31 +225,13 @@ describe('phone Statuses screen', () => {
     await fireEvent.input(r.getByLabelText('New status name'), { target: { value: 'Waiting' } });
     await fireEvent.click(r.getByText('Add'));
     expect(addColumn).toHaveBeenCalledWith('project:p', 'Waiting');
-    // Inserted before the last status, so Done stays last.
+    // addColumn itself places it before Done; the screen shows what it returns.
     await waitFor(() => expect(names(r.container)).toEqual(['To do', 'Doing', 'Waiting', 'Done']));
-    expect(reorderColumns).toHaveBeenLastCalledWith('project:p', [cols[0], cols[1], { id: 'col:new', name: 'Waiting' }, cols[2]]);
+    expect(reorderColumns).not.toHaveBeenCalled();
+    expect((r.getByLabelText('New status name') as HTMLInputElement).value).toBe('');
     addColumn.mockRejectedValue(new Error('boom'));
     await fireEvent.input(r.getByLabelText('New status name'), { target: { value: 'X' } });
     await fireEvent.keyDown(r.getByLabelText('New status name'), { key: 'Enter' });
     await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not add a status. Please try again.'));
-  });
-
-  it('in a one-status project the new status also goes before the done one', async () => {
-    addColumn.mockImplementation((_p, name) => Promise.resolve({ ...project, columns: [cols[2], { id: 'col:new', name }] }));
-    const r = setup({ columns: [cols[2]] });
-    await fireEvent.input(r.getByLabelText('New status name'), { target: { value: 'Waiting' } });
-    await fireEvent.click(r.getByText('Add'));
-    await waitFor(() => expect(reorderColumns).toHaveBeenCalledWith('project:p', [{ id: 'col:new', name: 'Waiting' }, cols[2]]));
-    await waitFor(() => expect(names(r.container)).toEqual(['Waiting', 'Done']));
-  });
-
-  it('added but not moved up: says so, and shows it where it is', async () => {
-    reorderColumns.mockRejectedValue(new Error('boom'));
-    const r = setup();
-    await fireEvent.input(r.getByLabelText('New status name'), { target: { value: 'Waiting' } });
-    await fireEvent.click(r.getByText('Add'));
-    await waitFor(() => expect(showError).toHaveBeenCalledWith('Added, but it is last, so its tasks count as done. Move it up.'));
-    expect(names(r.container)).toEqual(['To do', 'Doing', 'Done', 'Waiting']);
-    expect((r.getByLabelText('New status name') as HTMLInputElement).value).toBe('');
   });
 });

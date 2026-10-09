@@ -127,15 +127,6 @@
     }
     adopt(added);
     newName = '';
-    // A new status goes before the last one, so the done status stays
-    // last and no finished task silently becomes unfinished.
-    const cols = added.columns;
-    if (cols.length < 2) return;
-    try {
-      adopt(await reorderColumns(pid, [...cols.slice(0, -2), cols[cols.length - 1], cols[cols.length - 2]]));
-    } catch {
-      showError('Added, but it is last, so its tasks count as done. Move it up.');
-    }
   }
 
   // Per-status menu; {#key} bumped on every open (Sheet rule).

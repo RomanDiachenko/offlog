@@ -8,6 +8,7 @@ import type { ProjectDoc, TaskDoc } from '../src/lib/types';
 // stays a component test (menu wiring and the move's arguments), not a
 // round-trip through the real database, which db.test.ts already covers.
 const updateTask = vi.fn().mockResolvedValue(undefined);
+const createTask = vi.fn().mockResolvedValue(undefined);
 // The real one returns a fractional position between two neighbours; a
 // board with no cards in the target column appends, so a constant is
 // enough to assert the value is threaded through unchanged.
@@ -16,7 +17,8 @@ vi.mock('../src/lib/db', () => ({
   updateTask: (...args: unknown[]) => updateTask(...args),
   computeDropPosition: (...args: unknown[]) => computeDropPosition(...args),
   computeGroupDropPosition: (...args: unknown[]) => computeDropPosition(...args),
-  createTask: vi.fn().mockResolvedValue(undefined),
+  createTask: (...args: unknown[]) => createTask(...args),
+  ensureFreshTagColor: vi.fn().mockResolvedValue(undefined),
   addColumn: vi.fn().mockResolvedValue(undefined),
   renameColumn: vi.fn().mockResolvedValue(undefined),
   reorderColumns: vi.fn().mockResolvedValue(undefined),
@@ -245,5 +247,26 @@ describe('KanbanBoard due badge', () => {
     await tick();
     expect(badge(container).textContent!.trim()).toBe('Overdue · 12 Mar');
     expect(badge(container).classList.contains('overdue')).toBe(true);
+  });
+});
+
+describe('KanbanBoard per-status Add task', () => {
+  it('reads date, priority and tag words like Quick Add', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-03-11T10:00:00'));
+    try {
+      const r = render(KanbanBoard, { project: mkProject(), tasks: [] });
+      await fireEvent.click(r.getAllByText('+ Add task')[0]);
+      await fireEvent.input(r.getByPlaceholderText('Task title…'), { target: { value: 'Call Bob tomorrow #work !high' } });
+      await fireEvent.click(r.getByText('Add'));
+      expect(createTask).toHaveBeenCalledWith('project:1', 'space:unsorted', 'col:idea', 'Call Bob', expect.objectContaining({
+        due_date: '2026-03-12', priority: 3, tags: ['work'],
+      }));
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('is not offered on the done status', () => {
+    const r = render(KanbanBoard, { project: mkProject(), tasks: [] });
+    expect(r.getAllByText('+ Add task')).toHaveLength(COLUMNS.length - 1);
   });
 });

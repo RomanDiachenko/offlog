@@ -5,7 +5,8 @@
   import { flip } from 'svelte/animate';
   import { cubicOut } from 'svelte/easing';
   import type { ProjectDoc, TaskDoc } from '../types';
-  import { createTask, updateTask, computeDropPosition, computeGroupDropPosition, addColumn, renameColumn, reorderColumns, removeColumn, archiveColumnTasks, archiveTask, duplicateTask, deleteTask, getTaskById, getTaskIdsWithRelatedLinks, getTaskIdsBlocked, getTagColorOverrides, subscribe } from '../db';
+  import { createTask, updateTask, computeDropPosition, computeGroupDropPosition, addColumn, renameColumn, reorderColumns, removeColumn, archiveColumnTasks, archiveTask, duplicateTask, deleteTask, getTaskById, getTaskIdsWithRelatedLinks, getTaskIdsBlocked, getTagColorOverrides, ensureFreshTagColor, subscribe } from '../db';
+  import { parseQuickAdd } from '../nlpParse';
   import { reloadTasks, showError, projects } from '../store';
   import { confirmAction } from '../confirm';
   import CardDetail from './CardDetail.svelte';
@@ -53,14 +54,26 @@
   async function quickAdd(colId: string) {
     // A second Enter while the first add is in flight would add it twice.
     if (quickAdding) return;
-    const t = quickAddTitle.trim();
+    // Same date/priority/tag words as Quick Add. No project list: this form
+    // adds to this status, so an @word stays part of the title.
+    const parsed = parseQuickAdd(quickAddTitle.trim(), []);
     // Stay open on empty submit rather than closing as if Cancel had been
     // clicked -- Add doing nothing is more honest than Add silently acting
     // like Cancel.
-    if (!t) return;
+    if (!parsed.title) return;
     quickAdding = true;
     try {
-      await createTask(project._id, project.space_id, colId, t);
+      // Sequential: each new tag must see the color the previous one claimed.
+      for (const tag of parsed.tags) {
+        try { await ensureFreshTagColor(tag, parsed.tags.filter(x => x !== tag)); }
+        catch (e) { console.warn('tag color assignment failed', e); }
+      }
+      await createTask(project._id, project.space_id, colId, parsed.title, {
+        priority: parsed.priority ?? undefined,
+        due_date: parsed.due_date,
+        reminder_at: parsed.reminder_at,
+        tags: parsed.tags.length ? parsed.tags : undefined,
+      });
       await reloadTasks();
       quickAddTitle = '';
       quickAddCol = null;
@@ -723,7 +736,8 @@
               <button on:click={() => quickAddCol = null}>Cancel</button>
             </div>
           </div>
-        {:else}
+        {:else if col.id !== project.columns.at(-1)?.id || project.columns.length === 1}
+          <!-- Not on the done status: a task added there would be born finished. -->
           <button class="add-card-btn" on:click={() => quickAddCol = col.id}>+ Add task</button>
         {/if}
       </div>

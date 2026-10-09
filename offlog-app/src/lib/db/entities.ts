@@ -318,8 +318,12 @@ export async function createProjectFromTemplate(
   return doc;
 }
 
-export async function updateProject(id: string, changes: Partial<ProjectDoc>): Promise<ProjectDoc> {
+// `changes` may be a function of the doc as just read, so a change derived
+// from the current value (a status list) is computed from the revision it
+// writes over, never from a copy read earlier that a sync may have replaced.
+export async function updateProject(id: string, changesOrFn: Partial<ProjectDoc> | ((doc: ProjectDoc) => Partial<ProjectDoc>)): Promise<ProjectDoc> {
   const doc = await db.get<ProjectDoc>(id);
+  const changes = typeof changesOrFn === 'function' ? changesOrFn(doc) : changesOrFn;
   const updated = { ...doc, ...changes, updated_at: now(), source: currentSource() };
   await db.put(updated);
   const skip = new Set(['updated_at', 'source', 'default_view']);
@@ -331,14 +335,15 @@ export async function updateProject(id: string, changes: Partial<ProjectDoc>): P
   return updated;
 }
 
+// Inserted before the last status, never after it: the last status is "done",
+// so appending would make every finished task unfinished.
 export async function addColumn(projectId: string, name: string): Promise<ProjectDoc> {
-  const doc = await db.get<ProjectDoc>(projectId);
-  return updateProject(projectId, { columns: [...doc.columns, { id: `col:${nanoid()}`, name }] });
+  const col = { id: `col:${nanoid()}`, name };
+  return updateProject(projectId, doc => ({ columns: [...doc.columns.slice(0, -1), col, ...doc.columns.slice(-1)] }));
 }
 
 export async function renameColumn(projectId: string, colId: string, name: string): Promise<ProjectDoc> {
-  const doc = await db.get<ProjectDoc>(projectId);
-  return updateProject(projectId, { columns: doc.columns.map(c => c.id === colId ? { ...c, name } : c) });
+  return updateProject(projectId, doc => ({ columns: doc.columns.map(c => c.id === colId ? { ...c, name } : c) }));
 }
 
 export async function reorderColumns(projectId: string, columns: Column[]): Promise<ProjectDoc> {
@@ -498,7 +503,7 @@ export async function removeColumn(projectId: string, colId: string): Promise<Pr
   for (const t of tasks.filter(t => t.column_id === colId)) {
     await moveForColumnRemoval(t._id!, colId, remaining[0], fromName, doc.name);
   }
-  return updateProject(projectId, { columns: remaining });
+  return updateProject(projectId, fresh => ({ columns: fresh.columns.filter(c => c.id !== colId) }));
 }
 
 // A structural move, never routed through updateTask(): its "moved into the

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import db, {
   posBetween, computeDropPosition,
-  createProject, createProjectFromTemplate, getProjects, deleteProject, removeColumn, archiveProject, unarchiveProject, getRecentLogs,
+  createProject, createProjectFromTemplate, getProjects, deleteProject, removeColumn, addColumn, archiveProject, unarchiveProject, getRecentLogs, getLogsForTask,
   archiveTask, unarchiveTask,
   createTask, getTasksForProject, updateTask, deleteTask, getTaskById, getAllTags,
   getRecentlyDeleted, getAllDeletedTasks, undoDelete, deleteForever, emptyTrash, subscribeUndo,
@@ -134,11 +134,13 @@ describe('project + task CRUD', () => {
     localStorage.setItem('offlog_device_name', 'Galaxy S24 Ultra');
     const task = await createTask(project._id, 'space:unsorted', project.columns[0].id, 'Stamped');
     expect((await getTaskById(task._id!))!.source).toBe('Galaxy S24 Ultra');
-    expect((await getRecentLogs(1))[0].source).toBe('Galaxy S24 Ultra');
     localStorage.setItem('offlog_device_name', 'Renamed');
     await updateTask(task._id!, { title: 'Stamped again' });
     expect((await getTaskById(task._id!))!.source).toBe('Renamed');
-    expect((await getRecentLogs(1))[0].source).toBe('Renamed');
+    // By action, not by "latest": two logs in the same millisecond have no order.
+    const logs = await getLogsForTask(task._id!);
+    expect(logs.find(l => l.action === 'create')!.source).toBe('Galaxy S24 Ultra');
+    expect(logs.find(l => l.action === 'update')!.source).toBe('Renamed');
   });
 
   it('getTasksForProject never truncates past 25 results (the bug caught in v2.9.0)', async () => {
@@ -179,6 +181,39 @@ describe('project + task CRUD', () => {
     await removeColumn(project._id, secondCol.id);
     const [moved] = await getTasksForProject(project._id);
     expect(moved.column_id).toBe(firstCol.id);
+  });
+
+  it('addColumn inserts before the done status, so finished tasks stay finished', async () => {
+    await seedSpace();
+    const project = await createProject('space:unsorted', 'Add Status');
+    const done = project.columns.at(-1)!;
+    const task = await createTask(project._id, 'space:unsorted', done.id, 'Finished');
+    const updated = await addColumn(project._id, 'Waiting');
+    expect(updated.columns.at(-1)!.id).toBe(done.id);
+    expect(updated.columns.at(-2)!.name).toBe('Waiting');
+    expect((await getProjects('space:unsorted')).find(p => p._id === project._id)!.columns.at(-1)!.id).toBe((await getTaskById(task._id!))!.column_id);
+  });
+
+  it('removeColumn keeps a status another device added while its tasks were moving', async () => {
+    await seedSpace();
+    const project = await createProject('space:unsorted', 'Remove Status');
+    const doomed = project.columns[1];
+    await createTask(project._id, 'space:unsorted', doomed.id, 'Moving');
+    const realPut = db.put.bind(db);
+    let synced = false;
+    const spy = vi.spyOn(db, 'put').mockImplementation((async (doc: any, ...rest: any[]) => {
+      if (!synced && String(doc._id).startsWith('task:')) {
+        synced = true;
+        const p = await db.get<any>(project._id);
+        await realPut({ ...p, columns: [...p.columns, { id: 'col:remote', name: 'Blocked' }] });
+      }
+      return realPut(doc, ...rest);
+    }) as never);
+    try {
+      const after = await removeColumn(project._id, doomed.id);
+      expect(after.columns.map(c => c.id)).toContain('col:remote');
+      expect(after.columns.map(c => c.id)).not.toContain(doomed.id);
+    } finally { spy.mockRestore(); }
   });
 
   it('removeColumn also re-homes archived tasks, so unarchiving one shows it again', async () => {
