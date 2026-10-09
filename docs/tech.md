@@ -137,8 +137,8 @@ flowchart LR
   arrive through `@capacitor/app` (`getLaunchUrl()` cold, `appUrlOpen` warm)
   and route to `nav.navigate()`; a quick add is queued until the shell has
   mounted. Focus holds three picks in the day's `focusLock.ts` commitment,
-  ranked by `phone/focus/rank.ts`, a copy of FocusView's scoring: change
-  both. Home applies `livingHero.ts`'s hue/lightness shift on mount and on
+  ranked by `shared/focusRank.ts`, the same scoring the desktop's FocusView
+  uses. Home applies `livingHero.ts`'s hue/lightness shift on mount and on
   every return to the foreground. `searchAllTasks()` (shared with the desktop's
   GlobalSearch) returns open before done, title matches first, then by due
   date (undated last), then title.
@@ -204,6 +204,8 @@ src/
       TaskHistoryPanel.svelte     Lazy-loaded history for one task
       AppearanceSettings.svelte   View & Accessibility (desktop settings and the phone's Appearance page)
       taskHelpers.ts              Pure helpers: dates, summary text, image encoding
+      focusRank.ts                Focus suggestions: scoring and the round-robin spread (both Focus screens)
+      conflictFormat.ts           How Resolve conflicts shows each field's value (both Sync screens)
       settingsHelpers.ts          Pure helpers: download, storage math, maint steps
 
     desktop/                    Everything only the desktop uses; nothing on the phone path imports from here
@@ -288,7 +290,6 @@ src/
       task/ReminderPicker.svelte  Reminder chips, month, time wheels and one confirm button (task screen and quick add)
       mark.ts / icons.ts / format.ts  Logo paths, icon set, greeting and labels (shortDate)
       agenda/month.ts             Month grid maths
-      focus/rank.ts               Focus suggestions; a copy of FocusView's scoring (change both)
       project/                    Board, list, bulk/filter/card/project menu sheets, actions, filter.ts
       quickadd/                   Quick add panels; memory.ts keeps the last keyboard height
       settings/                   Settings pages (reuse shared/AppearanceSettings), Recycle bin (TrashPage), History, Archived, organize/

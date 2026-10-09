@@ -2446,6 +2446,8 @@ describe('backup/restore round-trip (the emergency exit)', () => {
       .rows.map((r: any) => r.doc).filter((d: any) => !d._id.startsWith('_'));
 
     // Simulate restoring into a database that lost the task.
+    // Binned first: Delete forever only acts on a task in the Recycle bin.
+    await deleteTask(task._id!);
     await deleteForever(task._id!);
     expect(await getTaskById(task._id!)).toBeNull();
 
@@ -2468,6 +2470,8 @@ describe('backup/restore round-trip (the emergency exit)', () => {
       _attachments: { 'att:old': { content_type: 'text/plain', digest: 'md5-bogus', length: 5, stub: true } },
       attachments: [{ key: 'att:old', filename: 'old.txt', content_type: 'text/plain', size: 5, added_at: new Date().toISOString() }],
     };
+    // Binned first: Delete forever only acts on a task in the Recycle bin.
+    await deleteTask(task._id!);
     await deleteForever(task._id!);
 
     const { ok } = await importJSON([legacyDoc]);
