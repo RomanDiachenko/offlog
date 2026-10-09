@@ -67,4 +67,25 @@ describe('desktop reminders', () => {
     await new Promise(r => setTimeout(r, 50));
     expect((await getTaskById(id))!.reminder_at).toBe(at);
   });
+
+  it('two re-arm passes during the settings check send one toast', async () => {
+    invoke.mockImplementation((cmd: string) => cmd === 'check_desktop_notification_setting'
+      ? new Promise(r => setTimeout(() => r(true), 30)) : Promise.resolve());
+    await dueReminder('Once');
+    await rescheduleAll();
+    await rescheduleAll();
+    await new Promise(r => setTimeout(r, 120));
+    expect(sends()).toHaveLength(1);
+  });
+
+  it('fires once notifications are switched back on', async () => {
+    let allowed = false;
+    invoke.mockImplementation(async (cmd: string) => cmd === 'check_desktop_notification_setting' ? allowed : undefined);
+    await dueReminder('Later');
+    await rescheduleAll();
+    await vi.waitFor(() => expect(get(permissionState)).toBe('denied'));
+    allowed = true;
+    await rescheduleAll();
+    await vi.waitFor(() => expect(sends()).toHaveLength(1));
+  });
 });

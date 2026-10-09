@@ -429,10 +429,12 @@ async function fireTauriNotification(task: TaskDoc): Promise<void> {
   const id = task._id!;
   const key = firedKey(task);
   if (_firedIds.has(key)) return;
+  // Claimed before the await: a re-arm pass running meanwhile would
+  // otherwise pass the check above too and send a second toast.
+  rememberFired(key);
   const allowed = await invokeTauri<boolean>('check_desktop_notification_setting').catch(() => true);
   permissionState.set(allowed ? 'granted' : 'denied');
-  if (!allowed) return;
-  rememberFired(key);
+  if (!allowed) { _firedIds.delete(key); return; }
   try {
     await invokeTauri('send_task_notification', { title: task.title, body: reminderBody(task), taskId: id });
   } catch {

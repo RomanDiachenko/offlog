@@ -6,7 +6,7 @@ import {
   scanConflicts,
 } from './db';
 import { rescheduleAll, initNotificationListeners, checkPermission } from './notifications';
-import { initTauriSyncDefaults, checkForOtherHosts, initDeviceName } from '../config';
+import { initTauriSyncDefaults, checkForOtherHosts, initDeviceName, isNativePlatform } from '../config';
 import { watchForStaleHost } from './discovery';
 import { runAutoBackupIfDue } from './autoBackup';
 
@@ -136,6 +136,23 @@ export async function init() {
   // would ever be enforced. Each of the three has its own internal "is it due
   // yet" check, so calling hourly is cheap.
   setInterval(runHousekeeping, HOUSEKEEPING_INTERVAL_MS);
+  // Android's reminders are OS alarms; desktop and web ones are JS timers.
+  if (!isNativePlatform()) watchForWake(() => { rescheduleAll().catch(() => {}); });
+}
+
+// Timers stall while a laptop sleeps, and the hidden tray window gets no
+// visibilitychange, so a reminder due during sleep would wait for its
+// stalled timer (up to the next hourly re-arm). A once-a-minute tick that
+// arrives far later than a minute means the machine slept.
+const WAKE_TICK_MS = 60_000;
+export function watchForWake(onWake: () => void): () => void {
+  let last = Date.now();
+  const id = setInterval(() => {
+    const t = Date.now();
+    if (t - last > WAKE_TICK_MS * 2) onWake();
+    last = t;
+  }, WAKE_TICK_MS);
+  return () => clearInterval(id);
 }
 
 const HOUSEKEEPING_INTERVAL_MS = 60 * 60 * 1000; // hourly; each task self-checks whether it's actually due

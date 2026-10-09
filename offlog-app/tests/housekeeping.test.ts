@@ -12,7 +12,7 @@ vi.mock('../src/lib/notifications', () => ({
 vi.mock('../src/lib/autoBackup', () => ({ runAutoBackupIfDue: () => runAutoBackupIfDue() }));
 vi.mock('../src/lib/discovery', () => ({ watchForStaleHost: vi.fn() }));
 
-import { runHousekeeping } from '../src/lib/store';
+import { runHousekeeping, watchForWake } from '../src/lib/store';
 
 describe('runHousekeeping()', () => {
   it('re-arms reminders alongside backups and retention', () => {
@@ -26,5 +26,24 @@ describe('runHousekeeping()', () => {
     runHousekeeping();
     await Promise.resolve();
     expect(rescheduleAll).toHaveBeenCalled();
+  });
+});
+
+describe('watchForWake()', () => {
+  it('fires after a sleep-sized gap between ticks, not on ordinary ticks', () => {
+    vi.useFakeTimers();
+    try {
+      const onWake = vi.fn();
+      const stop = watchForWake(onWake);
+      vi.advanceTimersByTime(60_000 * 3);
+      expect(onWake).not.toHaveBeenCalled();
+      // A suspended machine: the clock jumps 90 minutes, then the stalled tick runs.
+      vi.setSystemTime(Date.now() + 90 * 60_000);
+      vi.advanceTimersByTime(60_000);
+      expect(onWake).toHaveBeenCalledTimes(1);
+      vi.advanceTimersByTime(60_000);
+      expect(onWake).toHaveBeenCalledTimes(1);
+      stop();
+    } finally { vi.useRealTimers(); }
   });
 });
