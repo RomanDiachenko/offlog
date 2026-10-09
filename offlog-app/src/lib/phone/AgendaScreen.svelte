@@ -7,7 +7,7 @@
   import { localDateStr } from '../utils';
   import { onNewDay } from '../today';
   import { getWeekStartsMonday } from '../../config';
-  import { actions, memo } from './nav';
+  import { actions, memo, switchTab } from './nav';
   import { shortDate } from './format';
   import { I } from './icons';
   import { agendaDay, monthGrid, endOfWeek } from './agenda/month';
@@ -54,13 +54,15 @@
   $: tomorrow = (() => { const d = new Date(today + 'T12:00:00'); d.setDate(d.getDate() + 1); return localDateStr(d); })();
   $: weekEnd = endOfWeek(mondayFirst, new Date(today + 'T12:00:00'));
   // `date`: the one day a group stands for, so its rows drop the repeated pill.
+  // Overdue and today have their own tab; the list starts tomorrow, with one
+  // row pointing back there so they are not out of sight.
+  $: todayCount = all.filter(t => t.due_date === today).length;
+  $: lateCount = all.filter(t => t.due_date! < today).length;
   $: groups = [
-    { label: 'Overdue', late: true, tasks: all.filter(t => t.due_date! < today) },
-    { label: 'Today', date: today, tasks: all.filter(t => t.due_date === today) },
     { label: 'Tomorrow', date: tomorrow, tasks: all.filter(t => t.due_date === tomorrow) },
     { label: 'This week', tasks: all.filter(t => t.due_date! > tomorrow && t.due_date! <= weekEnd) },
     { label: 'Later', tasks: all.filter(t => t.due_date! > tomorrow && t.due_date! > weekEnd) },
-  ].map(g => ({ ...g, tasks: g.tasks.sort(byDue) })).filter(g => g.tasks.length);
+  ].map(g => ({ ...g, late: false, tasks: g.tasks.sort(byDue) })).filter(g => g.tasks.length);
 
   $: byDate = all.reduce<Record<string, Row[]>>((acc, t) => {
     if (t.due_date) (acc[t.due_date] ??= []).push(t);
@@ -155,6 +157,13 @@
 {:else if loaded && !all.length}
   <Empty title="Nothing scheduled" text="Tasks with a date show up here." />
 {:else}
+  {#if todayCount || lateCount}
+    <button class="today-row" on:click={() => switchTab('today')}>
+      <span class="n" aria-hidden="true">{todayCount}</span>
+      <span class="lbl">Today{#if lateCount}<span class="late">{' · '}{lateCount} overdue</span>{/if}</span>{@html I.chev}
+    </button>
+  {/if}
+  {#if !groups.length}<p class="p-empty">Nothing due after today.</p>{/if}
   <!-- Finishing a group's only task takes the whole group with it, heading
        included, so the group collapses as one. -->
   {#each groups as g (g.label)}
@@ -172,6 +181,17 @@
 {/key}
 
 <style>
+  .today-row {
+    display: flex; align-items: center; width: 100%; gap: 12px; margin: 0 0 10px; padding: 12px 12px 12px 14px;
+    background: var(--surface); color: var(--text); border: 0; border-radius: 14px; box-shadow: var(--p-shadow);
+    font: inherit; font-size: var(--p-fs-l); font-weight: 600; text-align: left; cursor: pointer;
+    transition: transform var(--dur-hover) var(--ease-hover);
+  }
+  .today-row .n { min-width: 26px; height: 26px; padding: 0 7px; box-sizing: border-box; border-radius: 13px; background: var(--accent); color: var(--on-accent); font-size: var(--p-fs-s); font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .today-row:active { transform: scale(.98); }
+  .today-row .lbl { flex: 1; }
+  .today-row .late { color: var(--danger); font-weight: 600; }
+  .today-row :global(svg) { width: 16px; height: 16px; color: var(--faint); }
   .month {
     padding: 8px 8px 6px; margin-bottom: 6px; overflow: hidden;
     background: var(--surface); border-radius: 16px; box-shadow: var(--p-shadow);

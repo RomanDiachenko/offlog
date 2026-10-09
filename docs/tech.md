@@ -108,7 +108,7 @@ flowchart LR
   steps — the rows show values, not labels, Due/Priority/Tags always, the
   other fields only once set, the unset ones behind one "Add …" row; dates
   read "Sun 4 Oct" via `phone/format.ts` `shortDate()`; every phone date
-  is picked on `phone/Month.svelte`, every time on the wheels), Agenda (list/month), Focus, Settings
+  is picked on `phone/Month.svelte`, every time on the wheels), Agenda (month, or a list from tomorrow on, with one row back to Today), Focus, Settings
   (pushed pages that reuse `shared/AppearanceSettings.svelte`, plus Recycle bin, History, Archived
   projects, and Organize — spaces, tags and fields in `phone/settings/organize/`
   instead of the desktop manager overlays). Quick add is a bottom sheet that adds where the user is (the
