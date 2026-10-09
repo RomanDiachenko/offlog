@@ -63,7 +63,6 @@
      rather than using the lighter dark --accent, which glares as a fill. */
   --hero-base: #575fca;
   --hero: var(--hero-base);
-  --on-hero: #ffffff;
   /* Snackbars and the bulk-select bar: an inverted surface. Dark mode keeps
      it a raised grey rather than a near-white slab. */
   --inverse-surface: #2b313d;
@@ -190,7 +189,6 @@ body.dark {
   --accent-ink: #9aa3ee;
   --hero-base: #373d81;
   --hero: var(--hero-base);
-  --on-hero: #eff0fc;
   --inverse-surface: #353b49;
   --on-inverse: #f3f4f6;
   --inverse-accent: #a9b0f0;

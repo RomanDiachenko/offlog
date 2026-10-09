@@ -750,7 +750,6 @@ low has no hue of its own (`--border-strong`), so green keeps meaning done. Deri
 | `--check-ring` | `--faint` 75% | `--faint` 75% | unticked check circle/box border, 3:1 against cards (declared on `body`) |
 | `--on-accent` | `#FFFFFF` | `#181A20` | ink on accent/overdue/due-soon/faint backgrounds |
 | `--hero-base` / `--hero` | `#575FCA` | `#373D81` | the phone's loading screen (continuing the splash) and a faint light behind Home's hero panel; dark deepens it instead of using the lighter dark accent. `--hero` is the base shifted by `--hero-dh` / `--hero-dl` on `<html>` (season and evening, `phone/livingHero.ts`) where relative colour is supported |
-| `--on-hero` | `#FFFFFF` | `#EFF0FC` | ink and the muted mark on `--hero` |
 | `--ink-fixed-dark` | `#181A20` | `#181A20` | ink on `--success`, which is bright in both themes |
 | `--danger` | `#BD4138` | `#E77F7C` | destructive actions |
 | `--success` | `#5ABE73` | `#74D791` | done, sync ok (dots, fills) |
