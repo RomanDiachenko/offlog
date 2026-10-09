@@ -1033,9 +1033,8 @@
 
   /* opacity 0 at rest: these reveal on row hover, as in most list UIs. A
      pinned project still shows its pin permanently via .pinned below,
-     since that state is meaningful without hovering. Desktop only -- the
-     touch-device media query further down forces them visible, since
-     there's no hover to reveal them on a phone. */
+     since that state is meaningful without hovering. The (hover: none)
+     query further down shows them on touch screens. */
   .proj-pin-btn {
     background: none; border: none; cursor: pointer; padding: .15rem .35rem;
     color: var(--faint); display: flex; align-items: center; border-radius: 4px;
@@ -1045,6 +1044,7 @@
   .project-row:hover .proj-pin-btn { opacity: .8; }
   .proj-pin-btn:hover { opacity: 1; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 12%, transparent); }
   .proj-pin-btn.pinned { opacity: 1; color: var(--accent); }
+  .proj-pin-btn:focus-visible, .proj-delete-btn:focus-visible { opacity: 1; }
 
   .project-row {
     display: flex; align-items: center;
@@ -1197,7 +1197,7 @@
     border: 1.5px solid var(--sidebar-bg);
     background: var(--due-soon-ink);
   }
-  @media (max-width: 768px) {
+  @media (hover: none) {
     .proj-delete-btn { opacity: .7; }
     .proj-pin-btn:not(.pinned) { opacity: .7; }
   }

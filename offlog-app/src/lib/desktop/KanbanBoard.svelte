@@ -815,8 +815,10 @@
   @media (max-width: 768px) {
     .board { padding: 1rem; gap: .75rem; }
     .column { width: 260px; }
-    /* These are hover-revealed on desktop, but touch has no hover state —
-       without this they're effectively undiscoverable on mobile. */
+  }
+  /* Hover-revealed controls need another way in. By input, not width: a
+     tablet gets these desktop views at full width and has no hover. */
+  @media (hover: none) {
     .col-rename, .col-archive, .col-remove { opacity: .55; }
     .card-menu-trigger { opacity: .55; }
   }
@@ -879,6 +881,7 @@
   .col-archive:hover { color: var(--accent); background: var(--hover); }
   .col-remove:hover { color: var(--danger); background: var(--hover); }
   .col-header:hover .col-archive, .col-header:hover .col-remove { opacity: 1; }
+  .col-rename:focus-visible, .col-archive:focus-visible, .col-remove:focus-visible { opacity: 1; }
 
   .card-list {
     padding: .25rem .6rem .65rem;
