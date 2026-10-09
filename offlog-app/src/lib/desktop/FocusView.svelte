@@ -303,7 +303,7 @@
       {/if}
     {/if}
     {#if picking}
-      <p class="picker-hint">Bigger, blue-highlighted notes are today's top suggestions — ranked pinned, then overdue, then due-soon, then priority. Tap a note to select it, then Commit below.</p>
+      <p class="picker-hint">Suggested notes carry a Pinned, Overdue or Due soon label. Click up to three, then Let's focus.</p>
       {#if pickable.length === 0}
         <div class="empty">No open tasks to pick from.</div>
       {:else}

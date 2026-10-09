@@ -396,6 +396,24 @@ describe('CardDetail Escape with a popover open', () => {
     await new Promise(r => setTimeout(r, 450));
     back.mockRestore();
   });
+
+  it('closes only the ⋯ menu, then the panel on a second Escape', async () => {
+    await new Promise(r => setTimeout(r, 450));
+    const back = vi.spyOn(window.history, 'back').mockImplementation(() => {});
+    const { getByLabelText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    const trigger = getByLabelText('More actions');
+    await fireEvent.click(trigger);
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+
+    await fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(back).not.toHaveBeenCalled();
+
+    await fireEvent.keyDown(document.body, { key: 'Escape' });
+    await waitFor(() => expect(back).toHaveBeenCalledTimes(1));
+    await new Promise(r => setTimeout(r, 450));
+    back.mockRestore();
+  });
 });
 
 // Closing never throws an edit away, whichever way the editor is left, as on

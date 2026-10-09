@@ -69,6 +69,17 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
+describe('FilterBar menu', () => {
+  it('Escape closes it', async () => {
+    const { getByLabelText } = mount();
+    const btn = getByLabelText('Filters');
+    await fireEvent.click(btn);
+    expect(btn.getAttribute('aria-expanded')).toBe('true');
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
 describe('FilterBar active-filter count', () => {
   it('shows no badge when nothing is filtered', () => {
     const { container } = mount();

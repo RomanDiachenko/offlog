@@ -451,7 +451,7 @@
   $: connectionStatus =
     !syncEnabled ? { text: 'Sync is paused.', tone: 'muted' } :
     !syncUrl ? (isAndroid
-      ? { text: 'Not connected to another device yet — tap "Find my computer" below to connect.', tone: 'muted' }
+      ? { text: 'Not connected to another device yet — click "Find my computer" below to connect.', tone: 'muted' }
       : { text: 'Not connected to another device yet — open the Advanced tab to connect one.', tone: 'muted' }) :
     syncStatus === 'syncing' ? { text: 'Syncing…', tone: 'muted' } :
     syncStatus === 'offline' ? { text: 'Offline — will resume automatically when back on your network.', tone: 'muted' } :

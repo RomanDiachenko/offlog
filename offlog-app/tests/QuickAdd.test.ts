@@ -17,7 +17,7 @@ const reloadTasks = vi.fn().mockResolvedValue(undefined);
 const showError = vi.fn();
 // vi.mock factories are hoisted above top-level declarations, so the
 // stores must be created inside vi.hoisted() to exist by then.
-const { projects, spaces } = vi.hoisted(() => {
+const { projects, spaces, activeProjectId } = vi.hoisted(() => {
   // Inlined minimal writable — importing svelte/store here would defeat
   // the point (hoisted code runs before the import statements).
   function hoistedWritable<T>(value: T) {
@@ -30,6 +30,7 @@ const { projects, spaces } = vi.hoisted(() => {
   return {
     projects: hoistedWritable<unknown[]>([]),
     spaces: hoistedWritable<unknown[]>([]),
+    activeProjectId: hoistedWritable<string>(''),
   };
 });
 vi.mock('../src/lib/store', () => ({
@@ -37,6 +38,7 @@ vi.mock('../src/lib/store', () => ({
   showError: (...args: unknown[]) => showError(...args),
   projects,
   spaces,
+  activeProjectId,
 }));
 
 // closeOnBack registers a history-stack entry; in jsdom just hand the
@@ -76,6 +78,7 @@ beforeEach(() => {
   showError.mockClear();
   projects.set([mkProject('1', 'Errands'), mkProject('2', 'Fitness')]);
   spaces.set([]);
+  activeProjectId.set('');
 });
 
 afterEach(() => cleanup());
@@ -103,6 +106,14 @@ describe('QuickAdd create pipeline', () => {
     expect(reloadTasks).toHaveBeenCalledTimes(1);
     expect(q.created).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(q.close).toHaveBeenCalledTimes(1));
+  });
+
+  it('defaults to the open project, not the first one', async () => {
+    activeProjectId.set('project:2');
+    const q = renderQuickAdd();
+    await fireEvent.input(titleInput(q), { target: { value: 'Run' } });
+    await fireEvent.click(q.getByText('Add task'));
+    expect(createTask.mock.calls[0][0]).toBe('project:2');
   });
 
   it('a second Enter while the first add is still saving adds nothing', async () => {

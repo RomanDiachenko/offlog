@@ -11,6 +11,7 @@
   import CardDetail from './CardDetail.svelte';
   import type { TaskDoc, ProjectDoc } from '../types';
   import { hapticToggle } from '../haptics';
+  import { offerUndo, shortTitle } from '../undoToast';
 
   const dispatch = createEventDispatcher<{ menu: void; search: void; addTask: string }>();
 
@@ -137,13 +138,18 @@
     if (!proj) return;
     const lastCol = proj.columns.at(-1)?.id;
     if (!lastCol || t.column_id === lastCol) return;
+    // Finishing a repeating task also moves its date and resets its steps,
+    // so Undo restores all of them, not just the status.
+    const { _id: id, column_id, due_date, reminder_at, checklist } = t;
     try {
-      await updateTask(t._id!, { column_id: lastCol });
+      await updateTask(id!, { column_id: lastCol });
       await load();
       hapticToggle();
     } catch {
       showError('Could not update task. Please try again.');
+      return;
     }
+    offerUndo(`done:${id}`, `Finished "${shortTitle(t.title)}"`, async () => { await updateTask(id!, { column_id, due_date, reminder_at, checklist }); await load(); });
   }
 </script>
 
@@ -304,7 +310,6 @@
                 <span class="task-title">{t.title}</span>
                 <span class="proj-badge">{t.project_name ?? '—'}</span>
               </div>
-              <span class="due-chip today">Today</span>
             </div>
           {/each}
         </section>
@@ -659,7 +664,6 @@
     padding: 3px 9px; border-radius: 6px; white-space: nowrap;
   }
   .due-chip.overdue { background: var(--overdue-bg); color: var(--overdue-ink); }
-  .due-chip.today   { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-ink); }
   .due-chip.week    { background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success-ink); }
   .due-chip.later   { background: var(--col-bg); color: var(--faint); }
 

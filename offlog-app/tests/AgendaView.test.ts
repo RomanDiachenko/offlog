@@ -162,6 +162,23 @@ describe('AgendaView mark done', () => {
     expect(vi.mocked(showError)).not.toHaveBeenCalled();
   });
 
+  it('offers Undo, which restores the status, date, reminder and steps', async () => {
+    const { undoToasts, runUndo } = await import('../src/lib/undoToast');
+    const t = { ...mkTask('task:u', '2026-03-11'), reminder_at: null, checklist: [{ text: 's', done: true }] };
+    getAllTasksDue.mockResolvedValueOnce([t]);
+    const { container } = render(AgendaView);
+    const circle = await waitFor(() => {
+      const b = container.querySelector('button.circle') as HTMLButtonElement;
+      if (!b) throw new Error('no task rendered');
+      return b;
+    });
+    await fireEvent.click(circle);
+    let list: { key: string }[] = [];
+    await waitFor(() => { undoToasts.subscribe(v => (list = v))(); expect(list.map(x => x.key)).toContain('done:task:u'); });
+    await runUndo('done:task:u');
+    expect(updateTask).toHaveBeenLastCalledWith('task:u', { column_id: t.column_id, due_date: '2026-03-11', reminder_at: null, checklist: [{ text: 's', done: true }] });
+  });
+
   // Agenda spans every project, so a task whose project is missing from the
   // store has no last column to resolve — it must not guess one.
   it('writes nothing when the task\'s project is unknown', async () => {

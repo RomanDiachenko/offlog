@@ -114,12 +114,18 @@
     // every window click.
     if (!(e.target instanceof Element) || !e.target.closest('.filter-menu-wrap')) showFilterMenu = false;
   }
+  function onMenuKey(e: KeyboardEvent) {
+    if (e.key !== 'Escape' || !showFilterMenu || e.defaultPrevented) return;
+    e.preventDefault();
+    showFilterMenu = false;
+    document.querySelector<HTMLElement>('.filter-menu-wrap > button')?.focus();
+  }
 </script>
 
-<svelte:window on:click={onWindowClick} />
+<svelte:window on:click={onWindowClick} on:keydown={onMenuKey} />
 
 <div class="filter-menu-wrap">
-  <button class="action-btn" class:compact class:active={activeFilters > 0 || showFilterMenu} on:click|stopPropagation={toggleFilterMenu} aria-label="Filters" title="Filters">
+  <button class="action-btn" class:compact class:active={activeFilters > 0 || showFilterMenu} on:click|stopPropagation={toggleFilterMenu} aria-expanded={showFilterMenu} aria-label="Filters" title="Filters">
     <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M1 2h12L8.5 7.5v4L5.5 13v-5.5z"/>
     </svg>

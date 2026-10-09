@@ -2,7 +2,7 @@
   import { createEventDispatcher, onMount, onDestroy, tick } from 'svelte';
   import { fade } from 'svelte/transition';
   import { scrimIn, scrimOut, quickAddIn, quickAddOut, revealIn, revealOut, exitMs } from '../motion';
-  import { projects, reloadTasks, spaces, showError } from '../store';
+  import { projects, reloadTasks, spaces, showError, activeProjectId } from '../store';
   import { createTask, findTasksByTitleInProject, ensureFreshTagColor } from '../db';
   import { closeOnBack, isTopLayer } from '../modalStack';
   import { trapFocus } from '../focusTrap';
@@ -45,8 +45,8 @@
   let inputEl: HTMLInputElement;
   let saving = false;
 
-  // pick a sensible default project
-  $: if (!projectId && $projects.length) projectId = $projects[0]._id;
+  // Defaults to the project open (or last open), else the first one.
+  $: if (!projectId && $projects.length) projectId = $projects.find(p => p._id === $activeProjectId)?._id ?? $projects[0]._id;
 
   $: projectOptions = $projects.map(p => {
     const sp = $spaces.find(s => s._id === p.space_id);

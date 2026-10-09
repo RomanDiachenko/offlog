@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { render, fireEvent, cleanup } from '@testing-library/svelte';
+import { render, fireEvent, cleanup, waitFor } from '@testing-library/svelte';
 import { writable } from 'svelte/store';
 import { tick } from 'svelte';
 import type { ProjectDoc, TaskDoc } from '../src/lib/types';
@@ -110,6 +110,18 @@ afterEach(cleanup);
 
 // The card menu is the only keyboard/touch route to a column change —
 // drag-and-drop cannot be driven without a pointer.
+describe('KanbanBoard card menu keyboard', () => {
+  it('Escape closes the open menu, from the page or from inside it', async () => {
+    const { container } = render(KanbanBoard, { project: mkProject(), tasks: [mkTask()] });
+    const menu = await openCardMenu(container);
+    await fireEvent.keyDown(menu.querySelector('.card-menu-item')!, { key: 'Escape' });
+    await waitFor(() => expect(container.querySelector('.card-menu-trigger')!.getAttribute('aria-expanded')).toBe('false'));
+    await openCardMenu(container);
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    await waitFor(() => expect(container.querySelector('.card-menu-trigger')!.getAttribute('aria-expanded')).toBe('false'));
+  });
+});
+
 describe('KanbanBoard "Move to" status', () => {
   it('offers every status except the one the task is already in', async () => {
     const { container } = render(KanbanBoard, { project: mkProject(), tasks: [mkTask()] });

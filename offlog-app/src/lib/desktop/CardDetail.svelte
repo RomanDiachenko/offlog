@@ -68,7 +68,10 @@
   });
 
   function onWindowKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape' && !e.defaultPrevented && isTopLayer(requestClose)) finish();
+    if (e.key !== 'Escape' || e.defaultPrevented || !isTopLayer(requestClose)) return;
+    // An open ⋯ menu takes the first Escape; the editor the next.
+    if (showActionsMenu) { showActionsMenu = false; menuTriggerEl?.focus(); return; }
+    finish();
   }
 
   const DUE_SHORTCUTS: { label: string; days: number; months?: number }[] = [
@@ -714,9 +717,9 @@
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 {#if __introReady}
 <div class="overlay" on:click|self={finish} in:fade={scrimIn} out:fade={scrimOut}>
-  <div class="panel" use:trapFocus in:scale={centredIn} out:scale={centredOut}>
+  <div class="panel" role="dialog" aria-modal="true" aria-label="Edit task" use:trapFocus in:scale={centredIn} out:scale={centredOut}>
     <div class="panel-header">
-      <textarea class="title-input" bind:value={title} placeholder="Task title" rows="1" on:input={(e) => { const t = e.currentTarget; t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }}></textarea>
+      <textarea class="title-input" bind:value={title} aria-label="Task title" placeholder="Task title" rows="1" on:input={(e) => { const t = e.currentTarget; t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }}></textarea>
       <div class="menu-wrap">
         <button type="button" class="menu-trigger" bind:this={menuTriggerEl} on:click={() => showActionsMenu = !showActionsMenu} aria-label="More actions" aria-expanded={showActionsMenu}>
           <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="3" cy="8" r=".9"/><circle cx="8" cy="8" r=".9"/><circle cx="13" cy="8" r=".9"/></svg>
@@ -971,7 +974,8 @@
      dead space landing after "1 month" where the eye reads it as a
      mistake, not a stopping point. */
   /* The block padding gives the selected chip's glow room inside the scroll clip. */
-  .due-shortcuts { display: flex; gap: 6px; flex-wrap: nowrap; margin-left: auto; overflow-x: auto; min-width: 0; padding: 6px 4px; margin-block: -6px; }
+  .due-shortcuts { display: flex; gap: 6px; flex-wrap: nowrap; margin-left: auto; overflow-x: auto; min-width: 0; padding: 6px 4px; margin-block: -6px; scrollbar-width: none; }
+  .due-shortcuts::-webkit-scrollbar { display: none; }
   @media (max-width: 480px) {
     .due-date-row { flex-direction: column; align-items: stretch; }
     .due-date-row :global(.cal-field) { width: 100%; }

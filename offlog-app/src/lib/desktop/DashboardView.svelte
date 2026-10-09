@@ -156,7 +156,7 @@
           <div class="brief-head">
             <span class="brief-label">Today's Focus</span>
           </div>
-          <span class="brief-empty">You haven't picked today's 3 tasks yet — tap to choose in Focus.</span>
+          <span class="brief-empty">You haven't picked today's 3 tasks yet — choose them in Focus.</span>
         {/if}
       </div>
 

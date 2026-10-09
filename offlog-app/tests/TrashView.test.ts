@@ -81,7 +81,7 @@ describe('TrashView restore', () => {
   it('restores a single task by id and reloads the task list', async () => {
     const { getByLabelText } = await renderWith([mkTrashed()]);
 
-    await fireEvent.click(getByLabelText('Restore'));
+    await fireEvent.click(getByLabelText(/^Restore/));
 
     await waitFor(() => expect(undoDelete).toHaveBeenCalledWith('task:1'));
     expect(reloadTasks).toHaveBeenCalled();
@@ -90,7 +90,7 @@ describe('TrashView restore', () => {
   it('restores without asking for confirmation — restore is not destructive', async () => {
     const { getByLabelText } = await renderWith([mkTrashed()]);
 
-    await fireEvent.click(getByLabelText('Restore'));
+    await fireEvent.click(getByLabelText(/^Restore/));
 
     await waitFor(() => expect(undoDelete).toHaveBeenCalled());
     expect(confirmAction).not.toHaveBeenCalled();
@@ -100,7 +100,7 @@ describe('TrashView restore', () => {
     undoDelete.mockRejectedValueOnce(new Error('write conflict'));
     const { getByLabelText } = await renderWith([mkTrashed()]);
 
-    await fireEvent.click(getByLabelText('Restore'));
+    await fireEvent.click(getByLabelText(/^Restore/));
 
     await waitFor(() => expect(showError).toHaveBeenCalledTimes(1));
     expect(reloadTasks).not.toHaveBeenCalled();
@@ -143,7 +143,7 @@ describe('TrashView permanent delete', () => {
   it('asks for confirmation naming the task before deleting forever', async () => {
     const { getByLabelText } = await renderWith([mkTrashed({ title: 'Nuke me' })]);
 
-    await fireEvent.click(getByLabelText('Delete forever'));
+    await fireEvent.click(getByLabelText(/^Delete forever/));
 
     await waitFor(() => expect(deleteForever).toHaveBeenCalledWith('task:1'));
     const [message, opts] = confirmAction.mock.calls[0];
@@ -155,7 +155,7 @@ describe('TrashView permanent delete', () => {
     confirmAction.mockResolvedValue(false);
     const { getByLabelText } = await renderWith([mkTrashed()]);
 
-    await fireEvent.click(getByLabelText('Delete forever'));
+    await fireEvent.click(getByLabelText(/^Delete forever/));
 
     await waitFor(() => expect(confirmAction).toHaveBeenCalled());
     expect(deleteForever).not.toHaveBeenCalled();
@@ -165,7 +165,7 @@ describe('TrashView permanent delete', () => {
     deleteForever.mockRejectedValueOnce(new Error('boom'));
     const { getByLabelText } = await renderWith([mkTrashed()]);
 
-    await fireEvent.click(getByLabelText('Delete forever'));
+    await fireEvent.click(getByLabelText(/^Delete forever/));
 
     await waitFor(() => expect(showError).toHaveBeenCalledTimes(1));
   });

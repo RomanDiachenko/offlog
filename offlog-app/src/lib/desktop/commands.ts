@@ -54,12 +54,12 @@ export function getCommands(ctx: CommandContext): Command[] {
     { id: 'dashboard', label: 'Go to Dashboard', keywords: 'home view', run: ctx.goToDashboard },
     { id: 'focus', label: 'Go to Focus', keywords: 'view commitment', run: ctx.goToFocus },
     { id: 'agenda', label: 'Go to Agenda', keywords: 'deadlines calendar view week', run: ctx.goToAgenda },
-    { id: 'quickadd', label: 'Quick Add Task', keywords: 'new task create', run: ctx.openQuickAdd, opensOverlay: true },
-    { id: 'theme', label: 'Toggle Dark / Light Mode', keywords: 'appearance dark light theme', run: ctx.toggleTheme },
-    { id: 'contrast', label: 'Toggle High Contrast', keywords: 'appearance accessibility', run: ctx.toggleHighContrast },
-    { id: 'settings', label: 'Open Settings', keywords: 'preferences config organize sync notifications', run: ctx.openSettings, opensOverlay: true },
+    { id: 'quickadd', label: 'Add task', keywords: 'new task create', run: ctx.openQuickAdd, opensOverlay: true },
+    { id: 'theme', label: 'Switch dark / light mode', keywords: 'appearance dark light theme', run: ctx.toggleTheme },
+    { id: 'contrast', label: 'Turn high contrast on or off', keywords: 'appearance accessibility', run: ctx.toggleHighContrast },
+    { id: 'settings', label: 'Open settings', keywords: 'preferences config organize sync notifications', run: ctx.openSettings, opensOverlay: true },
     { id: 'timetravel', label: 'Open History', keywords: 'history activity log journal retrospective', run: ctx.openTimeTravel, opensOverlay: true },
     { id: 'trash', label: 'Open Recycle bin', keywords: 'recycle bin deleted restore trash', run: ctx.openTrash, opensOverlay: true },
-    { id: 'sync', label: 'Sync Now', keywords: 'refresh couchdb nyxdb replicate', run: ctx.syncNow },
+    { id: 'sync', label: 'Sync now', keywords: 'refresh couchdb nyxdb replicate', run: ctx.syncNow },
   ];
 }

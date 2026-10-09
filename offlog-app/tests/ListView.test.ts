@@ -125,9 +125,20 @@ describe('ListView mark done', () => {
 
 // One try around the whole loop stopped at the first failing task, leaving
 // every task after it unwritten while the message said only "some" failed.
+describe('ListView View menu', () => {
+  it('Escape closes it', async () => {
+    const { getByLabelText } = render(ListView, { project: mkProject(), tasks: [mkTask()] });
+    const btn = getByLabelText('View: select rows, order, columns');
+    await fireEvent.click(btn);
+    expect(btn.getAttribute('aria-expanded')).toBe('true');
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
 describe('ListView bulk actions', () => {
   async function selectAll(container: HTMLElement, getByLabelText: (l: string) => HTMLElement) {
-    await fireEvent.click(getByLabelText('Select rows or show/hide columns'));
+    await fireEvent.click(getByLabelText('View: select rows, order, columns'));
     await fireEvent.click(getByLabelText('Toggle row selection'));
     await fireEvent.click(getByLabelText('Select all visible tasks'));
     expect(container.querySelector('.bulk-count')?.textContent).toBe('3 selected');

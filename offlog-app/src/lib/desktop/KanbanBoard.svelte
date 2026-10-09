@@ -180,6 +180,16 @@
     if (cardMenuTriggerEl?.contains(t) || cardMenuPanelEl?.contains(t)) return;
     openCardMenu = null;
   }
+  // Escape closes an open card menu and hands focus back to its ⋯.
+  function onCardMenuKey(e: KeyboardEvent) {
+    if (e.key !== 'Escape' || !openCardMenu || e.defaultPrevented) return;
+    e.preventDefault();
+    // Looked up, not cardMenuTriggerEl: that binding sits in the card loop,
+    // so it holds the last card's ⋯, not the open one.
+    const trigger = document.querySelector<HTMLElement>('.card-menu-trigger[aria-expanded="true"]');
+    openCardMenu = null;
+    trigger?.focus();
+  }
   async function togglePin(task: TaskDoc) {
     try {
       await updateTask(task._id!, { pinned: !task.pinned });
@@ -562,7 +572,7 @@
   });
 </script>
 
-<svelte:window on:click={onWindowClick} />
+<svelte:window on:click={onWindowClick} on:keydown={onCardMenuKey} />
 
 {#if tasks.length === 0}
   <div class="board-empty-hint">No tasks yet — click "+ Add task" under any status to add one.</div>
@@ -663,7 +673,7 @@
                   <svg viewBox="0 0 14 14" width="13" height="13" fill="currentColor"><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="11" cy="7" r="1.2"/></svg>
                 </button>
                 {#if openCardMenu === task._id}
-                  <div class="card-menu glass" bind:this={cardMenuPanelEl} on:click|stopPropagation on:keydown|stopPropagation in:fly={popIn} out:fly={popOut}>
+                  <div class="card-menu glass" bind:this={cardMenuPanelEl} on:click|stopPropagation on:keydown={(e) => { onCardMenuKey(e); e.stopPropagation(); }} in:fly={popIn} out:fly={popOut}>
                     <button type="button" class="card-menu-item" on:click={() => { openCardMenu = null; togglePin(task); }}>
                       <PinStar size={12} filled={task.pinned} stroked />
                       {task.pinned ? 'Unpin' : 'Pin'}

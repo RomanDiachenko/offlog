@@ -276,6 +276,12 @@
     const t = e.target as HTMLElement;
     if (showColMenu && !t.closest('.col-menu-wrap')) showColMenu = false;
   }
+  function onMenuKey(e: KeyboardEvent) {
+    if (e.key !== 'Escape' || !showColMenu || e.defaultPrevented) return;
+    e.preventDefault();
+    showColMenu = false;
+    document.querySelector<HTMLElement>('.col-menu-wrap > button')?.focus();
+  }
 
   // ── Horizontal scroll, no truncation ────────────────────────────────────
   // grid-template-columns is built from the fixed circle/title tracks plus
@@ -477,7 +483,7 @@
   }
 </script>
 
-<svelte:window on:click={onWindowClick} />
+<svelte:window on:click={onWindowClick} on:keydown={onMenuKey} />
 
 <div class="list-wrap">
   <!-- Toolbar + grid share one outer panel (single border/radius). The
@@ -506,15 +512,15 @@
         <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <rect x="1" y="1" width="12" height="3" rx="1"/><path d="M2 4v8a1 1 0 001 1h8a1 1 0 001-1V4"/><line x1="5" y1="7" x2="9" y2="7"/>
         </svg>
-        <span class="action-label">Archived{#if archivedTasksRaw.length > 0} · {archivedTasksRaw.length}{/if}</span>
+        <span class="action-label">Archived{#if archivedTasksRaw.length > 0}{' · '}{archivedTasksRaw.length}{/if}</span>
       </button>
 
       <div class="col-menu-wrap">
-        <button class="action-btn" class:active={showColMenu || selectionMode} on:click={openColMenu} aria-label="Select rows or show/hide columns" title="Select rows / show-hide columns">
+        <button class="action-btn" class:active={showColMenu || selectionMode} on:click={openColMenu} aria-expanded={showColMenu} aria-label="View: select rows, order, columns" title="Select rows, pinned first, show or hide columns">
           <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="3" x2="3" y2="11"/><line x1="7" y1="3" x2="7" y2="11"/><line x1="11" y1="3" x2="11" y2="11"/>
           </svg>
-          <span class="action-label">Select</span>
+          <span class="action-label">View</span>
         </button>
         {#if showColMenu}
           <!-- position:fixed (not the shared .col-menu's default absolute)
@@ -634,8 +640,8 @@
           <button
             class="circle"
             class:done={task.column_id === lastColId()}
-            title="Move to last status"
-            aria-label="Move to last status"
+            title="Mark done"
+            aria-label="Mark done"
             on:click|stopPropagation={() => markDone(task)}
           >
             {#if task.column_id === lastColId()}
@@ -686,7 +692,7 @@
   </div>
   </div>
 
-  <div class="sort-hint">* Shift+click a column header to sort by more than one column</div>
+  <div class="sort-hint">Shift+click a column header to sort by more than one column</div>
 
   {#if showArchived && archivedTasksRaw.length > 0}
     <div class="archived-section">
