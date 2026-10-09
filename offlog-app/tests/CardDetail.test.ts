@@ -151,6 +151,14 @@ describe('CardDetail save logic', () => {
     expect(changes.title).toBe('Updated title');
   });
 
+  it('a cleared title keeps the old one', async () => {
+    const { getByPlaceholderText, getByText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    await fireEvent.input(getByPlaceholderText('Task title') as HTMLTextAreaElement, { target: { value: '   ' } });
+    await fireEvent.click(getByText('Save'));
+    await new Promise(r => setTimeout(r, 50));
+    for (const [, changes] of updateTask.mock.calls) expect(changes).not.toHaveProperty('title');
+  });
+
   it('writes only what was edited here, so changes made meanwhile elsewhere survive', async () => {
     const task = mkTask({ reminder_at: new Date(2030, 0, 1, 9, 0).toISOString(), column_id: 'col:idea' });
     const { getByPlaceholderText, getByText } = render(CardDetail, { props: { task, project: mkProject() } });

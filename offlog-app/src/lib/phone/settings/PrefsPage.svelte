@@ -8,7 +8,8 @@
   import AppearanceSettings from '../../shared/AppearanceSettings.svelte';
   import BackupPage from './BackupPage.svelte';
   import { downloadBlob, freshMaintSteps, formatStorageEstimate, summarizeIssues, type MaintStep } from '../../shared/settingsHelpers';
-  import { isAutoBackupEnabled, setAutoBackupEnabled, getLastAutoBackupAt } from '../../autoBackup';
+  import { isAutoBackupEnabled, setAutoBackupEnabled, getLastAutoBackupAt, getAutoBackupUsage } from '../../autoBackup';
+  import { formatAttachmentSize } from '../../attachments';
   import db, {
     importJSON, analyzeImport, exportProjectDocs, exportTasksCSV,
     getStorageBreakdown, type StorageBreakdown, subscribe as subscribeDb,
@@ -260,6 +261,8 @@
     }
   }
   let storageUsed = '';
+  // The automatic backups sit outside the database the estimate measures.
+  let backupUsage: { count: number; bytes: number } | null = null;
   let storagePercent = 0;
   let storageAvailable = true;
   async function loadStorage() {
@@ -270,6 +273,7 @@
         storageUsed = `${(usage / 1048576).toFixed(1)} MB`;
         storageAvailable = true;
       } else storageAvailable = false;
+      backupUsage = await getAutoBackupUsage();
     } catch {
       storageAvailable = false;
     }
@@ -466,7 +470,7 @@
         </button>
         <div class="p-row still">
           <span class="ri">{@html I.disk}</span>
-          <span class="p-k"><span>Storage used</span>{#if breakdown}<span class="p-sub">{allTasks.toLocaleString()} task{allTasks === 1 ? '' : 's'} · {breakdown.attachmentCount} attachment{breakdown.attachmentCount === 1 ? '' : 's'}</span>{/if}</span>
+          <span class="p-k"><span>Storage used</span>{#if breakdown}<span class="p-sub">{allTasks.toLocaleString()} task{allTasks === 1 ? '' : 's'} · {breakdown.attachmentCount} attachment{breakdown.attachmentCount === 1 ? '' : 's'}{#if backupUsage?.count}{' · '}plus {backupUsage.count} backup{backupUsage.count === 1 ? '' : 's'} ({formatAttachmentSize(backupUsage.bytes)}){/if}</span>{/if}</span>
           <span class="p-v">{storageAvailable ? storageUsed || '…' : '—'}</span>
         </div>
       </div>

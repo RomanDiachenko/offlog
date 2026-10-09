@@ -103,6 +103,7 @@ const confirmAction = vi.fn();
 vi.mock('../src/lib/confirm', () => ({ confirmAction: (...a: unknown[]) => confirmAction(...a) }));
 
 import SettingsPage from '../src/lib/phone/settings/SettingsPage.svelte';
+import { getAutoBackupUsage } from '../src/lib/autoBackup';
 import { showError, projects } from '../src/lib/store';
 import * as cfg from '../src/config';
 import * as nav from '../src/lib/phone/nav';
@@ -514,6 +515,13 @@ describe('phone settings pages', () => {
       vi.mocked(db.getStorageBreakdown).mockResolvedValueOnce({ activeTasks: 1200, archivedTasks: 30, deletedTasks: 10, logEntries: 9, attachmentCount: 1, attachmentBytes: 5 } as never);
       const { findByText } = render(SettingsPage, { page: 'advanced' });
       expect(await findByText(/^1.?240 tasks · 1 attachment$/)).toBeTruthy();
+    });
+
+    it('Storage used also counts the automatic backups kept outside the database', async () => {
+      vi.mocked(db.getStorageBreakdown).mockResolvedValueOnce({ activeTasks: 2, archivedTasks: 0, deletedTasks: 0, logEntries: 0, attachmentCount: 0, attachmentBytes: 0 } as never);
+      vi.mocked(getAutoBackupUsage).mockResolvedValueOnce({ count: 7, bytes: 3 * 1048576 });
+      const { container } = render(SettingsPage, { page: 'advanced' });
+      await waitFor(() => expect([...container.querySelectorAll('.p-sub')].map(e => e.textContent!.replace(/\s+/g, ' ')).join('|')).toMatch(/2 tasks · 0 attachments · plus 7 backups \(3(\.0)? MB\)/));
     });
 
     it('Source code opens the repository in a new tab', async () => {

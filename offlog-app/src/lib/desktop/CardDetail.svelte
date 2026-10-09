@@ -604,7 +604,9 @@
     ];
     try {
       const edited: Partial<TaskDoc> = {
-        title, body,
+        // A cleared title keeps the old one, as on the phone: a task with no
+        // name has nothing to show on its card.
+        title: title.trim() ? title : task.title, body,
         priority: priority as 1 | 2 | 3,
         due_date: due_date || null,
         reminder_at: reminder_at ? new Date(reminder_at).toISOString() : null,
