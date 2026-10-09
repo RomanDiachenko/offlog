@@ -31,6 +31,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DESKTOP = path.resolve(ROOT, '..', 'offlog-desktop');
 
 const PKG = path.join(ROOT, 'package.json');
+// npm copies package.json's version into the lockfile twice (top level and
+// packages[""]) and rewrites it only on its next install, so it lagged a
+// release behind unless set here too.
+const LOCK = path.join(ROOT, 'package-lock.json');
 const GRADLE = path.join(ROOT, 'android', 'app', 'build.gradle');
 const TAURI = path.join(DESKTOP, 'src-tauri', 'tauri.conf.json');
 const CHANGELOG = path.resolve(ROOT, '..', 'docs', 'changelog.md');
@@ -66,6 +70,8 @@ function currentVersions() {
     gradleName: nameMatch[1],
     gradleCode: Number(codeMatch[1]),
     tauri: JSON.parse(read(TAURI)).version,
+    lock: JSON.parse(read(LOCK)).version,
+    lockRoot: JSON.parse(read(LOCK)).packages?.['']?.version,
   };
 }
 
@@ -81,6 +87,9 @@ function check(expectedTag) {
   }
   if (v.tauri !== v.pkg) {
     errors.push(`tauri.conf.json version "${v.tauri}" != package.json "${v.pkg}"`);
+  }
+  if (v.lock !== v.pkg || v.lockRoot !== v.pkg) {
+    errors.push(`package-lock.json version "${v.lock}" / "${v.lockRoot}" != package.json "${v.pkg}"`);
   }
   if (SEMVER.test(v.pkg)) {
     const expected = versionCodeFor(v.pkg);
@@ -156,6 +165,11 @@ function set(next) {
   const tauri = JSON.parse(read(TAURI));
   tauri.version = next;
   fs.writeFileSync(TAURI, JSON.stringify(tauri, null, 2) + '\n');
+
+  const lock = JSON.parse(read(LOCK));
+  lock.version = next;
+  if (lock.packages?.['']) lock.packages[''].version = next;
+  fs.writeFileSync(LOCK, JSON.stringify(lock, null, 2) + '\n');
 
   console.log(`set ${v.pkg} -> ${next} (versionCode ${code})`);
   return v.pkg;

@@ -285,7 +285,8 @@ inside and import it back.
 ## Release
 
 1. `npm run release:prepare X.Y.Z` — writes all three version sources and
-   derives `versionCode` (never edit them by hand), adds TODO entries to
+   `package-lock.json`'s copy, derives `versionCode` (never edit them by
+   hand), adds TODO entries to
    `docs/changelog.md` and `docs/release-notes.md`, moves changelog entries
    past the newest ten into `docs/archive/history.md`, adds the compare
    link, and prints the maintenance due date and the commits since the last
