@@ -9,6 +9,7 @@
   import { today, loadFocusLock, saveFocusLock, type FocusLock } from '../focusLock';
   import { onNewDay } from '../today';
   import { rankPicker, type Reason as SuggestReason } from '../shared/focusRank';
+  import { offerUndo } from '../undoToast';
 
   const dispatch = createEventDispatcher<{ menu: void; search: void }>();
 
@@ -72,12 +73,27 @@
     lockedTasks = fetched.filter((t): t is TaskDoc => !!t && !t.deleted && !t.archived);
   }
 
+  // Picking more for a lock already made: the picker shows again, minus
+  // what is locked, with room for the rest of MAX_COMMIT.
+  let adding = false;
+  $: lockedIds = new Set(lockedTasks.map(t => t._id!));
+  $: room = lock ? MAX_COMMIT - lockedTasks.length : MAX_COMMIT;
+  $: picking = !lock || adding;
+  $: pickable = lock ? pickerTasks.filter(t => !lockedIds.has(t._id!)) : pickerTasks;
+
   async function loadPicker() { pickerTasks = arrangePicker(await getOpenTasksForFocusPicker()); }
 
   async function refresh() {
     lock = loadFocusLock();
+    if (!lock) adding = false;
     if (lock) await loadLockedTasks();
-    else await loadPicker();
+    if (!lock || adding) await loadPicker();
+  }
+
+  async function startAdding() {
+    selected = [];
+    adding = true;
+    await loadPicker();
   }
 
   // The lock is date-stamped and loadFocusLock() already discards a stale
@@ -101,19 +117,37 @@
 
   function toggleSelect(id: string) {
     if (selected.includes(id)) selected = selected.filter(x => x !== id);
-    else if (selected.length < MAX_COMMIT) selected = [...selected, id];
+    else if (selected.length < room) selected = [...selected, id];
   }
 
   async function commit() {
     if (!selected.length) return;
-    saveFocusLock({ date: today(), taskIds: selected });
+    const ids = [...(lock ? lockedTasks.map(t => t._id!) : []), ...selected].slice(0, MAX_COMMIT);
+    saveFocusLock({ date: today(), taskIds: ids });
     selected = [];
+    adding = false;
     await refresh();
   }
 
-  async function resetCommitment() {
-    saveFocusLock(null);
+  // Removing and resetting act at once; Undo puts the previous lock back.
+  function restoreLock(prev: FocusLock | null) {
+    return async () => { saveFocusLock(prev); await refresh(); };
+  }
+
+  async function removeFromFocus(t: TaskDoc) {
+    const prev = lock;
+    const ids = lockedTasks.map(x => x._id!).filter(id => id !== t._id);
+    saveFocusLock(ids.length ? { date: today(), taskIds: ids } : null);
     await refresh();
+    offerUndo(`focus-remove:${t._id}`, 'Removed from focus', restoreLock(prev));
+  }
+
+  async function resetCommitment() {
+    const prev = lock;
+    saveFocusLock(null);
+    selected = [];
+    await refresh();
+    offerUndo('focus-reset', 'Focus reset', restoreLock(prev));
   }
 
   function openDetail(t: TaskDoc) {
@@ -257,15 +291,22 @@
             <span class="task-title" class:done>{t.title}</span>
             <span class="proj-badge">{$projects.find(p => p._id === t.project_id)?.name ?? '—'}</span>
           </div>
+          <button class="remove-btn" on:click|stopPropagation={() => removeFromFocus(t)} title="Remove from focus" aria-label="Remove {t.title} from focus">
+            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5"/></svg>
+          </button>
         </div>
       {/each}
-    {:else}
+      {#if !adding && room > 0}
+        <button class="add-more-btn" on:click={startAdding}>+ Add {room === 1 ? 'one more task' : `up to ${room} more`}</button>
+      {/if}
+    {/if}
+    {#if picking}
       <p class="picker-hint">Bigger, blue-highlighted notes are today's top suggestions — ranked pinned, then overdue, then due-soon, then priority. Tap a note to select it, then Commit below.</p>
-      {#if pickerTasks.length === 0}
+      {#if pickable.length === 0}
         <div class="empty">No open tasks to pick from.</div>
       {:else}
         <div class="board">
-          {#each pickerTasks as t (t._id)}
+          {#each pickable as t (t._id)}
             <div
               class="note {noteSize(t)}"
               class:selected={selected.includes(t._id!)}
@@ -294,10 +335,11 @@
     {/if}
   </div>
 
-  {#if !lock}
+  {#if picking}
     <div class="fc-footer">
+      {#if adding}<button class="reset-btn" on:click={() => { adding = false; selected = []; }}>Cancel</button>{/if}
       <button class="commit-btn" disabled={!selected.length} on:click={commit}>
-        {selected.length ? `Let's focus on ${selected.length} task${selected.length > 1 ? 's' : ''}` : "Let's focus"}
+        {#if adding}{selected.length ? `Add ${selected.length} to focus` : 'Add to focus'}{:else}{selected.length ? `Let's focus on ${selected.length} task${selected.length > 1 ? 's' : ''}` : "Let's focus"}{/if}
       </button>
     </div>
   {/if}
@@ -433,6 +475,19 @@
     transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
   .task-row:hover { background: var(--hover); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .remove-btn {
+    background: none; border: none; padding: 6px; border-radius: 6px; cursor: pointer;
+    color: var(--faint); display: flex; align-items: center; justify-content: center;
+    transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
+  }
+  .remove-btn:hover { background: var(--hover); color: var(--text); }
+  .add-more-btn {
+    width: 100%; padding: 12px 16px; border-radius: 7px; cursor: pointer;
+    background: none; border: 1.5px dashed var(--border-strong); color: var(--muted);
+    font-size: 13px; font-weight: 600; text-align: left;
+    transition: border-color var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
+  }
+  .add-more-btn:hover { border-color: var(--accent); color: var(--text); }
 
   .suggest-chip {
     font-family: var(--mono); font-size: 10px; font-weight: 600;
@@ -501,7 +556,7 @@
 
   .fc-footer {
     flex-shrink: 0;
-    display: flex; justify-content: center;
+    display: flex; justify-content: center; gap: 10px;
     padding: 14px 28px; border-top: 1px solid var(--border);
     background: var(--surface);
   }

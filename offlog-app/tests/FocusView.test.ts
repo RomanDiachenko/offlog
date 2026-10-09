@@ -68,6 +68,8 @@ vi.mock('../src/lib/confirm', () => ({
 
 import { projects as projectsStore, showError } from '../src/lib/store';
 import FocusView from '../src/lib/desktop/FocusView.svelte';
+import { get } from 'svelte/store';
+import { undoToasts, runUndo, dismissUndo } from '../src/lib/undoToast';
 
 const COLUMNS = [
   { id: 'col:todo', name: 'To do' },
@@ -243,6 +245,62 @@ describe('FocusView commitment lock', () => {
 
     expect(localStorage.getItem(LOCK_KEY)).toBeNull();
     await waitFor(() => expect(noteFor(container, 'Back in picker')).toBeTruthy());
+  });
+});
+
+describe('FocusView changing a lock already made', () => {
+  afterEach(() => { for (const t of get(undoToasts)) dismissUndo(t.key); });
+  const titles: Record<string, string> = { 'task:a': 'Alpha', 'task:b': 'Beta', 'task:c': 'Gamma' };
+  function locked(ids: string[]) {
+    localStorage.setItem(LOCK_KEY, JSON.stringify({ date: TODAY, taskIds: ids }));
+    getTaskById.mockImplementation(async (id: string) => mkTask(id, { title: titles[id] }));
+  }
+
+  it('adds to the lock, keeping what was locked and hiding it from the picker', async () => {
+    locked(['task:a']);
+    getOpenTasksForFocusPicker.mockResolvedValue([mkTask('task:a', { title: 'Alpha' }), mkTask('task:b', { title: 'Beta' })]);
+    const { container, getByText } = render(FocusView);
+    await waitFor(() => expect(rowTitles(container)).toEqual(['Alpha']));
+
+    await fireEvent.click(getByText('+ Add up to 2 more'));
+    await waitFor(() => expect(notes(container).map(n => n.querySelector('.note-title')!.textContent)).toEqual(['Beta']));
+    await fireEvent.click(noteFor(container, 'Beta'));
+    await fireEvent.click(commitBtn(container));
+
+    expect(readLock()).toEqual({ date: TODAY, taskIds: ['task:a', 'task:b'] });
+    await waitFor(() => expect(rowTitles(container)).toEqual(['Alpha', 'Beta']));
+  });
+
+  it('offers no Add once three are locked', async () => {
+    locked(['task:a', 'task:b', 'task:c']);
+    const { container } = render(FocusView);
+    await waitFor(() => expect(rowTitles(container)).toEqual(['Alpha', 'Beta', 'Gamma']));
+    expect(container.querySelector('.add-more-btn')).toBeNull();
+  });
+
+  it('removes one task, and Undo puts it back', async () => {
+    locked(['task:a', 'task:b']);
+    const { container, getByLabelText } = render(FocusView);
+    await waitFor(() => expect(rowTitles(container)).toEqual(['Alpha', 'Beta']));
+
+    await fireEvent.click(getByLabelText('Remove Alpha from focus'));
+    await waitFor(() => expect(rowTitles(container)).toEqual(['Beta']));
+    expect(readLock().taskIds).toEqual(['task:b']);
+
+    await waitFor(() => expect(get(undoToasts).map(t => t.msg)).toContain('Removed from focus'));
+    await runUndo(get(undoToasts).find(t => t.msg === 'Removed from focus')!.key);
+    await waitFor(() => expect(rowTitles(container)).toEqual(['Alpha', 'Beta']));
+  });
+
+  it('Reset can be undone', async () => {
+    locked(['task:a']);
+    const { container } = render(FocusView);
+    await waitFor(() => expect(rowTitles(container)).toEqual(['Alpha']));
+    await fireEvent.click(container.querySelector('.fc-header .reset-btn') as HTMLButtonElement);
+    expect(localStorage.getItem(LOCK_KEY)).toBeNull();
+    await waitFor(() => expect(get(undoToasts).map(t => t.msg)).toContain('Focus reset'));
+    await runUndo('focus-reset');
+    await waitFor(() => expect(rowTitles(container)).toEqual(['Alpha']));
   });
 });
 
