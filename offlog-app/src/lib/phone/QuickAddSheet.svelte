@@ -288,7 +288,10 @@
       closeSheet();
       // No Undo here: deleteTask would raise its own undo toast and leave
       // the task in the Recycle bin.
-      showToast(`Added to ${p.name}`);
+      // Inside its own project the status is the useful part: it may not be
+      // the one on screen (+ on the done status adds to the first).
+      const where = p._id === projectId && p.columns.length > 1 ? p.columns.find(c => c.id === col)?.name : null;
+      showToast(`Added to ${where ?? p.name}`);
     } catch {
       showError('Could not create task. Please try again.');
     } finally {

@@ -141,6 +141,7 @@ describe('phone Quick add', () => {
     await waitFor(() => expect(createTask).toHaveBeenCalledWith('project:f', 'space:h', 'col:f2', 'Stretch', {
       priority: undefined, due_date: '2026-10-05', reminder_at: null, tags: undefined,
     }));
+    await waitFor(() => expect(get(toast)?.text).toBe('Added to col:f2'));
   });
 
   it('a time sets a reminder; a typed date beats the prefilled one', async () => {
