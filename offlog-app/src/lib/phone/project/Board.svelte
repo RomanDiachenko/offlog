@@ -144,7 +144,7 @@
     position: relative; flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 8px 13px; min-height: 36px; border-radius: 999px; border: 0; cursor: pointer;
     font: inherit; font-size: var(--p-fs-s); font-weight: 600; background: var(--surface); color: var(--muted);
     box-shadow: var(--p-shadow);
-    transition: background var(--dur-small) var(--ease-standard), color var(--dur-small) var(--ease-standard), box-shadow var(--dur-small) var(--ease-standard);
+    transition: background var(--dur-small) var(--ease-standard), color var(--dur-small) var(--ease-standard);
   }
   .pills button::before { content: ''; position: absolute; left: 0; right: 0; top: -4px; bottom: -4px; }
   .pills button.on { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }

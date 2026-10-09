@@ -158,5 +158,6 @@
     padding: .4rem .55rem; border-radius: 6px; font-size: .85rem; color: var(--text);
   }
   .cs-option.highlighted { background: var(--hover); }
-  .cs-option.selected { color: var(--accent); font-weight: 600; }
+  .cs-option.selected { background: var(--sel-fill); color: var(--text); font-weight: 600; }
+  .cs-option.selected.highlighted { background: color-mix(in srgb, var(--text) 12%, transparent); }
 </style>

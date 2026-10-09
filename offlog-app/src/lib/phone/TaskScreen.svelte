@@ -634,7 +634,7 @@
   }
   .stbar button { flex: 1 0 auto; min-width: 72px; padding: 8px 12px; border: 0; border-radius: 9px; background: none; cursor: pointer; white-space: nowrap;
     font: inherit; font-size: var(--p-fs-s); font-weight: 600; color: var(--muted); transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover); }
-  .stbar button.on { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
+  .stbar button.on { background: var(--surface); color: var(--text); box-shadow: var(--sel-ring); }
   .vals .p-k > span { display: flex; align-items: center; gap: 6px; }
   .vals .p-k.late, .vals .p-k.today { font-weight: 600; }
   .vals .p-k.late { color: var(--overdue-ink); }

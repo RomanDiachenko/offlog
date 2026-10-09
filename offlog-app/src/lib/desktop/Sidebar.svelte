@@ -22,6 +22,9 @@
   export let showDashboard = false;
   export let showFocus = false;
   export let open = false;
+  // A project is current only on its own page; Dashboard, Focus and Agenda
+  // keep the last project id for coming back to it.
+  $: onProject = (id: string) => $activeProjectId === id && !showDashboard && !showFocus && !showAgenda;
 
   // ── Collapsible + resizable sidebar ─────────────────────────────────────
   // Per-device (localStorage), same reasoning as every other sidebar/list
@@ -522,7 +525,7 @@
   <nav class="primary-nav" aria-label="Main">
     <button
       class="nav-btn"
-      class:active={showDashboard} class:is-selected={showDashboard}
+      class:active={showDashboard} class:is-selected={showDashboard} aria-current={showDashboard ? 'page' : undefined}
       title="Dashboard"
       aria-label="Dashboard"
       on:click={() => { showDashboard = true; showAgenda = false; showFocus = false; activeProjectId.set(''); dispatch('navigate'); }}
@@ -538,7 +541,7 @@
 
     <button
       class="nav-btn"
-      class:active={showFocus} class:is-selected={showFocus}
+      class:active={showFocus} class:is-selected={showFocus} aria-current={showFocus ? 'page' : undefined}
       title="Focus"
       aria-label="Focus"
       on:click={() => { showFocus = true; showDashboard = false; showAgenda = false; activeProjectId.set(''); dispatch('navigate'); }}
@@ -553,7 +556,7 @@
 
     <button
       class="nav-btn"
-      class:active={showAgenda} class:is-selected={showAgenda}
+      class:active={showAgenda} class:is-selected={showAgenda} aria-current={showAgenda ? 'page' : undefined}
       title="Agenda"
       aria-label="Agenda"
       on:click={() => { showAgenda = true; showDashboard = false; showFocus = false; activeProjectId.set(''); dispatch('navigate'); }}
@@ -627,8 +630,8 @@
                 </div>
               </div>
               {:else}
-              <div class="project-row" class:active={$activeProjectId === project._id} class:is-selected={$activeProjectId === project._id}>
-                <button class="project-btn" on:click={() => goToProject(project)}>
+              <div class="project-row" class:active={onProject(project._id)} class:is-selected={onProject(project._id)}>
+                <button class="project-btn" aria-current={onProject(project._id) ? 'page' : undefined} on:click={() => goToProject(project)}>
                   {project.name}
                 </button>
                 <!-- Laid over the row's right edge, not beside the name: hidden
@@ -1025,6 +1028,8 @@
   .tree-section {
     display: flex; flex-direction: column; gap: .05rem; padding-top: .3rem;
     flex: 1; min-height: 90px; overflow-y: auto;
+    /* Room inside the scroll clip for the selected row's glow. */
+    padding-inline: 6px; margin-inline: -6px;
   }
   .space-group { display: flex; flex-direction: column; margin-bottom: .05rem; }
   .space-header {

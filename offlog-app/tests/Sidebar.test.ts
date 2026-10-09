@@ -335,3 +335,14 @@ describe('Sidebar project row', () => {
     expect(rows[1].querySelector('.proj-actions [aria-label="Delete project Plain one"]')).toBeTruthy();
   });
 });
+
+describe('Sidebar current item', () => {
+  it('marks the open project current only on its own page, never beside Dashboard', async () => {
+    const { getByText, rerender } = await renderTree([mkProject()], 'project:1');
+    expect(getByText('Alpha').getAttribute('aria-current')).toBe('page');
+    expect(getByText('Alpha').closest('.project-row')?.classList.contains('is-selected')).toBe(true);
+    await rerender({ showDashboard: true });
+    await waitFor(() => expect(getByText('Alpha').getAttribute('aria-current')).toBeNull());
+    expect(getByText('Alpha').closest('.project-row')?.classList.contains('is-selected')).toBe(false);
+  });
+});

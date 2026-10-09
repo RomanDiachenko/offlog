@@ -439,8 +439,7 @@
   .note:hover { transform: rotate(0deg) translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.1); }
   .note.selected {
     transform: rotate(0deg); border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 6%, var(--surface));
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 25%, transparent);
+    box-shadow: var(--sel-ring);
   }
   .note.suggested { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
   .note.suggested.selected { border-color: var(--accent); }

@@ -902,7 +902,7 @@
   }
   .grid-row:last-child { border-bottom: none; }
   .grid-row:hover { background: var(--hover); }
-  .grid-row.row-selected { background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+  .grid-row.row-selected { background: var(--sel-fill); }
   /* An inset ::before bar, not a full-height border-left: a full-height
      border reads as one continuous stripe across adjacent rows sharing a
      priority color, since the border-bottom hairline isn't enough to break

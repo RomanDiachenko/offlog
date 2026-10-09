@@ -119,25 +119,25 @@
     <div class="pref-row">
       <span class="pref-label">Theme</span>
       <div class="pref-toggle">
-        <button class:active={themeMode === 'light'} class:is-selected={themeMode === 'light'} on:click={() => selectThemeMode('light')}>Light</button>
-        <button class:active={themeMode === 'dark'} class:is-selected={themeMode === 'dark'} on:click={() => selectThemeMode('dark')}>Dark</button>
-        <button class:active={themeMode === 'system'} class:is-selected={themeMode === 'system'} on:click={() => selectThemeMode('system')}>System</button>
+        <button class:active={themeMode === 'light'} class:is-selected={themeMode === 'light'} aria-pressed={themeMode === 'light'} on:click={() => selectThemeMode('light')}>Light</button>
+        <button class:active={themeMode === 'dark'} class:is-selected={themeMode === 'dark'} aria-pressed={themeMode === 'dark'} on:click={() => selectThemeMode('dark')}>Dark</button>
+        <button class:active={themeMode === 'system'} class:is-selected={themeMode === 'system'} aria-pressed={themeMode === 'system'} on:click={() => selectThemeMode('system')}>System</button>
       </div>
     </div>
 
     <div class="pref-row">
       <span class="pref-label">Week starts on</span>
       <div class="pref-toggle">
-        <button class:active={!weekStartsMonday} class:is-selected={!weekStartsMonday} on:click={() => setWeekStart(false)}>Sunday</button>
-        <button class:active={weekStartsMonday} class:is-selected={weekStartsMonday} on:click={() => setWeekStart(true)}>Monday</button>
+        <button class:active={!weekStartsMonday} class:is-selected={!weekStartsMonday} aria-pressed={!weekStartsMonday} on:click={() => setWeekStart(false)}>Sunday</button>
+        <button class:active={weekStartsMonday} class:is-selected={weekStartsMonday} aria-pressed={weekStartsMonday} on:click={() => setWeekStart(true)}>Monday</button>
       </div>
     </div>
 
     <div class="pref-row">
       <span class="pref-label">Time format</span>
       <div class="pref-toggle">
-        <button class:active={!timeFormat24h} class:is-selected={!timeFormat24h} on:click={() => setTimeFormat(false)}>12h</button>
-        <button class:active={timeFormat24h} class:is-selected={timeFormat24h} on:click={() => setTimeFormat(true)}>24h</button>
+        <button class:active={!timeFormat24h} class:is-selected={!timeFormat24h} aria-pressed={!timeFormat24h} on:click={() => setTimeFormat(false)}>12h</button>
+        <button class:active={timeFormat24h} class:is-selected={timeFormat24h} aria-pressed={timeFormat24h} on:click={() => setTimeFormat(true)}>24h</button>
       </div>
     </div>
 
@@ -218,7 +218,7 @@
     padding: .35rem .65rem; font-size: .78rem; font-weight: 600; cursor: pointer;
     border: none; border-radius: 7px; background: transparent; color: var(--muted);
   }
-  .pref-toggle button.active { background: var(--sel-fill); color: var(--text); }
+  .pref-toggle button.active { background: var(--surface); color: var(--text); }
   .notif-btn {
     padding: .35rem .75rem; border-radius: var(--radius-sm); font-size: .78rem; font-weight: 600; cursor: pointer;
     border: 1px solid var(--accent); background: transparent; color: var(--accent);

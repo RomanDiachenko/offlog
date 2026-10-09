@@ -304,11 +304,17 @@ body.dark {
 }
 @supports (backdrop-filter: blur(1px)) {
   @media (prefers-reduced-transparency: no-preference) {
-    body:not(.reduce-transparency) .glass { background: var(--glass-fill); backdrop-filter: var(--glass-blur); }
+    body:not(.reduce-transparency):not(.high-contrast) .glass { background: var(--glass-fill); backdrop-filter: var(--glass-blur); }
+    /* Glass inside glass (a dropdown in a menu): the inner blur would only
+       see its parent, so it goes solid. */
+    body:not(.reduce-transparency):not(.high-contrast) .glass .glass { background: var(--glass-solid); backdrop-filter: none; }
   }
 }
+/* More contrast, from the OS or Settings: solid, with a strong edge. The
+   selector matches the see-through rule's weight so it wins either way. */
+body.high-contrast .glass { background: var(--surface); border: 2px solid var(--border-strong); }
 @media (prefers-contrast: more) {
-  .glass { background: var(--surface); border: 2px solid var(--border-strong); }
+  body:not(.reduce-transparency):not(.high-contrast) .glass, body .glass { background: var(--surface); backdrop-filter: none; border: 2px solid var(--border-strong); }
 }
 
 /* A desktop view's top: a floating .glass panel (.fluid-panel) on a stage
@@ -325,7 +331,8 @@ body.dark {
    accent glow is drawn once on ::after and only its opacity ever animates.
    Hover never glows, and keyboard focus keeps its own outline. A scoped
    rule outranks this one, so a component restyling its own buttons
-   restates the pill with var(--sel-fill). */
+   restates the pill with var(--sel-fill). On a filled track (--col-bg) the
+   pill is var(--surface) instead: the faint fill barely shows there. */
 .is-selected {
   position: relative;
   background: var(--sel-fill);

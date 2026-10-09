@@ -688,7 +688,7 @@
                    removes it from the accessible-name computation too, so
                    without it the button has no accessible name at all
                    once collapsed. -->
-              <button class="view-btn" class:active={currentView === v.key} class:is-selected={currentView === v.key} on:click={() => setView(v.key)} aria-label={v.label} title={v.label}>
+              <button class="view-btn" class:active={currentView === v.key} class:is-selected={currentView === v.key} aria-pressed={currentView === v.key} on:click={() => setView(v.key)} aria-label={v.label} title={v.label}>
                 {@html ICONS[v.key]}
                 <span class="view-label" aria-hidden="true">{v.label}</span>
               </button>

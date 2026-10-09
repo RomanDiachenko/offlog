@@ -168,8 +168,8 @@
         </svg>
       </button>
       <div class="mode-toggle">
-        <button class="mode-btn" class:active={mode === 'list'} class:is-selected={mode === 'list'} on:click={() => setMode('list')}>List</button>
-        <button class="mode-btn" class:active={mode === 'month'} class:is-selected={mode === 'month'} on:click={() => setMode('month')}>Month</button>
+        <button class="mode-btn" class:active={mode === 'list'} class:is-selected={mode === 'list'} aria-pressed={mode === 'list'} on:click={() => setMode('list')}>List</button>
+        <button class="mode-btn" class:active={mode === 'month'} class:is-selected={mode === 'month'} aria-pressed={mode === 'month'} on:click={() => setMode('month')}>Month</button>
       </div>
     </div>
   </div>
@@ -507,8 +507,9 @@
   .month-cell:nth-child(7n) { border-right: none; }
   .month-cell.out-month { background: var(--bg); color: var(--faint); }
   .month-cell.out-month .month-daynum { color: var(--faint); }
-  .month-cell.today { background: color-mix(in srgb, var(--accent) 6%, transparent); }
-  .month-cell.selected { box-shadow: inset 0 0 0 2px var(--accent); }
+  /* Same markers as the phone's Month: today is a ring on the number, the
+     selected day a solid dot, its cell the Fluid selected fill. */
+  .month-cell.selected { background: var(--sel-fill); }
   /* min-height:20px (and the flex centering) must apply to EVERY day, not
      just "today": the fixed-size circle badge below only changes today's
      cell, so without it every other day's plain-text number is shorter and
@@ -518,10 +519,9 @@
     display: flex; align-items: center; justify-content: center;
     min-height: 20px; font-size: .78rem; font-weight: 700; color: var(--text);
   }
-  .month-cell.today .month-daynum {
-    color: var(--on-accent); background: var(--accent);
-    border-radius: 50%; width: 20px; height: 20px; font-size: .72rem;
-  }
+  .month-cell.today .month-daynum, .month-cell.selected .month-daynum { border-radius: 50%; width: 20px; height: 20px; font-size: .72rem; }
+  .month-cell.today .month-daynum { color: var(--accent-ink); box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .month-cell.selected .month-daynum { color: var(--on-accent); background: var(--accent); box-shadow: none; }
   /* Desktop: day number top-left, dots pinned to the cell's top-right
      corner. Mobile stacks them — overridden back to column in the 700px
      media query below.

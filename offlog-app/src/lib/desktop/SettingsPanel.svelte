@@ -1134,7 +1134,7 @@
       <nav class="settings-nav" aria-label="Settings sections">
         <h3 class="nav-title">Settings</h3>
         {#each CATEGORIES as cat (cat.key)}
-          <button class="nav-item" class:active={activeCategory === cat.key} on:click={() => selectCategory(cat.key)}>
+          <button class="nav-item" class:active={activeCategory === cat.key} aria-current={activeCategory === cat.key ? 'page' : undefined} on:click={() => selectCategory(cat.key)}>
             <svg viewBox="0 0 18 18" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">{@html cat.icon}</svg>
             <span>{cat.label}</span>
             {#if cat.key === 'sync' && conflictCount > 0}<span class="nav-badge">{conflictCount}</span>{/if}
@@ -1728,7 +1728,7 @@
     font-size: .8rem; font-weight: 500; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .detail-content :global(.theme-seg-btn:hover) { background: var(--hover); color: var(--text); }
-  .detail-content :global(.theme-seg-btn.active) { background: var(--sel-fill); color: var(--text); font-weight: 600; }
+  .detail-content :global(.theme-seg-btn.active) { background: var(--surface); color: var(--text); font-weight: 600; }
 
   .detail-content :global(.toggle-btn) {
     width: 42px; height: 24px; border-radius: 12px; border: none; cursor: pointer;
