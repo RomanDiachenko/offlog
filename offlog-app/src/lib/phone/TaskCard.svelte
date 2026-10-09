@@ -131,7 +131,7 @@
   /* Priority tints the ring (Todoist-style): shape and position say "this
      task", colour says how much; darkened toward --text so amber still
      clears 3:1 on a white card. */
-  .chk.prio { border-color: color-mix(in srgb, var(--prio) 62%, var(--text)); background: color-mix(in srgb, var(--prio) 14%, transparent); }
+  .chk.prio { border-color: var(--prio); background: color-mix(in srgb, var(--prio) 14%, transparent); }
   .chk.on { background: var(--accent); border-color: var(--accent); transition: background var(--dur-small) var(--ease-decelerate), border-color var(--dur-small) var(--ease-decelerate); }
   .chk.on::after { transform: rotate(45deg) scale(1); opacity: 1; transition: transform var(--dur-small) var(--ease-decelerate), opacity var(--dur-small) var(--ease-decelerate); }
   /* The fill and tick wait for the loop (phone.css .p-loop) to close. */

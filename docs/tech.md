@@ -723,7 +723,8 @@ All colours are CSS custom properties in `app.css` — `:root` for light,
 where CSS can't reach: Android `values/colors.xml` / `values-night/colors.xml`,
 `theme-color` in `index.html`, `public/theme-init.js` and `theme.ts`; each
 mirrors a token and must move with it. `constants.ts`'s `PRIORITY_COLOR`
-(the low/medium/high hues) is fixed hex with no token behind it. Derived tints use
+is fixed hex for medium and high, drawn at full strength on both shells;
+low has no hue of its own (`--border-strong`), so green keeps meaning done. Derived tints use
 `color-mix(in srgb, var(--accent) X%, transparent)`.
 
 | Token | Light | Dark | Role |
