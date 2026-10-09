@@ -51,7 +51,7 @@
   // library, so command and task matching stay consistent.
   $: matchingCommands = query.trim()
     ? commands.filter(c => (c.label + ' ' + c.keywords).toLowerCase().includes(query.trim().toLowerCase()))
-    : commands;
+    : commands.filter(c => !c.onlyWhenSearched);
   // Commands and task results share one keyboard-navigable index —
   // commands first, tasks below.
   $: combinedLength = matchingCommands.length + results.length;

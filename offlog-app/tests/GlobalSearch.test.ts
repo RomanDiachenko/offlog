@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, cleanup, waitFor } from '@testing-library/svelte';
-import type { Command } from '../src/lib/desktop/commands';
+import { projectCommands, type Command } from '../src/lib/desktop/commands';
 import type { ProjectDoc, TaskDoc } from '../src/lib/types';
 
 const searchAllTasks = vi.fn().mockResolvedValue([]);
@@ -87,6 +87,23 @@ describe('GlobalSearch matching', () => {
 
     await waitFor(() => expect(rows(container)).toHaveLength(1));
     expect(rows(container)[0].textContent).toContain('Quick Add Task');
+  });
+
+  it('finds a project by name once something is typed, and opens it', async () => {
+    const open = vi.fn();
+    const space = { _id: 'space:home', type: 'space', name: 'Home', color: '#000', position: 0, updated_at: '', source: 'PC' } as const;
+    const groceries = { ...PROJECT, _id: 'project:groc', name: 'Groceries', space_id: 'space:home' };
+    const shelved = { ...PROJECT, _id: 'project:old', name: 'Grocery archive', archived: true };
+    const commands = [...COMMANDS, ...projectCommands([groceries, shelved], [space], open)];
+    const { container } = render(GlobalSearch, { props: { commands } });
+    expect(rows(container).some(r => r.textContent!.includes('Groceries'))).toBe(false);
+
+    await typeQuery(container, 'groc');
+    await waitFor(() => expect(rows(container).map(r => r.textContent!.replace(/\s+/g, ' ').trim())).toContain('⌘ Go to project · Groceries (Home)'));
+    expect(rows(container).some(r => r.textContent!.includes('Grocery archive'))).toBe(false);
+
+    await fireEvent.click(rows(container).find(r => r.textContent!.includes('Groceries'))!);
+    expect(open).toHaveBeenCalledWith('project:groc');
   });
 
   it('shows task results below the commands once the debounced search returns', async () => {

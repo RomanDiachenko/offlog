@@ -11,7 +11,7 @@
   import { pendingOpenTaskId, notificationActionError } from './lib/notifications';
   import { undoToasts, offerUndo, dismissUndo, runUndo, shortTitle } from './lib/undoToast';
   import { applyTheme, watchSystemTheme, getThemeMode, setThemeMode, isEffectivelyDark, getHighContrast, setHighContrast } from './lib/theme';
-  import { getCommands } from './lib/desktop/commands';
+  import { getCommands, projectCommands } from './lib/desktop/commands';
   // Type-only: the desktop views load through desktopViews.ts (see below).
   import type Sidebar from './lib/desktop/Sidebar.svelte';
   import ConfirmDialog from './lib/desktop/ConfirmDialog.svelte';
@@ -133,7 +133,7 @@
   function goToAgenda() { showDashboard = false; showFocus = false; showAgenda = true; }
   function goToDashboard() { showAgenda = false; showFocus = false; showDashboard = true; }
 
-  $: commands = getCommands({
+  $: commands = [...getCommands({
     goToDashboard,
     goToFocus,
     goToAgenda,
@@ -146,7 +146,7 @@
     // Paused sync stays paused; an unreachable server is a quiet no-op here
     // (the sync status shows it), not the global "Something went wrong".
     syncNow: () => { if (isSyncEnabled()) syncNow().catch(() => {}); },
-  });
+  }), ...projectCommands($projects, $spaces, id => { showDashboard = false; showAgenda = false; showFocus = false; goToProject(id); })];
   let searchDetailTask: import('./lib/types').TaskDoc | null = null;
   let searchDetailProject: import('./lib/types').ProjectDoc | null = null;
   // See KanbanBoard.svelte's identical detailOpenSession for why this

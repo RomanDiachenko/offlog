@@ -1,7 +1,9 @@
 // Command palette: deliberately a small, fixed list of navigation/action
-// shortcuts, not a plugin system. Matched against GlobalSearch's existing
-// query box by plain substring on label+keywords, the same matching style as
-// searchAllTasks() in db.ts — no fuzzy-matching library.
+// shortcuts plus one 'Go to project' entry per project, not a plugin
+// system. Matched against GlobalSearch's existing query box by plain
+// substring on label+keywords, the same matching style as searchAllTasks()
+// in db.ts — no fuzzy-matching library.
+import type { ProjectDoc, SpaceDoc } from '../types';
 export interface Command {
   id: string;
   label: string;
@@ -14,6 +16,9 @@ export interface Command {
   // history.back() races the new overlay's own pushState, and the new overlay
   // then never appears. See modalStack.ts's discardTop() comment.
   opensOverlay?: boolean;
+  // Listed only once something is typed: one entry per project would bury
+  // the fixed commands in an empty palette.
+  onlyWhenSearched?: boolean;
 }
 
 export interface CommandContext {
@@ -27,6 +32,21 @@ export interface CommandContext {
   openTimeTravel: () => void;
   openTrash: () => void;
   syncNow: () => void;
+}
+
+// "Go to project" entries, so a board can be opened by name from Ctrl+K.
+// Archived projects stay out, as in the sidebar.
+export function projectCommands(projects: ProjectDoc[], spaces: SpaceDoc[], open: (id: string) => void): Command[] {
+  return projects.filter(p => !p.archived).map(p => {
+    const space = spaces.find(s => s._id === p.space_id)?.name;
+    return {
+      id: `project:${p._id}`,
+      label: `Go to project · ${p.name}${space ? ` (${space})` : ''}`,
+      keywords: 'project board open',
+      run: () => open(p._id!),
+      onlyWhenSearched: true,
+    };
+  });
 }
 
 export function getCommands(ctx: CommandContext): Command[] {
