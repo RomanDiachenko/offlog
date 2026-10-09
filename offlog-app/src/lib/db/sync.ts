@@ -23,15 +23,32 @@ interface SyncEmitter {
   pull?: SyncEmitter;
 }
 
+// One remote instance per server and login, reused across restarts. PouchDB
+// holds every instance it creates until close(), so a fresh one per restart
+// (every phone resume) piles up for the life of the process. A replaced
+// instance is not closed: a replication being cancelled may still be using it.
+let _remote: { key: string; db: PouchDB.Database } | null = null;
 async function remote() {
   const { user, pass } = await getSyncCredentials();
-  return new PouchDB(getSyncUrl(), { auth: { username: user, password: pass } });
+  const url = getSyncUrl();
+  const key = JSON.stringify([url, user, pass]);
+  if (_remote?.key !== key) _remote = { key, db: new PouchDB(url, { auth: { username: user, password: pass } }) };
+  return _remote.db;
 }
 
 
 // ── Sync ──────────────────────────────────────────────────────────────────────
 
 let _syncHandler: PouchDB.Replication.Sync<{}> | null = null;
+// Bumped by every start, restart and pause. Reading credentials is async, so
+// two starts can overlap; one overtaken while it waited must not start a
+// replication of its own, or the first is never cancelled and keeps running
+// beside the second, and a Pause in that gap would not hold.
+let _syncGen = 0;
+function stopReplication(): number {
+  if (_syncHandler) { _syncHandler.cancel(); _syncHandler = null; }
+  return ++_syncGen;
+}
 
 // Exported for tests — pure classification, no I/O, so what a dropped
 // connection tells the user is testable without a real db.sync() call.
@@ -255,7 +272,7 @@ export function attachSyncHandlers<H extends SyncEmitter>(handler: H, onSettle?:
 }
 
 export async function startSync(): Promise<void> {
-  if (_syncHandler) { _syncHandler.cancel(); _syncHandler = null; }
+  const gen = stopReplication();
   // An explicit pause takes priority over auto-starting on init.
   if (!isSyncEnabled()) { syncState.status = 'idle'; notify(); return; }
   // No server configured yet — don't attempt new PouchDB('', ...), which
@@ -263,7 +280,9 @@ export async function startSync(): Promise<void> {
   // Settings' Sync tab renders "Not connected to another device yet" for this.
   if (!getSyncUrl()) { syncState.status = 'idle'; notify(); return; }
   if (!navigator.onLine) { syncState.status = 'offline'; notify(); }
-  _syncHandler = attachSyncHandlers(db.sync(await remoteOrMarkError(), { live: true, retry: true }));
+  const remoteDb = await remoteOrMarkError();
+  if (gen !== _syncGen) return;
+  _syncHandler = attachSyncHandlers(db.sync(remoteDb, { live: true, retry: true }));
 }
 
 // Reading the stored credentials can fail; without this the status would
@@ -275,7 +294,7 @@ async function remoteOrMarkError() {
 // Pause: cancels the live replication without touching the configured URL
 // (setSyncUrl('') would drop the server config entirely, which a pause must not do).
 export function cancelSync() {
-  if (_syncHandler) { _syncHandler.cancel(); _syncHandler = null; }
+  stopReplication();
   syncState.status = 'idle';
   notify();
 }
@@ -285,8 +304,10 @@ export async function syncNow(): Promise<void> {
   // immediately rather than attempting new PouchDB('', ...).
   if (!getSyncUrl()) { syncState.status = 'idle'; notify(); return; }
   syncState.status = 'syncing'; notify();
-  if (_syncHandler) { _syncHandler.cancel(); _syncHandler = null; }
+  const gen = stopReplication();
   const remoteDb = await remoteOrMarkError();
+  // Overtaken: the newer start or pause owns the state from here.
+  if (gen !== _syncGen) return;
   return new Promise((resolve, reject) => {
     _syncHandler = attachSyncHandlers(db.sync(remoteDb, { live: true, retry: true }), (err) => {
       if (err) reject(err); else resolve();

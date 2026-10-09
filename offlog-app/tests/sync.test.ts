@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { describeSyncError, attachSyncHandlers, startSync, syncNow, cancelSync, syncState } from '../src/lib/db';
+import db, { describeSyncError, attachSyncHandlers, startSync, syncNow, cancelSync, syncState } from '../src/lib/db';
 import { setSyncEnabled, setSyncUrl, getSyncUrl } from '../src/config';
 
 // Offline-queue robustness for sync. There's no CI-reachable
@@ -199,5 +199,49 @@ describe('startSync()/syncNow() treat an unconfigured URL as "nothing to do" (no
     syncState.status = 'error';
     await expect(syncNow()).resolves.toBeUndefined();
     expect(syncState.status).toBe('idle');
+  });
+});
+
+// Reading credentials is async, so a resume and an 'online' event can start
+// sync twice at once; only one live replication may come out of it.
+describe('overlapping starts run one replication', () => {
+  const originalUrl = getSyncUrl();
+  let syncSpy: ReturnType<typeof vi.spyOn>;
+  const fakeHandler = () => { const h: any = { cancel: vi.fn(), on: () => h }; return h; };
+  beforeEach(() => {
+    cancelSync();
+    setSyncEnabled(true);
+    setSyncUrl('http://192.0.2.1:5984/offlog');
+    syncSpy = vi.spyOn(db, 'sync').mockImplementation((() => fakeHandler()) as never);
+  });
+  afterEach(() => { cancelSync(); syncSpy.mockRestore(); setSyncUrl(originalUrl); });
+
+  it('two concurrent starts open one replication', async () => {
+    await Promise.all([startSync(), startSync()]);
+    expect(syncSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('a pause while credentials are read stops the start', async () => {
+    const pending = startSync();
+    cancelSync();
+    await pending;
+    expect(syncSpy).not.toHaveBeenCalled();
+  });
+
+  it('a restart replaces the replication and reuses the remote connection', async () => {
+    await startSync();
+    const first = syncSpy.mock.results[0].value;
+    await startSync();
+    expect(first.cancel).toHaveBeenCalled();
+    expect(syncSpy).toHaveBeenCalledTimes(2);
+    expect(syncSpy.mock.calls[1][0]).toBe(syncSpy.mock.calls[0][0]);
+  });
+
+  it('an overtaken Sync now settles instead of hanging', async () => {
+    const a = syncNow();
+    const b = startSync();
+    await expect(a).resolves.toBeUndefined();
+    await b;
+    expect(syncSpy).toHaveBeenCalledTimes(1);
   });
 });
