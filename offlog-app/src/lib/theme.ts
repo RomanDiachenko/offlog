@@ -88,14 +88,13 @@ export function applyTheme(): void {
   syncBrowserThemeColor(dark);
 }
 
-// A coloured band running up under the status bar (the phone Home's hero, a
-// project's band) gives the strip its colour (body.statusbar-hero /
-// .statusbar-band in app.css) and, on a dark band, light OS icons. Screens
-// claim the strip; the most recent live claim wins and releasing it hands the
+// The hero colour under the status bar (the phone's loading screen) gives
+// the strip that colour (body.statusbar-hero in app.css) and light OS icons;
+// a null claim keeps the plain strip. Screens claim the strip; the most recent live claim wins and releasing it hands the
 // strip back to the one below, so a screen that leaves after the next one has
 // claimed (an outro still running) can't undo it. Switched in one step with
 // the icon style for the same lockstep reason as the theme itself.
-export interface StripTint { fill?: string; lightIcons: boolean }
+export interface StripTint { lightIcons: boolean }
 interface Claim { tint: StripTint | null }
 const claims: Claim[] = [];
 const hero: Claim = { tint: null };
@@ -137,17 +136,14 @@ function stripVisible(): boolean {
 function syncHero(): void {
   const top = claims.at(-1)?.tint ?? null;
   const on = !!top && !suppressed && stripVisible();
-  const key = on ? `${top!.fill ?? 'hero'}|${top!.lightIcons}` : 'off';
+  const key = on ? `hero|${top!.lightIcons}` : 'off';
   if (key === applied) return;
   applied = key;
   onHero = on && top!.lightIcons;
-  const fill = on ? top!.fill : undefined;
   const apply = () => {
     if (applied !== key) return;
     const b = document.body;
     b.classList.toggle('statusbar-hero', on);
-    b.classList.toggle('statusbar-band', !!fill);
-    if (fill) b.style.setProperty('--statusbar-band', fill); else b.style.removeProperty('--statusbar-band');
   };
   const native = syncAndroidStatusBar(isEffectivelyDark() || onHero);
   if (native) native.then(apply); else apply();

@@ -522,7 +522,7 @@
   <nav class="primary-nav" aria-label="Main">
     <button
       class="nav-btn"
-      class:active={showDashboard}
+      class:active={showDashboard} class:is-selected={showDashboard}
       title="Dashboard"
       aria-label="Dashboard"
       on:click={() => { showDashboard = true; showAgenda = false; showFocus = false; activeProjectId.set(''); dispatch('navigate'); }}
@@ -538,7 +538,7 @@
 
     <button
       class="nav-btn"
-      class:active={showFocus}
+      class:active={showFocus} class:is-selected={showFocus}
       title="Focus"
       aria-label="Focus"
       on:click={() => { showFocus = true; showDashboard = false; showAgenda = false; activeProjectId.set(''); dispatch('navigate'); }}
@@ -553,7 +553,7 @@
 
     <button
       class="nav-btn"
-      class:active={showAgenda}
+      class:active={showAgenda} class:is-selected={showAgenda}
       title="Agenda"
       aria-label="Agenda"
       on:click={() => { showAgenda = true; showDashboard = false; showFocus = false; activeProjectId.set(''); dispatch('navigate'); }}
@@ -627,7 +627,7 @@
                 </div>
               </div>
               {:else}
-              <div class="project-row" class:active={$activeProjectId === project._id}>
+              <div class="project-row" class:active={$activeProjectId === project._id} class:is-selected={$activeProjectId === project._id}>
                 <button class="project-btn" on:click={() => goToProject(project)}>
                   {project.name}
                 </button>
@@ -1009,12 +1009,9 @@
   /* Subtle hover shadow, not just a flat background swap -- same
      treatment on .space-header and .project-row below. */
   .nav-btn:hover { background: var(--hover); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.07); }
-  /* Needs an actual fill: a text-only active state disappears in
-     practice. var(--hover) is the same flat neutral tint this row's
-     :hover already uses, made permanent -- lighter than
-     .project-row.active's bordered card, but still visible. */
-  /* The phone tab bar's selected pill: accent tint, accent icon. */
-  .nav-btn.active { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--text); font-weight: 700; }
+  /* .is-selected (app.css) draws the glow; the pill is restated because
+     the scoped :hover rule above would otherwise outrank it. */
+  .nav-btn.active, .nav-btn.active:hover { background: var(--sel-fill); color: var(--text); font-weight: 700; box-shadow: none; }
   .nav-btn.active svg { opacity: 1; color: var(--accent); }
 
   .spaces-divider { height: 1px; background: var(--border); margin: .5rem 0; }
@@ -1091,13 +1088,7 @@
   .project-row:hover .proj-actions, .project-row:focus-within .proj-actions { visibility: visible; }
   .proj-pinned-mark { display: flex; color: var(--accent); padding: 0 .35rem; flex-shrink: 0; }
   .project-row:hover .proj-pinned-mark, .project-row:focus-within .proj-pinned-mark { visibility: hidden; }
-  /* A var(--surface) card needs an explicit border: --surface and
-     --sidebar-bg have a near-zero lightness gap in light mode, so the
-     card is otherwise invisible there. Kept at var(--border) with a light
-     shadow so it doesn't become the boldest thing in the tree. */
-  .project-row.active, .project-row.active:hover {
-    background: color-mix(in srgb, var(--accent) 22%, transparent);
-  }
+  .project-row.active, .project-row.active:hover { background: var(--sel-fill); box-shadow: none; }
 
   .project-btn {
     flex: 1; background: none; border: none; cursor: pointer;

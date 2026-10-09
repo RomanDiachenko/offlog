@@ -148,7 +148,8 @@
 </script>
 
 <div class="agenda">
-  <div class="agenda-header">
+  <div class="fluid-stage">
+  <div class="agenda-header fluid-panel glass">
     <button class="hamburger" on:click={() => dispatch('menu')} aria-label="Menu">
       <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
         <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
@@ -167,10 +168,11 @@
         </svg>
       </button>
       <div class="mode-toggle">
-        <button class="mode-btn" class:active={mode === 'list'} on:click={() => setMode('list')}>List</button>
-        <button class="mode-btn" class:active={mode === 'month'} on:click={() => setMode('month')}>Month</button>
+        <button class="mode-btn" class:active={mode === 'list'} class:is-selected={mode === 'list'} on:click={() => setMode('list')}>List</button>
+        <button class="mode-btn" class:active={mode === 'month'} class:is-selected={mode === 'month'} on:click={() => setMode('month')}>Month</button>
       </div>
     </div>
+  </div>
   </div>
 
   {#if mode === 'month'}
@@ -380,8 +382,6 @@
        comment: keeps the hamburger at the same position across pages with
        different numbers of subtitle lines. */
     display: flex; align-items: flex-start; gap: 10px;
-    padding: 20px 28px 14px;
-    border-bottom: 1px solid var(--border);
     flex-shrink: 0;
   }
   .title-block { min-width: 0; }
@@ -412,10 +412,9 @@
     color: var(--muted); cursor: pointer; transition: color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
   .palette-btn:hover { color: var(--text); background: var(--hover); }
-  .mode-toggle {
-    display: flex; border: 1px solid var(--border-strong); border-radius: 8px;
-    overflow: hidden; flex-shrink: 0;
-  }
+  /* Same quiet segment as the board header's Board/List: no frame, and no
+     overflow clip, which would cut off the selected button's glow. */
+  .mode-toggle { display: flex; gap: 2px; padding: 3px; flex-shrink: 0; }
   .mode-btn {
     /* Explicit height (not just padding) so this cluster matches the
        adjacent .palette-btn's 32px box — padding alone leaves the two
@@ -423,12 +422,11 @@
        button does the same. */
     display: flex; align-items: center; justify-content: center;
     height: 30px; box-sizing: border-box; padding: 0 14px;
-    border: none; background: var(--surface); color: var(--muted);
+    border: none; border-radius: 7px; background: transparent; color: var(--muted);
     font-size: .8rem; font-weight: 600; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
-  .mode-btn + .mode-btn { border-left: 1px solid var(--border-strong); }
-  .mode-btn:hover { background: var(--hover); }
-  .mode-btn.active { background: var(--accent); color: var(--on-accent); }
+  .mode-btn:hover { background: var(--hover); color: var(--text); }
+  .mode-btn.active, .mode-btn.active:hover { background: var(--sel-fill); color: var(--text); }
 
   /* Shared by any calendar-style nav bar (currently just Month's) --
      prev/next arrows plus a centered period label. */

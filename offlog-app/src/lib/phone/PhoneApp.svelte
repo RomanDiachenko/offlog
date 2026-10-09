@@ -254,7 +254,8 @@
   .pill { transition: background var(--dur-hover) var(--ease-hover), color var(--dur-medium) var(--ease-standard); position: relative; display: flex; align-items: center; justify-content: center; width: 60px; height: 32px; border-radius: 16px; }
   .pill :global(svg.i) { position: relative; width: 22px; height: 22px; }
   .tb.on .pill { color: var(--accent); }
-  .pillbg { position: absolute; inset: 0; border-radius: 16px; background: color-mix(in srgb, var(--accent) 22%, transparent); }
+  /* app.css .is-selected, drawn on the moving pill. */
+  .pillbg { position: absolute; inset: 0; border-radius: 16px; background: var(--sel-fill); box-shadow: var(--sel-ring); }
 
   /* A phone held sideways has little height: the tabs move to a rail on the
      left, the + and the snackbar drop to the bottom edge, and pages keep a

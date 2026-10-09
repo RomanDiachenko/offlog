@@ -152,7 +152,7 @@
   $: sub = active ? `${doneN} of ${locked.length} done` : 'Pick up to three for today';
 </script>
 
-<TopBar title="Focus" {sub}>
+<TopBar panel title="Focus" {sub}>
   {#if active}<button class="p-tbtn" on:click={reset}>Reset</button>{/if}
 </TopBar>
 

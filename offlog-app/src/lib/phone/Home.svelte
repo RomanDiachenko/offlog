@@ -48,11 +48,10 @@
 
   let unsub: (() => void) | undefined;
   onMount(() => { applyHeroShift(); load(); unsub = subscribe(load); });
-  // Its own claim, taken when Home appears: the screen it returns from may
-  // still be animating out with a claim of its own.
-  const HERO = { lightIcons: true };
+  // Its own claim of the plain strip, taken when Home appears: the screen it
+  // returns from may still be animating out with a claim of its own.
   let strip: ReturnType<typeof claimStatusBar> | undefined;
-  onMount(() => { strip = claimStatusBar(HERO); });
+  onMount(() => { strip = claimStatusBar(null); });
   onDestroy(() => { unsub?.(); if (raf) cancelAnimationFrame(raf); strip?.release(); });
   // Coming back to the app the next morning shows the new day.
   function onVisible() { if (!document.hidden) { todayStr = localDateStr(new Date()); applyHeroShift(); load(); } }
@@ -80,9 +79,9 @@
     || a.position - b.position);
   let todayStr = localDateStr(new Date());
 
-  // The top bar sits over the hero in the hero's colour, then turns into the
-  // regular page-coloured bar across the last 40px before the hero's lowest
-  // point passes under it. --t follows the finger; nothing here is timed.
+  // The top bar is see-through over the hero, then turns into the regular
+  // page-coloured bar across the last 40px before the hero's lowest point
+  // passes under it. --t follows the finger; nothing here is timed.
   let heroH = 0, t = 0, fill = 0, markY = 0, raf = 0;
   // Mounted after Home, so its entrance plays even on the app's first frame
   // (an intro does not run on the initial render).
@@ -117,23 +116,20 @@
       const end = heroH - 64, span = 40;
       const lin = Math.min(1, Math.max(0, (y - (end - span)) / span));
       t = lin * lin * (3 - 2 * lin); // smoothstep: the muddy middle of the mix passes quickly
-      // The bar stays see-through while only the band is under it (same
-      // colour), so the mark scrolls under it whole. It fills in just before
-      // the tiles, which overlap the band's edge, can reach it.
+      // The mark fades out as the hero leaves.
       fill = Math.min(1, Math.max(0, (y - (heroH - 150)) / 24));
       // Inside the band the mark scrolls with it; easing it back down a third
       // of the way makes it move slower than the page (depth).
       markY = prefersReducedMotion() ? 0 : y * .4;
       fadeHeroLines(y);
-      strip?.set(t < .5 ? HERO : null);
     });
   }
 </script>
 
 <div class="home">
-  <div class="appbar" style="--t:{t};--fill:{fill}">
+  <div class="appbar" style="--t:{t}">
     <span class="bt">
-      <b><span class="on-hero">Offlog</span><span class="on-page" aria-hidden="true">Offlog</span></b>
+      <b>Offlog</b>
       <small>{firstRun ? 'No tasks yet' : total ? `${left} left` : 'Nothing due today'}</small>
     </span>
     <button class="ibtn" on:click={() => actions.openSettings()} aria-label="Settings">{@html I.gear}</button>
@@ -148,6 +144,7 @@
           </svg>
         </div>
       {/if}
+      <div class="hpanel glass">
       {#if firstRun}
         <button class="hbody" on:click={() => actions.quickAdd()}>
           <span class="hi">{greeting()} <span>· {shortDate(todayStr)}</span></span>
@@ -164,6 +161,7 @@
         {/if}
       </button>
       {/if}
+      </div>
     </div>
 
     <div class="tiles" class:pending={!data}>
@@ -223,39 +221,39 @@
   .appbar {
     position: absolute; top: 0; left: 0; right: 0; z-index: 6; height: 64px;
     display: flex; align-items: center; gap: 12px; padding: 0 8px 0 20px;
-    background: color-mix(in srgb, var(--bg) calc(var(--t) * 100%), color-mix(in srgb, var(--hero) calc(var(--fill) * 100%), transparent));
-    color: color-mix(in srgb, var(--text) calc(var(--t) * 100%), var(--on-hero));
+    background: color-mix(in srgb, var(--bg) calc(var(--t) * 100%), transparent);
+    color: var(--text);
     box-shadow: 0 1px 0 color-mix(in srgb, var(--border) calc(var(--t) * 100%), transparent);
   }
   .bt { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
-  .bt b { display: grid; font-size: var(--p-fs-t); font-weight: 700; letter-spacing: -.01em; line-height: 1.1; }
-  /* Two copies on one spot: white fades out while dark fades in, so the
-     title never passes through a grey midpoint. */
-  .bt b span { grid-area: 1 / 1; }
-  .bt .on-hero { color: var(--on-hero); opacity: calc(1 - var(--t)); }
-  .bt .on-page { color: var(--text); opacity: var(--t); }
+  .bt b { font-size: var(--p-fs-t); font-weight: 700; letter-spacing: -.01em; line-height: 1.1; }
   .bt small { font-size: var(--p-fs-s); font-weight: 600; color: var(--faint); overflow: hidden; height: calc(var(--t) * 16px); opacity: clamp(0, calc(var(--t) * 2 - 1), 1); }
   .ibtn { position: relative; margin-left: auto; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: inherit; }
   .ibtn:active { background: color-mix(in srgb, currentColor 12%, transparent); }
 
-  /* Inside the band, so its diagonal clips it; starts below the top bar. */
-  /* Up under the (see-through) top bar and off to the right, clear of the
-     count and the progress dashes. */
+  /* Off to the right, partly under the glass panel, which frosts it. */
   .markwrap { position: absolute; right: -92px; top: -36px; width: 252px; height: 252px; pointer-events: none; }
-  /* Opacity is set inline: 10%, fading out as the band leaves. */
-  .mark { width: 100%; height: 100%; color: var(--on-hero); fill: currentColor; }
+  /* Opacity is set inline: 10%, fading out as the hero leaves. */
+  .mark { width: 100%; height: 100%; color: var(--accent); fill: currentColor; }
 
+  /* The desktop headers' look: a glass panel on a stage lit faintly by the
+     accent, never a coloured band. */
+  /* Clipped sideways only (the mark hangs off the right edge): a full clip
+     would cut the panel's shadow at the bottom. */
   .hero {
-    position: relative; overflow: hidden;
-    margin: 0 -16px; padding: 64px 20px 68px; background: var(--hero); color: var(--on-hero);
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 52px), 0 100%);
+    position: relative; overflow-x: clip;
+    margin: 0 -16px; padding: 64px 16px 14px;
+    background:
+      radial-gradient(80% 90% at 15% 10%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 70%),
+      radial-gradient(60% 80% at 95% 0%, color-mix(in srgb, var(--hero) 8%, transparent), transparent 70%);
   }
+  .hpanel { position: relative; border-radius: 22px; padding: 16px 18px 18px; }
   /* stretch is spelled out: older WebViews give buttons align-items:
      flex-start, which collapses the tile rows and the progress track. */
-  .hbody { position: relative; display: flex; flex-direction: column; align-items: stretch; width: 100%; color: inherit; margin-top: 10px; }
+  .hbody { position: relative; display: flex; flex-direction: column; align-items: stretch; width: 100%; color: inherit; }
   .hbody:active { opacity: .85; }
   .hi { font-size: var(--p-fs-m); margin: 0 0 10px; font-weight: 500; }
-  .hi span { opacity: .88; font-weight: 400; }
+  .hi span { color: var(--muted); font-weight: 400; }
   .pin { display: flex; color: var(--faint); }
   .pin :global(svg) { width: 14px; height: 14px; }
   .count { display: flex; align-items: baseline; gap: 10px; }
@@ -263,10 +261,10 @@
   .count span { font-size: var(--p-fs-xl); font-weight: 600; }
   .none { font-size: 28px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; margin-bottom: 4px; }
   .track { display: flex; gap: 5px; max-width: 190px; margin-top: 14px; }
-  .track i { flex: 1; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--on-hero) 24%, transparent); transition: background var(--dur-medium) var(--ease-standard); }
-  .track i.on { background: var(--on-hero); }
+  .track i { flex: 1; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--text) 14%, transparent); transition: background var(--dur-medium) var(--ease-standard); }
+  .track i.on { background: var(--accent); }
 
-  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: -46px 0 18px; position: relative; z-index: 2; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 4px 0 18px; position: relative; z-index: 2; }
   /* Before the first load the numbers would read as a real "nothing due /
      0 late" for a frame; the usual layout holds the space instead. */
   .hbody.pending > :not(.hi), .tiles.pending b { visibility: hidden; }
@@ -293,15 +291,14 @@
   .late-n { color: var(--overdue-ink); font-size: var(--p-fs-xs); font-weight: 600; }
   .stat { font-size: var(--p-fs-s); color: var(--faint); text-align: center; margin: 4px 0 0; }
 
-  /* Sideways: a shorter band, so the projects start on the first screen. */
+  /* Sideways: a shorter hero, so the projects start on the first screen. */
   @media (orientation: landscape) and (max-height: 500px) {
     .appbar { height: 56px; }
-    .hero { padding: 56px 20px 54px; }
-    .hbody { margin-top: 0; }
+    .hero { padding: 56px 16px 10px; }
+    .hpanel { padding: 12px 16px 14px; }
     .hi { margin-bottom: 6px; }
     .count b { font-size: 40px; }
     .track { margin-top: 10px; }
     .markwrap { width: 180px; height: 180px; right: -60px; top: -24px; }
-    .tiles { margin-top: -40px; }
   }
 </style>

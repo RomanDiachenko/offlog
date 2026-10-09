@@ -239,7 +239,8 @@
 </script>
 
 <div class="focus">
-  <div class="fc-header">
+  <div class="fluid-stage">
+  <div class="fc-header fluid-panel glass">
     <button class="hamburger" on:click={() => dispatch('menu')} aria-label="Menu">
       <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
         <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
@@ -266,6 +267,7 @@
         <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
       </svg>
     </button>
+  </div>
   </div>
 
   <div class="fc-body">
@@ -364,8 +366,6 @@
        comment: keeps the hamburger at the same position across pages with
        different numbers of subtitle lines. */
     display: flex; align-items: flex-start; gap: 10px;
-    padding: 20px 28px 14px;
-    border-bottom: 1px solid var(--border);
     flex-shrink: 0;
   }
   .title-block { min-width: 0; flex: 1; }

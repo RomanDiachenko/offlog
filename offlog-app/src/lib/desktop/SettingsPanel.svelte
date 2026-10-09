@@ -1719,17 +1719,16 @@
   .field-label input:focus, .detail-content :global(.field-label input:focus) { outline: none; border-color: var(--accent); }
   .field-label input:disabled, .detail-content :global(.field-label input:disabled) { opacity: .5; cursor: default; }
 
+  /* No overflow clip on the track: it would cut off the selected glow. */
   .detail-content :global(.theme-segment) {
-    display: flex; border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    overflow: hidden; flex-shrink: 0;
+    display: flex; background: var(--col-bg); border-radius: 10px; padding: 3px; gap: 2px; flex-shrink: 0;
   }
   .detail-content :global(.theme-seg-btn) {
-    padding: .35rem .75rem; border: none; background: var(--surface); color: var(--muted);
+    padding: .3rem .75rem; border: none; border-radius: 7px; background: transparent; color: var(--muted);
     font-size: .8rem; font-weight: 500; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
-  .detail-content :global(.theme-seg-btn + .theme-seg-btn) { border-left: 1px solid var(--border-strong); }
-  .detail-content :global(.theme-seg-btn:hover) { background: var(--hover); }
-  .detail-content :global(.theme-seg-btn.active) { background: var(--accent); color: var(--on-accent); }
+  .detail-content :global(.theme-seg-btn:hover) { background: var(--hover); color: var(--text); }
+  .detail-content :global(.theme-seg-btn.active) { background: var(--sel-fill); color: var(--text); font-weight: 600; }
 
   .detail-content :global(.toggle-btn) {
     width: 42px; height: 24px; border-radius: 12px; border: none; cursor: pointer;

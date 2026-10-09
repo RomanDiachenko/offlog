@@ -633,7 +633,7 @@
       {:else if Desktop && $activeProject}
       <div class="view-fade" in:fade={viewIn} out:fade={viewOut}>
         <div class="fluid-stage" style:--space={activeSpace ? soften(activeSpace.color) : 'var(--accent)'}>
-        <header class="board-header fluid glass">
+        <header class="board-header fluid fluid-panel glass">
           <button class="hamburger" on:click={() => sidebarOpen = true} aria-label="Menu">
             <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
               <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
@@ -894,18 +894,12 @@
     border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
   /* Fluid: a floating glass panel over a faint light of the space color. */
-  .fluid-stage {
-    flex-shrink: 0; padding: 14px 18px 6px;
-    background:
-      radial-gradient(60% 140% at 12% 0%, color-mix(in srgb, var(--space) 8%, transparent), transparent 70%),
-      radial-gradient(45% 120% at 88% 10%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 70%);
-  }
-  /* Surface, edge and blur come from app.css's .glass. */
-  .board-header.fluid { border-radius: 18px; padding: 12px 18px; }
+  /* Stage, panel, surface and blur come from app.css (.fluid-stage, .fluid-panel, .glass). */
+  .board-header.fluid { border-bottom: none; }
   .board-header.fluid .search-filter-group, .board-header.fluid .view-seg { background: transparent; border-color: transparent; }
   /* The selected view is app.css's .is-selected (pill + glow); this only
      lifts the old solid button look that .view-btn.active draws elsewhere. */
-  .board-header.fluid .view-btn.active { background: color-mix(in srgb, var(--text) 8%, transparent); box-shadow: none; }
+  .board-header.fluid .view-btn.active { background: var(--sel-fill); box-shadow: none; }
 
   /* Hamburger — hidden on desktop, shown on mobile */
   .hamburger {

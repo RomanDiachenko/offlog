@@ -204,13 +204,11 @@ describe('phone Project screen — board', () => {
     expect(container.querySelector('.dots')).toBeNull();
   });
 
-  it('the header sits on a band in the space colour; ink is whichever contrasts more (dark on this mid blue)', () => {
+  it('the header is a glass panel on a stage lit by the space colour', () => {
     const { container } = setup();
-    const band = container.querySelector('.band') as HTMLElement;
-    expect(band.style.getPropertyValue('--band')).toContain('#3b82f6');
-    // #3b82f6: white 3.7:1, page ink 4.1:1.
-    expect(band.classList.contains('light')).toBe(false);
-    expect(band.querySelector('h1')?.textContent).toBe('House');
+    const stage = container.querySelector('.stage') as HTMLElement;
+    expect(stage.style.getPropertyValue('--space')).toBe('#3b82f6');
+    expect(stage.querySelector('.glass h1')?.textContent).toBe('House');
   });
 
   it('the title may wrap to two lines', () => {

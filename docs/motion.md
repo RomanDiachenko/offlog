@@ -207,7 +207,7 @@ row per family; a new phone animation joins one of these or does not exist.
 | Progress segments (Home track, Focus bar) | `background` at `--dur-medium --ease-standard` | |
 | Board pills scrolling into view | `scrollIntoView({ behavior })`, `'auto'` under Reduce Motion | Smooth scrolling is motion the tokens cannot reach. |
 
-Home's logo mark sits inside the band (clipped by its diagonal) and enters
+Home's logo mark sits in the hero, partly under its glass panel, and enters
 once per app launch (a module flag in Home.svelte; later Home mounts show it
 at rest) with `markIn` — a 1.2s decelerating rise from below-left with a 16°
 turn and a 0.84→1 scale, the one deliberately long animation, decorative only.

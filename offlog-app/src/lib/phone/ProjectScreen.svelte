@@ -1,13 +1,11 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { activeProjectId, activeSpaceId, projects, spaces, projectTasks, showError } from '../store';
   import { getTaskIdsBlocked, getTaskIdsWithRelatedLinks, getTagColorOverrides, getCustomFieldDefs, subscribe } from '../db';
   import type { CustomFieldDef, TaskDoc } from '../types';
   import { PRIORITY_LABEL } from '../constants';
-  import { bandColours } from '../tagColors';
-  import { claimStatusBar, isEffectivelyDark } from '../theme';
+  import { claimStatusBar } from '../theme';
   import { actions, addContext, memo } from './nav';
-  import { onDestroy } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { I } from './icons';
   import { applyFilter, activeCount, EMPTY, type Filter, type Sort } from './project/filter';
   import { isList, setView } from './project/actions';
@@ -23,30 +21,9 @@
   $: project = $projects.find(p => p._id === id) ?? null;
   $: space = project ? $spaces.find(s => s._id === project!.space_id) : undefined;
 
-  // The strip under the clock takes the band's colour while the band is under it.
+  // Claims the plain strip under the clock over Home's hero colour.
   const strip = claimStatusBar(null);
   onDestroy(() => strip.release());
-  let bandEl: HTMLElement | undefined, scrolled = false;
-  function onScroll(e: Event) { scrolled = (e.currentTarget as HTMLElement).scrollTop > (bandEl?.offsetHeight ?? 0) - 28; }
-  // Follows the theme as it changes (a System theme flips with the OS):
-  // dark mode deepens every band, so its icons are always light.
-  let dark = isEffectivelyDark();
-  onMount(() => {
-    const mo = new MutationObserver(() => { dark = document.body.classList.contains('dark'); });
-    mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    return () => mo.disconnect();
-  });
-  // The band at the top is the space's colour, with Home's diagonal edge. Ink
-  // follows the colour: light ink on a dark colour, the page's own on a light
-  // one (dark mode deepens every band, so ink is always light there). A
-  // colour too mid-toned for either ink is darkened until its text reads.
-  const token = (n: string) => getComputedStyle(document.body).getPropertyValue(n).trim();
-  $: bc = space ? (dark
-    ? bandColours(space.color, { light: token('--on-hero'), mix: token('--bg') })
-    : bandColours(space.color, { light: token('--on-hero'), dark: token('--text') })) : null;
-  $: band = bc?.fill ?? null;
-  $: lightInk = !bc || bc.lightInk;
-  $: strip.set(band && !scrolled ? { fill: band, lightIcons: lightInk || dark } : null);
   // $projectTasks follows the store's active project, so the screen on top
   // claims it (including when a lower project screen is uncovered).
   $: if (project && $activeProjectId !== id) { activeSpaceId.set(project.space_id); activeProjectId.set(id); }
@@ -107,9 +84,8 @@
 </script>
 
 {#if project}
-  <div class="scr" on:scroll={onScroll}>
-    <div class="band" class:light={lightInk} style:--band={band ?? 'var(--hero)'} bind:this={bandEl}>
-    <TopBar wrap title={project.name} sub="{space?.name ?? ''} · {open} open{project.pinned ? ' · pinned' : ''}">
+  <div class="scr">
+    <TopBar panel space={space?.color ?? null} wrap title={project.name} sub="{space?.name ?? ''} · {open} open{project.pinned ? ' · pinned' : ''}">
       <span slot="sub-end" class="p-seg view" style="--n:2;--i:{list ? 1 : 0}" role="group" aria-label="View">
         <button class:on={!list} aria-pressed={!list} on:click={() => pickView(false)}>Board</button>
         <button class:on={list} aria-pressed={list} on:click={() => pickView(true)}>List</button>
@@ -117,7 +93,6 @@
       <button class="ib" class:on={nFilters > 0} on:click={() => openSheet('filter')} aria-label={nFilters ? `Filter, ${nFilters} on` : 'Filter'}>{@html I.filter}</button>
       <button class="ib" on:click={() => openSheet('more')} aria-label="More">{@html I.more}</button>
     </TopBar>
-    </div>
 
     {#if chips.length}
       <div class="fbar">
@@ -151,25 +126,11 @@
   /* Not positioned: the list's bulk bar anchors to the screen, not this scroller. */
   .scr { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0 16px 96px; scrollbar-width: none; }
   .scr::-webkit-scrollbar { display: none; }
-  /* The slanted edge needs clear air on both sides: under the Board | List
-     switch (where it rises) and before the status pills. */
-  .band { margin: 0 -16px 24px; padding: 0 16px 38px; background: var(--band); clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), 0 100%); }
-  .band :global(.sub) { margin-bottom: 0; font-weight: 500; }
-  :global(body.dark) .band { background: color-mix(in srgb, var(--band) 62%, var(--bg)); }
-  /* Ink on the band: TopBar and the view toggle read these tokens. */
-  /* The page greys are tuned for --bg and vanish on a saturated band, so the
-     secondary text there is the band's own ink at full strength. */
-  .band { --col-bg: color-mix(in srgb, var(--text) 9%, transparent); --muted: var(--text); --faint: var(--text); }
-  .band.light, :global(body.dark) .band {
-    --text: var(--on-hero); --muted: var(--on-hero); --faint: var(--on-hero);
-    --col-bg: color-mix(in srgb, var(--on-hero) 18%, transparent); color: var(--text);
-  }
   .fbar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: -6px 0 12px; }
   .fbar .p-pill { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent-ink); }
   /* Sits on the meta line without making it taller; each half still has a
      44px tap area. */
-  .p-seg.view { flex-shrink: 0; margin: -8px 0 -8px auto; padding: 2px; }
+  .p-seg.view { flex-shrink: 0; margin: -8px 0 -8px auto; padding: 2px; background: transparent; }
   .p-seg.view button { position: relative; flex: none; width: 56px; min-height: 30px; padding: 0; }
   .p-seg.view button::before { content: ''; position: absolute; left: 0; right: 0; top: -7px; bottom: -7px; }
-  @media (orientation: landscape) and (max-height: 500px) { .band { padding-bottom: 22px; margin-bottom: 14px; } }
 </style>

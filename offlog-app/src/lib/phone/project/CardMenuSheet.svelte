@@ -97,7 +97,7 @@
 <style>
   /* A horizontal scroller clips vertically too, so it pads by the pills'
      tap extension and gives the space back with negative margins. */
-  .sts { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: -4px -16px 8px; padding: 4px 16px 6px; }
+  .sts { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: -8px -16px 6px; padding: 8px 16px; }
   .sts::-webkit-scrollbar { display: none; }
   .sts button {
     position: relative; flex-shrink: 0; display: flex; align-items: center; gap: 5px; padding: 8px 13px; min-height: 36px; border-radius: 999px; border: 0; cursor: pointer;
@@ -105,7 +105,7 @@
     transition: background var(--dur-small) var(--ease-standard), color var(--dur-small) var(--ease-standard);
   }
   .sts button::before { content: ''; position: absolute; left: 0; right: 0; top: -4px; bottom: -4px; }
-  .sts button.on { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent-ink); box-shadow: none; }
+  .sts button.on { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
   .sts button:not(.on):active { background: var(--col-bg); }
   .sts button.last { background: color-mix(in srgb, var(--success) 14%, var(--surface)); }
   .sts button.last.on { background: color-mix(in srgb, var(--success) 30%, var(--surface)); color: var(--text); }

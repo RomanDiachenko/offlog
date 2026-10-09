@@ -113,7 +113,7 @@
   });
 </script>
 
-<TopBar title="Agenda" root />
+<TopBar panel title="Agenda" root />
 
 <div class="p-seg" role="group" aria-label="Agenda view" style="--n:2;--i:{mode === 'list' ? 0 : 1}">
   <button aria-pressed={mode === 'list'} class:on={mode === 'list'} on:click={() => setMode('list')}>List</button>

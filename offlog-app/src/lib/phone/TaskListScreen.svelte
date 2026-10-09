@@ -107,7 +107,7 @@
   $: sub = kind === 'today' ? `${shortDate(today)} · ${count} due` : kind === 'late' ? `${count} past their date` : `${count} pinned`;
 </script>
 
-<TopBar title={TITLE[kind]} {sub} {root}>
+<TopBar panel title={TITLE[kind]} {sub} {root}>
   {#if kind === 'late' && movable.length}<button class="p-tbtn" on:click={moveAllToToday} disabled={moving}>Move all to today</button>{/if}
 </TopBar>
 {#if kind === 'today' && lateCount}

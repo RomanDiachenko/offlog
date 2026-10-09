@@ -64,7 +64,7 @@
   const colorOf = (spaceId: string) => { const c = $spaces.find(s => s._id === spaceId)?.color; return c ? soften(c) : 'var(--faint)'; };
 </script>
 
-<TopBar title="Search" root />
+<TopBar panel title="Search" root />
 <label class="field">
   {@html I.search}
   <input bind:this={input} bind:value={q} placeholder="Tasks, notes, steps, tags…" autocomplete="off" enterkeyhint="search" aria-label="Search" />

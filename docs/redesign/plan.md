@@ -230,7 +230,7 @@ Phone only. After a research-backed UX pass (seven area reviews against Material
 |---|---|
 | Loop tick: the finish circle draws itself closed (one stroke of the logo loop), then fills | **Built** |
 | Priority shown by tinting the finish circle (Medium amber, High red; Low is plain) | **Built** (replaces the red side bar) |
-| Project header on a band in its space colour, Home's straight slant, generous gap below | **Built** |
+| Project header on a band in its space colour, Home's straight slant, generous gap below | Built, then replaced (10 Oct 2026) by the Fluid glass header shared with desktop |
 | Empty screens: logo line, short title, one sentence | **Built** |
 | Today's late row as a white card with a red count | **Built** |
 | Focus as three places filled by "+ Add" picks | **Built** |

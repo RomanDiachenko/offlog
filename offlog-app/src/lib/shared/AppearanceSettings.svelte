@@ -29,6 +29,7 @@
                       <button
                         class="theme-seg-btn"
                         class:active={themeMode === mode}
+                        class:is-selected={themeMode === mode}
                         role="radio"
                         aria-checked={themeMode === mode}
                         on:click={() => selectThemeMode(mode)}
@@ -46,6 +47,7 @@
                     <button
                       class="theme-seg-btn"
                       class:active={!weekStartsMonday}
+                      class:is-selected={!weekStartsMonday}
                       role="radio"
                       aria-checked={!weekStartsMonday}
                       on:click={() => setWeekStart(false)}
@@ -53,6 +55,7 @@
                     <button
                       class="theme-seg-btn"
                       class:active={weekStartsMonday}
+                      class:is-selected={weekStartsMonday}
                       role="radio"
                       aria-checked={weekStartsMonday}
                       on:click={() => setWeekStart(true)}
@@ -67,6 +70,7 @@
                     <button
                       class="theme-seg-btn"
                       class:active={!timeFormat24h}
+                      class:is-selected={!timeFormat24h}
                       role="radio"
                       aria-checked={!timeFormat24h}
                       on:click={() => setTimeFormat(false)}
@@ -74,6 +78,7 @@
                     <button
                       class="theme-seg-btn"
                       class:active={timeFormat24h}
+                      class:is-selected={timeFormat24h}
                       role="radio"
                       aria-checked={timeFormat24h}
                       on:click={() => setTimeFormat(true)}

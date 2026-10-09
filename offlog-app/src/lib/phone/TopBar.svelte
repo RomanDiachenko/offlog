@@ -8,8 +8,14 @@
   export let root = false;
   // Opt-in: a long title wraps to two lines instead of truncating at one.
   export let wrap = false;
+  // A main screen's header: a glass panel on a stage lit faintly by `space`
+  // (else the accent), the desktop views' look. Expects the screen's 16px gutter.
+  export let panel = false;
+  export let space: string | null = null;
 </script>
 
+<div class="wrap-stage" class:stage={panel} style:--space={panel ? space : null}>
+<div class:head={panel} class:glass={panel} class:fluid-panel={panel}>
 <header class="bar">
   {#if !root}<button class="ib back" on:click={back} aria-label="Back">{@html I.back}</button>{/if}
   <h1 class:root class:wrap>{title}</h1>
@@ -19,6 +25,8 @@
   </span>
 </header>
 {#if sub}<p class="sub"><slot name="sub-lead" />{sub}<slot name="sub-end" /></p>{/if}
+</div>
+</div>
 
 <style>
   .bar { display: flex; align-items: center; gap: 4px; min-height: 64px; }
@@ -39,4 +47,15 @@
   .ib::before, .acts :global(.ib::before) { content: ''; position: absolute; inset: -2px; border-radius: 50%; }
   .acts :global(.ib.on) { color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
   .sub { font-size: var(--p-fs-s); color: var(--faint); margin: -6px 2px 16px; display: flex; align-items: center; gap: 6px; }
+  /* Without a panel the wrappers drop out of layout. */
+  .wrap-stage:not(.stage), .wrap-stage:not(.stage) > div { display: contents; }
+  .stage {
+    margin: 0 -16px 14px; padding: 10px 12px 6px;
+    background:
+      radial-gradient(70% 120% at 10% 0%, color-mix(in srgb, var(--space, var(--accent)) 10%, transparent), transparent 70%),
+      radial-gradient(50% 100% at 90% 10%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 70%);
+  }
+  .head { padding: 2px 10px 2px 14px; }
+  .head .sub { margin-bottom: 12px; }
+  .head h1.root { margin-left: 0; }
 </style>

@@ -238,12 +238,8 @@ body.dark.high-contrast {
 }
 body.statusbar-hero { --statusbar-fill: var(--hero); }
 /* The strip's height is a fractional inset; a pixel of the same colour below
-   it covers the rounding seam against the band. */
+   it covers the rounding seam against the hero. */
 body.statusbar-hero .status-bar-fill { box-shadow: 0 1px 0 var(--statusbar-fill); }
-/* A project band (theme.ts claimStatusBar) in its own colour; dark mode
-   deepens it the same way the project screen's band is deepened. */
-body.statusbar-band { --statusbar-fill: var(--statusbar-band); }
-body.dark.statusbar-band { --statusbar-fill: color-mix(in srgb, var(--statusbar-band) 62%, var(--bg)); }
 
 /* ── State layers ───────────────────────────────────────────────────────────
    A hover or pressed tint is the element's OWN ink at low alpha, composited
@@ -288,6 +284,8 @@ body {
   --glass-hi:    color-mix(in srgb, var(--surface) 70%, transparent);
   --glass-blur:  blur(10px) saturate(115%);
   --glow:        color-mix(in srgb, var(--accent) 14%, transparent);
+  --sel-fill:    color-mix(in srgb, var(--text) 8%, transparent);
+  --sel-ring:    0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 8px var(--glow);
 }
 body.dark {
   --glass-fill: color-mix(in srgb, var(--surface) 50%, transparent);
@@ -315,17 +313,29 @@ body.dark {
   .glass { background: var(--surface); border: 2px solid var(--border-strong); }
 }
 
+/* A desktop view's top: a floating .glass panel (.fluid-panel) on a stage
+   lit faintly by --space (the space's colour, else the accent). */
+.fluid-stage {
+  flex-shrink: 0; padding: 14px 28px 6px;
+  background:
+    radial-gradient(60% 140% at 12% 0%, color-mix(in srgb, var(--space, var(--accent)) 8%, transparent), transparent 70%),
+    radial-gradient(45% 120% at 88% 10%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 70%);
+}
+.fluid-panel { border-radius: 18px; padding: 12px 18px; }
+
 /* Selected, Fluid style: a neutral pill and weight carry the state; the
    accent glow is drawn once on ::after and only its opacity ever animates.
-   Hover never glows, and keyboard focus keeps its own outline. */
+   Hover never glows, and keyboard focus keeps its own outline. A scoped
+   rule outranks this one, so a component restyling its own buttons
+   restates the pill with var(--sel-fill). */
 .is-selected {
   position: relative;
-  background: color-mix(in srgb, var(--text) 8%, transparent);
+  background: var(--sel-fill);
   color: var(--text); font-weight: 600;
 }
 .is-selected::after {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 8px var(--glow);
+  box-shadow: var(--sel-ring);
   transition: opacity var(--dur-small) var(--ease-standard);
 }
 

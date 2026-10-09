@@ -249,7 +249,7 @@
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .cal-chip:hover, .cal-time:hover { background: var(--hover); }
-  .cal-chip.on, .cal-time.on { background: var(--accent); color: var(--on-accent); }
+  .cal-chip.on, .cal-time.on { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
   .cal-header { display: flex; align-items: center; justify-content: space-between; padding: 2px 0 6px; }
   .cal-nav {
     background: none; border: none; cursor: pointer; color: var(--muted);

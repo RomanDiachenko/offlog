@@ -76,20 +76,18 @@ describe('theme — native status bar', () => {
     strip.remove();
   });
 
-  it('a band claim tints the strip on top of the hero, and releasing it hands the strip back', async () => {
+  it('a plain claim covers the hero tint, and releasing it hands the strip back', async () => {
     const { setStatusBarOnHero, claimStatusBar } = await import('../src/lib/theme');
     nativeOff();
     setStatusBarOnHero(true);
     expect(document.body.classList.contains('statusbar-hero')).toBe(true);
-    const c = claimStatusBar({ fill: 'blue', lightIcons: true });
-    expect(document.body.classList.contains('statusbar-band')).toBe(true);
-    expect(document.body.style.getPropertyValue('--statusbar-band')).toBe('blue');
-    // Home leaving after the project claimed must not undo the project's tint.
+    const c = claimStatusBar(null);
+    expect(document.body.classList.contains('statusbar-hero')).toBe(false);
+    // The hero leaving after the screen claimed must not change the strip.
     setStatusBarOnHero(false);
-    expect(document.body.classList.contains('statusbar-band')).toBe(true);
+    expect(document.body.classList.contains('statusbar-hero')).toBe(false);
     setStatusBarOnHero(true);
     c.release();
-    expect(document.body.classList.contains('statusbar-band')).toBe(false);
     expect(document.body.classList.contains('statusbar-hero')).toBe(true);
     setStatusBarOnHero(false);
     expect(document.body.classList.contains('statusbar-hero')).toBe(false);

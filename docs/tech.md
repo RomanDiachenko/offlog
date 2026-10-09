@@ -68,7 +68,7 @@ flowchart LR
   instead: four tabs (Home, Today, Agenda, Search), each a stack of screens.
   Held sideways (`(orientation: landscape) and (max-height: 500px)`) the tabs
   become a rail on the left, pages keep a 680px column, sheets a 600px
-  width, and Home, the project band, the lock screen and Welcome switch to
+  width, and Home, the lock screen and Welcome switch to
   shorter or two-column layouts so their main action is on the first screen.
   Each shell is its own chunk, imported dynamically only on its side:
   `phone/PhoneApp.svelte` on a phone, `desktopViews.ts` (Sidebar, the five
@@ -732,7 +732,7 @@ low has no hue of its own (`--border-strong`), so green keeps meaning done. Deri
 | `--bg` | `#F6F7F9` | `#181A20` | page background |
 | `--surface` | `#FFFFFF` | `#242934` | cards, panels |
 | `--sidebar-bg` | `#FBFBFC` | `#101218` | sidebar (follows theme) |
-| `--statusbar-fill` | `#f6f7f9` | `#181a20` | Android status-bar strip. `--bg` at rest; `body.statusbar-hero` makes it `--hero`, and `body.statusbar-band` makes it the claiming screen's `--statusbar-band` (deepened 62% into `--bg` in dark). Claims go through `theme.ts` (`setStatusBarOnHero`, `claimStatusBar`; latest live claim wins), applied after the native icon style lands |
+| `--statusbar-fill` | `#f6f7f9` | `#181a20` | Android status-bar strip. `--bg` at rest; `body.statusbar-hero` makes it `--hero` (the loading screen). Claims go through `theme.ts` (`setStatusBarOnHero`, `claimStatusBar`; latest live claim wins), applied after the native icon style lands |
 | `--col-bg` | `#ECEEF2` | `#1E222C` | Board status column fill |
 | `--border` | `#E2E4EA` | `#2F3542` | hairlines |
 | `--border-strong` | `#C7CBD6` | `#3F4657` | stronger dividers, scrollbar |
@@ -749,7 +749,7 @@ low has no hue of its own (`--border-strong`), so green keeps meaning done. Deri
 | `--accent-ink` | `#4C54BD` | `#9AA3EE` | accent text on an accent tint (selected pills, "Today"), 4.5:1 where plain accent falls short |
 | `--check-ring` | `--faint` 75% | `--faint` 75% | unticked check circle/box border, 3:1 against cards (declared on `body`) |
 | `--on-accent` | `#FFFFFF` | `#181A20` | ink on accent/overdue/due-soon/faint backgrounds |
-| `--hero-base` / `--hero` | `#575FCA` | `#373D81` | the phone Home's hero band; dark deepens it instead of using the lighter dark accent. `--hero` is the base shifted by `--hero-dh` / `--hero-dl` on `<html>` (season and evening, `phone/livingHero.ts`) where relative colour is supported |
+| `--hero-base` / `--hero` | `#575FCA` | `#373D81` | the phone's loading screen (continuing the splash) and a faint light behind Home's hero panel; dark deepens it instead of using the lighter dark accent. `--hero` is the base shifted by `--hero-dh` / `--hero-dl` on `<html>` (season and evening, `phone/livingHero.ts`) where relative colour is supported |
 | `--on-hero` | `#FFFFFF` | `#EFF0FC` | ink and the muted mark on `--hero` |
 | `--ink-fixed-dark` | `#181A20` | `#181A20` | ink on `--success`, which is bright in both themes |
 | `--danger` | `#BD4138` | `#E77F7C` | destructive actions |
@@ -765,8 +765,9 @@ low has no hue of its own (`--border-strong`), so green keeps meaning done. Deri
 | `--glass-edge` / `--glass-hi` | `--text` 9% / `--surface` 70% | `--text` 10% / `--text` 7% | the glass hairline and its inset top highlight |
 | `--glass-blur` | `blur(10px) saturate(115%)` | same | the one blur: low enough that what is underneath reads as matte shapes; never animated |
 | `--glow` | `--accent` 14% | `--accent` 18% | the halo of a selected item (`.is-selected`), kept faint on purpose |
+| `--sel-fill` / `--sel-ring` | `--text` 8% / 1px `--accent` 22% + 8px `--glow` | same | the selected pill and its glow, for components whose own scoped rules outrank `.is-selected` |
 
-**Fluid glass** (`.glass` and `.is-selected` in app.css) is for floating chrome only: bars, menus, dropdowns, the date picker, sheets, toasts, the board header. The red error toast stays solid. The phone tab bar floats over the screens (`--tab-h`, measured, is the room each scroller adds at its end); Board and List panes stop above it instead, and the landscape rail stays in the layout. Never cards, rows, columns or forms, and never glass inside glass. It is solid by default and turns see-through only where `backdrop-filter` works and neither `prefers-reduced-transparency` nor Settings → Reduce transparency (`body.reduce-transparency`; Android feeds the media query nothing) asks otherwise. A parent with `opacity`, `filter` or `clip-path` confines the blur. Selected means a neutral pill plus weight, with the faint accent glow on `::after`; hover never glows.
+**Fluid glass** (`.glass` and `.is-selected` in app.css) is for floating chrome only: bars, menus, dropdowns, the date picker, sheets, toasts, and the main views' headers. The red error toast stays solid. Every main view — desktop Board, Dashboard, Agenda, Focus; phone Home, Today, Agenda, Search, Focus and a project — opens with its header as a `.fluid-panel` of glass on a stage lit faintly by the space colour (else the accent): `.fluid-stage` in app.css on desktop, `TopBar panel` and Home's hero on the phone. No screen has a solid colour band. The phone tab bar floats over the screens (`--tab-h`, measured, is the room each scroller adds at its end); Board and List panes stop above it instead, and the landscape rail stays in the layout. Never cards, rows, columns or forms, and never glass inside glass. It is solid by default and turns see-through only where `backdrop-filter` works and neither `prefers-reduced-transparency` nor Settings → Reduce transparency (`body.reduce-transparency`; Android feeds the media query nothing) asks otherwise. A parent with `opacity`, `filter` or `clip-path` confines the blur. Selected means a neutral pill plus weight, with the faint accent glow on `::after`; hover never glows. That covers navigation (sidebar, tab bar), segmented controls (Board/List, List/Month, Settings choices, status pills) and choice chips; a selected calendar day keeps its solid accent dot.
 
 The saturated colours are deliberately muted (OKLCH chroma ×0.8, same hue and
 lightness, every text pair still AA). User-picked space and tag colours are
@@ -896,12 +897,8 @@ same UI.
   tint when the strip is 0px tall (WebViews that report no top inset), where
   light icons would vanish on the system's light bar. The strip sits below every modal
   scrim (z-index 299), so dialogs and sheets dim it with the page.
-  A project screen's header sits on a band in its space's colour (Home's
-  diagonal edge; dark mode mixes it 62% toward `--bg`). `bandColours()` in
-  tagColors.ts picks the ink that contrasts more and, when neither reaches
-  4.5:1, lowers the colour's OKLCH lightness just enough for the light ink,
-  so any space colour keeps its small text readable. The band tints the strip the same way through
-  `claimStatusBar()`. Claims stack: the newest live one wins and releasing it
+  Home and the project screen claim the plain strip through
+  `claimStatusBar(null)`. Claims stack: the newest live one wins and releasing it
   hands the strip back, so a screen whose outro ends after the next screen
   claimed cannot undo that claim.
 - **Phone shell and the keyboard**: the WebView resizes (`adjustResize`), so

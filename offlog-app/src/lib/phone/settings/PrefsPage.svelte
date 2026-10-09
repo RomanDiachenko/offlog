@@ -658,7 +658,7 @@
   .pset :global(.theme-segment) { display: flex; background: var(--col-bg); border-radius: 12px; padding: 3px; gap: 2px; flex-shrink: 0; }
   .pset :global(.theme-seg-btn) { min-height: 44px; padding: 0 14px; border-radius: 9px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
   /* Same selected look as the shell's .p-seg (Board | List, Organize tabs). */
-  .pset :global(.theme-seg-btn.active) { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent-ink); }
+  .pset :global(.theme-seg-btn.active) { background: var(--sel-fill); color: var(--text); }
 
   .pset :global(.toggle-btn) {
     width: 42px; height: 26px; border-radius: 13px; border: 0; padding: 0; cursor: pointer; flex-shrink: 0;

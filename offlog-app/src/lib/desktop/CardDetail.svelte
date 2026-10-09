@@ -970,7 +970,8 @@
      edge Priority's field ends at -- rather than left-packed with the
      dead space landing after "1 month" where the eye reads it as a
      mistake, not a stopping point. */
-  .due-shortcuts { display: flex; gap: 6px; flex-wrap: nowrap; margin-left: auto; overflow-x: auto; min-width: 0; }
+  /* The block padding gives the selected chip's glow room inside the scroll clip. */
+  .due-shortcuts { display: flex; gap: 6px; flex-wrap: nowrap; margin-left: auto; overflow-x: auto; min-width: 0; padding: 6px 4px; margin-block: -6px; }
   @media (max-width: 480px) {
     .due-date-row { flex-direction: column; align-items: stretch; }
     .due-date-row :global(.cal-field) { width: 100%; }
@@ -984,7 +985,7 @@
     white-space: nowrap; flex-shrink: 0;
   }
   .due-shortcut:hover { background: var(--hover); color: var(--text); }
-  .due-shortcut.active { background: var(--accent); color: var(--on-accent); }
+  .due-shortcut.active { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
 
   .extras-panel :global(.reminder-hint) {
     font-size: .72rem; color: var(--faint); line-height: 1.35;
@@ -1049,7 +1050,7 @@
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
   .extras-panel :global(.repeat-pill:hover) { border-color: var(--accent); color: var(--text); }
-  .extras-panel :global(.repeat-pill.active) { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .extras-panel :global(.repeat-pill.active) { background: var(--sel-fill); color: var(--text); border-color: transparent; box-shadow: var(--sel-ring); }
   /* Skip is an action, not a state toggle like Weekdays-only -- accent
      outline, not accent fill, so it doesn't read as "currently on" the
      way .active does. */
