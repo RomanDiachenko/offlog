@@ -91,10 +91,9 @@ export async function reloadTasks() {
 }
 
 export async function init() {
-  // seedIfEmpty() doesn't depend on the Mango indexes existing (it only
-  // writes docs), and reload()'s own call to getTasksForProject() already
-  // awaits initIndexes() internally — so the two can run concurrently here
-  // instead of the seed check waiting on index creation first.
+  // seedIfEmpty() doesn't depend on the Mango index existing (it only writes
+  // docs), and getLogsForTask() awaits initIndexes() itself — so the two can
+  // run concurrently here instead of the seed check waiting on index creation.
   await Promise.all([initIndexes(), seedIfEmpty()]);
   // Test builds only (`npm run build:demo`): fill a fresh install with the
   // demo workspace once. A normal build compiles this branch out.

@@ -6,7 +6,7 @@ import { getDefaultReminderTime } from '../../config';
 import type { SpaceDoc, ProjectDoc, TaskDoc, Column, CustomFieldDef, TaskAttachment, Source } from '../types';
 import { wordSet, wordSetSimilarity, localDateStr, advanceDate } from '../utils';
 import { ATTACHMENT_MAX_BYTES, isAttachmentExtensionAllowed, attachmentExtension, attachmentMimeType } from '../attachments';
-import { db, currentSource, DEFAULT_COLS, initIndexes, getAllTasksRaw, invalidateTaskCache, now, nanoid, logChange, queueTaskWrite, bulkWrite } from './core';
+import { db, currentSource, DEFAULT_COLS, getAllTasksRaw, invalidateTaskCache, now, nanoid, logChange, queueTaskWrite, bulkWrite } from './core';
 
 // A purge writes only {_id, _rev, _deleted}. A deleted revision that keeps
 // the doc's fields keeps its _attachments digests, so compaction never frees
@@ -517,22 +517,12 @@ function moveForColumnRemoval(id: string, fromId: string, to: Column, fromName: 
 
 // ── Tasks ─────────────────────────────────────────────────────────────────────
 
+// Filters the in-memory task list rather than querying a Mango index: an
+// index catches up on every edit at the next query (150-350ms at 20,000
+// tasks), while the cache catches up per change and is already warm.
 export async function getTasksForProject(projectId: string): Promise<TaskDoc[]> {
-  await initIndexes();
-  try {
-    // pouchdb-find silently defaults to 25 results — always pass an explicit
-    // limit, or any project past 25 tasks truncates without warning.
-    const r = await db.find({
-      selector: { type: 'task', project_id: projectId },
-      use_index: 'idx-type-project',
-      limit: 100000,
-    });
-    return (r.docs as TaskDoc[]).filter(d => !d.deleted && !d.archived);
-  } catch {
-    // Fallback if find()/the index is unavailable for any reason.
-    const all = await getAllTasksRaw();
-    return all.filter(d => d.project_id === projectId && !d.deleted && !d.archived);
-  }
+  const all = await getAllTasksRaw();
+  return all.filter(d => d.project_id === projectId && !d.deleted && !d.archived);
 }
 
 // Duplicate-title nudge, scoped to *within one project* on purpose (unlike

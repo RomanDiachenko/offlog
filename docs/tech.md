@@ -389,10 +389,17 @@ One PouchDB database, `offlog`. The `_id` prefix is the document type.
 
 ## Performance & Reliability
 
-**Indexing.** `getTasksForProject()` is the hottest read and uses a Mango
-index on `['type', 'project_id']` (~9x faster than a full scan at 5,000
-tasks). Note `db.find()` silently defaults to 25 results — always pass an
-explicit `limit`.
+**Indexing.** One Mango index, `['type', 'ref']`, serves `getLogsForTask()`
+(History): log docs aren't cached and a scan grows with the whole changelog
+(5 ms vs 5.4 s at 100,000 logs, real IndexedDB). `getTasksForProject()`, the
+hottest read, filters the task cache instead of querying an index. A Mango
+index catches up on every edit at its next query (150–350 ms after 200 edits
+at 20,000 tasks) and builds from scratch on first use (116 s at 20,000);
+the cache read costs under 1 ms. `_design/idx-type-project`, which older
+versions created, stays in place: design docs replicate, so deleting it
+would ping-pong with devices still on an older version, and an unqueried
+index is never rebuilt. Note `db.find()` silently defaults to 25 results —
+always pass an explicit `limit`.
 
 **Task cache.** Cross-cutting reads (search, dashboard, agenda, tag
 autocomplete) each need *every* task, which no index can narrow.

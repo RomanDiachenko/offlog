@@ -186,6 +186,13 @@ describe('read paths — cost does not grow with the data', () => {
     expect(large).toBe(small);
   });
 
+  it('opens a board from the task cache: no index query, same cost at 4x the tasks', async () => {
+    const small = await roundTrips(() => getTasksForProject(projectIds[0]), 100);
+    const large = await roundTrips(() => getTasksForProject(projectIds[0]), 400);
+    expect(findSpy).not.toHaveBeenCalled();
+    expect(large).toBe(small);
+  });
+
   it('does not query once per project', async () => {
     await seed(TASKS);
     await getDashboardData();

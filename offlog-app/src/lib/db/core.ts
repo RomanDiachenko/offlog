@@ -32,9 +32,13 @@ const SOURCE_ID: string = getDeviceId();
 export const db = new PouchDB('offlog', { auto_compaction: true });
 
 // ── Indexes ───────────────────────────────────────────────────────────────────
-// Mango indexes for pouchdb-find. getTasksForProject is the hottest path in
-// the app (runs on every project switch and every reload), so it queries
-// through this index instead of scanning every task doc and filtering in JS.
+// One Mango index, for getLogsForTask: log docs are never cached in memory
+// and outnumber tasks several times over, so History scans would grow with
+// the whole changelog. Task reads go through the task cache instead.
+// _design/idx-type-project, which older versions create, is left in place:
+// design docs replicate, so deleting it here would ping-pong with any device
+// still on an older version. Nothing queries it, and an unqueried Mango index
+// is never rebuilt.
 let _indexesReady: Promise<void> | null = null;
 export function initIndexes(): Promise<void> {
   if (_indexesReady) return _indexesReady;
@@ -44,7 +48,6 @@ export function initIndexes(): Promise<void> {
       // option missing from @types/pouchdb-find's CreateIndexOptions, hence
       // the cast. Don't drop it: without an explicit ddoc each index gets its
       // own generated design doc, slower to query and churnier on replication.
-      await db.createIndex({ index: { fields: ['type', 'project_id'] }, ddoc: 'idx-type-project' } as PouchDB.Find.CreateIndexOptions);
       await db.createIndex({ index: { fields: ['type', 'ref'] }, ddoc: 'idx-type-ref' } as PouchDB.Find.CreateIndexOptions);
     } catch {
       // Index creation failing (e.g. unsupported adapter) shouldn't break
