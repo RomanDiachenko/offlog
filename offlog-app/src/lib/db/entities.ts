@@ -1136,11 +1136,13 @@ export async function archiveTask(id: string): Promise<void> {
   await updateTask(id, { archived: true, archivedWithProject: false });
 }
 
-export async function archiveColumnTasks(projectId: string, columnId: string): Promise<void> {
+// Returns the ids it archived, so Undo restores exactly those.
+export async function archiveColumnTasks(projectId: string, columnId: string): Promise<string[]> {
   const tasks = await getTasksForProject(projectId);
   const toArchive = tasks.filter(t => t.column_id === columnId && !t.archived);
-  if (!toArchive.length) return;
+  if (!toArchive.length) return [];
   await Promise.all(toArchive.map(t => updateTask(t._id!, { archived: true })));
+  return toArchive.map(t => t._id!);
 }
 
 // Focus view is a daily commitment lock, not an auto-computed priority list:

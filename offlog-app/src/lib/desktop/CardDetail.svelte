@@ -3,7 +3,7 @@
   import { fade, fly, scale, slide } from 'svelte/transition';
   import { scrimIn, scrimOut, centredIn, centredOut, popIn, popOut, revealIn, revealOut, exitMs } from '../motion';
   import type { TaskDoc, ProjectDoc, CustomFieldDef, TaskAttachment } from '../types';
-  import { updateTask, deleteTask, getAllTags, archiveTask, duplicateTask, skipRecurrence, getCustomFieldDefs, findTasksByTitleInProject, findSimilarNotes, getRelatedTasks, searchTasksForLinking, linkRelatedTask, unlinkRelatedTask, getBlockingTasks, linkBlockedBy, unlinkBlockedBy, isBlockerResolved, addAttachment, deleteAttachment, getAttachmentBlob, ATTACHMENT_MAX_PER_TASK, getTagColorOverrides, ensureFreshTagColor } from '../db';
+  import { updateTask, deleteTask, getAllTags, archiveTask, unarchiveTask, duplicateTask, skipRecurrence, getCustomFieldDefs, findTasksByTitleInProject, findSimilarNotes, getRelatedTasks, searchTasksForLinking, linkRelatedTask, unlinkRelatedTask, getBlockingTasks, linkBlockedBy, unlinkBlockedBy, isBlockerResolved, addAttachment, deleteAttachment, getAttachmentBlob, ATTACHMENT_MAX_PER_TASK, getTagColorOverrides, ensureFreshTagColor } from '../db';
   import { ATTACHMENT_MAX_BYTES, isAttachmentExtensionAllowed, isAttachmentImage, attachmentExtension, attachmentMimeType } from '../attachments';
   import { resolveTagColor, soften } from '../tagColors';
   import { PRIORITY_COLOR } from '../constants';
@@ -25,6 +25,7 @@
   import NotesBlock from './carddetail/NotesBlock.svelte';
   import { isoToLocalInput, dateFromToday, dueDateToReminderInput, formatExtrasSummary, blobToBase64, base64ToBlob, downscaleImage, openAttachmentFile } from '../shared/taskHelpers';
   import { today } from '../today';
+  import { offerUndo, shortTitle } from '../undoToast';
   // Svelte does not run intro transitions on a component's own root elements
   // when the component itself is being created -- and every panel here is
   // created by a parent's {#if}. Without the gate below no modal animates,
@@ -650,13 +651,16 @@
   }
 
   async function archive() {
+    const id = task._id!, title = task.title;
     try {
-      await archiveTask(task._id!);
+      await archiveTask(id);
       await reloadTasks();
       requestClose();
     } catch {
       showError('Could not archive task. Please try again.');
+      return;
     }
+    offerUndo(`archive:${id}`, `Archived "${shortTitle(title)}"`, async () => { await unarchiveTask(id); await reloadTasks(); });
   }
 
   async function duplicate() {

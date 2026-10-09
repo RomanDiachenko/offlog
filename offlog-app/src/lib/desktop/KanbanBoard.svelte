@@ -5,8 +5,9 @@
   import { flip } from 'svelte/animate';
   import { cubicOut } from 'svelte/easing';
   import type { ProjectDoc, TaskDoc } from '../types';
-  import { createTask, updateTask, computeDropPosition, computeGroupDropPosition, addColumn, renameColumn, reorderColumns, removeColumn, archiveColumnTasks, archiveTask, duplicateTask, deleteTask, getTaskById, getTaskIdsWithRelatedLinks, getTaskIdsBlocked, getTagColorOverrides, ensureFreshTagColor, subscribe } from '../db';
+  import { createTask, updateTask, computeDropPosition, computeGroupDropPosition, addColumn, renameColumn, reorderColumns, removeColumn, archiveColumnTasks, archiveTask, unarchiveTask, duplicateTask, deleteTask, getTaskById, getTaskIdsWithRelatedLinks, getTaskIdsBlocked, getTagColorOverrides, ensureFreshTagColor, subscribe } from '../db';
   import { parseQuickAdd } from '../nlpParse';
+  import { offerUndo, shortTitle } from '../undoToast';
   import { reloadTasks, showError, projects } from '../store';
   import { confirmAction } from '../confirm';
   import CardDetail from './CardDetail.svelte';
@@ -189,12 +190,30 @@
     }
   }
   async function cardArchive(task: TaskDoc) {
+    const id = task._id!;
     try {
-      await archiveTask(task._id!);
+      await archiveTask(id);
       await reloadTasks();
     } catch {
       showError('Could not archive task. Please try again.');
+      return;
     }
+    offerUndo(`archive:${id}`, `Archived "${shortTitle(task.title)}"`, async () => { await unarchiveTask(id); await reloadTasks(); });
+  }
+
+  async function archiveAll(col: { id: string; name: string }) {
+    if (!(await confirmAction(`Archive all ${tasksByCol[col.id]?.length} tasks in "${col.name}"?`, { confirmLabel: 'Archive' }))) return;
+    let ids: string[];
+    try {
+      ids = await archiveColumnTasks(project._id, col.id);
+      await reloadTasks();
+    } catch {
+      showError('Could not archive tasks. Please try again.');
+      return;
+    }
+    if (!ids.length) return;
+    offerUndo(`archive-all:${ids.join(',')}`, `Archived ${ids.length} ${ids.length === 1 ? 'task' : 'tasks'} from "${col.name}"`,
+      async () => { await Promise.all(ids.map(id => unarchiveTask(id))); await reloadTasks(); });
   }
   async function cardDuplicate(task: TaskDoc) {
     try {
@@ -584,15 +603,7 @@
             </svg>
           </button>
           {#if (tasksByCol[col.id]?.length ?? 0) > 0}
-            <button class="col-archive" title="Archive all tasks in this status" aria-label="Archive all tasks in {col.name}" on:click={async () => {
-              if (!(await confirmAction(`Archive all ${tasksByCol[col.id]?.length} tasks in "${col.name}"?`, { confirmLabel: 'Archive' }))) return;
-              try {
-                await archiveColumnTasks(project._id, col.id);
-                await reloadTasks();
-              } catch {
-                showError('Could not archive tasks. Please try again.');
-              }
-            }}>
+            <button class="col-archive" title="Archive all tasks in this status" aria-label="Archive all tasks in {col.name}" on:click={() => archiveAll(col)}>
               <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="1" y="1" width="12" height="3" rx="1"/><path d="M2 4v8a1 1 0 001 1h8a1 1 0 001-1V4"/><line x1="5" y1="7" x2="9" y2="7"/>
               </svg>

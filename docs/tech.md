@@ -191,6 +191,7 @@ src/
     attachments.ts              Attachment size cap and extension→mime map
     focusLock.ts                The day's Focus commitment — per-day UI state, never synced
     today.ts                    `today` store: the local date, advancing at midnight
+    undoToast.ts                Desktop "… · Undo" toasts (delete, archive, Archive all); App.svelte renders them
     tagColors.ts                Tag colour: stored override, else deterministic hash
     spaceIcons.ts               The 25-icon space-icon set and resolver
     logFormat.ts                Turns log: docs into plain English for History (desktop and phone)

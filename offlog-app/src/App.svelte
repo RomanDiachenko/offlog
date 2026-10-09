@@ -9,6 +9,7 @@
   import type { CustomFieldDef } from './lib/types';
   import type { CustomFieldFilter } from './lib/utils';
   import { pendingOpenTaskId, notificationActionError } from './lib/notifications';
+  import { undoToasts, offerUndo, dismissUndo, runUndo, shortTitle } from './lib/undoToast';
   import { applyTheme, watchSystemTheme, getThemeMode, setThemeMode, isEffectivelyDark, getHighContrast, setHighContrast } from './lib/theme';
   import { getCommands } from './lib/desktop/commands';
   // Type-only: the desktop views load through desktopViews.ts (see below).
@@ -189,9 +190,6 @@
   // else". Escape and the scrim/hamburger still close it.
   function closeSidebar() { sidebarOpen = false; }
 
-  // Undo toast
-  let undoToasts: { id: string; title: string; timer: ReturnType<typeof setTimeout> }[] = [];
-
   // Looks up the id that was just deleted, never "the most recent deletion":
   // a synced or clock-skewed delete can outrank it, and Undo would then
   // restore a different task.
@@ -205,23 +203,7 @@
       });
       return;
     }
-    if (undoToasts.find(t => t.id === task._id)) return;
-    const timer = setTimeout(() => {
-      undoToasts = undoToasts.filter(t => t.id !== task._id);
-    }, 5000);
-    undoToasts = [{ id: task._id!, title: task.title, timer }, ...undoToasts].slice(0, 3);
-  }
-
-  async function handleUndo(id: string) {
-    const t = undoToasts.find(t => t.id === id);
-    if (t) clearTimeout(t.timer);
-    undoToasts = undoToasts.filter(t => t.id !== id);
-    try {
-      await undoDelete(id);
-      await reloadTasks();
-    } catch {
-      showError('Could not undo. Please try again.');
-    }
+    offerUndo(`delete:${id}`, `Deleted "${shortTitle(task.title)}"`, async () => { await undoDelete(id); await reloadTasks(); });
   }
 
   async function openFromNotification(taskId: string) {
@@ -846,13 +828,13 @@
   {/if}
 {/if}
 
-{#if undoToasts.length}
+{#if $undoToasts.length}
   <div class="toast-stack">
-    {#each undoToasts as t (t.id)}
+    {#each $undoToasts as t (t.key)}
       <div class="toast" in:toastIn out:toastOut>
-        <span class="toast-msg">Deleted "{t.title.length > 30 ? t.title.slice(0,30)+'…' : t.title}"</span>
-        <button class="toast-undo" on:click={() => handleUndo(t.id)}>Undo</button>
-        <button class="toast-close" on:click={() => { clearTimeout(t.timer); undoToasts = undoToasts.filter(u => u.id !== t.id); }} aria-label="Dismiss">✕</button>
+        <span class="toast-msg">{t.msg}</span>
+        <button class="toast-undo" on:click={() => runUndo(t.key)}>Undo</button>
+        <button class="toast-close" on:click={() => dismissUndo(t.key)} aria-label="Dismiss">✕</button>
       </div>
     {/each}
   </div>

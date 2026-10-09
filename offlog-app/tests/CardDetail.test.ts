@@ -9,6 +9,7 @@ import type { ProjectDoc, TaskDoc } from '../src/lib/types';
 const updateTask = vi.fn().mockResolvedValue(undefined);
 const deleteTask = vi.fn().mockResolvedValue(undefined);
 const archiveTask = vi.fn().mockResolvedValue(undefined);
+const unarchiveTask = vi.fn().mockResolvedValue(undefined);
 const duplicateTask = vi.fn().mockResolvedValue(undefined);
 const getRelatedTasks = vi.fn().mockResolvedValue([]);
 const searchTasksForLinking = vi.fn().mockResolvedValue([]);
@@ -23,6 +24,7 @@ vi.mock('../src/lib/db', () => ({
   updateTask: (...args: unknown[]) => updateTask(...args),
   deleteTask: (...args: unknown[]) => deleteTask(...args),
   archiveTask: (...args: unknown[]) => archiveTask(...args),
+  unarchiveTask: (...args: unknown[]) => unarchiveTask(...args),
   duplicateTask: (...args: unknown[]) => duplicateTask(...args),
   getAllTags: (...args: unknown[]) => getAllTags(...args),
   getTagColorOverrides: vi.fn().mockResolvedValue({}),
@@ -80,6 +82,8 @@ vi.mock('../src/lib/confirm', () => ({
 }));
 
 import CardDetail from '../src/lib/desktop/CardDetail.svelte';
+import { get } from 'svelte/store';
+import { undoToasts, runUndo } from '../src/lib/undoToast';
 
 function mkProject(): ProjectDoc {
   return {
@@ -452,5 +456,16 @@ describe('CardDetail discard & delete', () => {
 
     expect(showError).toHaveBeenCalledTimes(1);
     expect(reloadTasks).not.toHaveBeenCalled();
+  });
+});
+
+describe('CardDetail archive', () => {
+  it('offers Undo, which restores the task', async () => {
+    const { getByLabelText, getByText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    await fireEvent.click(getByLabelText('More actions'));
+    await fireEvent.click(getByText('Archive'));
+    await waitFor(() => expect(get(undoToasts).map(t => t.msg)).toContain('Archived "Original title"'));
+    await runUndo(get(undoToasts)[0].key);
+    expect(unarchiveTask).toHaveBeenCalledWith('task:1');
   });
 });

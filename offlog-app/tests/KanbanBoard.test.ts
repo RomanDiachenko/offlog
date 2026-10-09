@@ -9,6 +9,8 @@ import type { ProjectDoc, TaskDoc } from '../src/lib/types';
 // round-trip through the real database, which db.test.ts already covers.
 const updateTask = vi.fn().mockResolvedValue(undefined);
 const createTask = vi.fn().mockResolvedValue(undefined);
+const unarchiveTask = vi.fn().mockResolvedValue(undefined);
+const archiveColumnTasks = vi.fn().mockResolvedValue(['task:1']);
 // The real one returns a fractional position between two neighbours; a
 // board with no cards in the target column appends, so a constant is
 // enough to assert the value is threaded through unchanged.
@@ -23,8 +25,9 @@ vi.mock('../src/lib/db', () => ({
   renameColumn: vi.fn().mockResolvedValue(undefined),
   reorderColumns: vi.fn().mockResolvedValue(undefined),
   removeColumn: vi.fn().mockResolvedValue(undefined),
-  archiveColumnTasks: vi.fn().mockResolvedValue(undefined),
+  archiveColumnTasks: (...args: unknown[]) => archiveColumnTasks(...args),
   archiveTask: vi.fn().mockResolvedValue(undefined),
+  unarchiveTask: (...args: unknown[]) => unarchiveTask(...args),
   duplicateTask: vi.fn().mockResolvedValue(undefined),
   deleteTask: vi.fn().mockResolvedValue(undefined),
   getTaskById: vi.fn().mockResolvedValue(null),
@@ -67,6 +70,8 @@ vi.mock('../src/lib/confirm', () => ({
 }));
 
 import KanbanBoard from '../src/lib/desktop/KanbanBoard.svelte';
+import { get } from 'svelte/store';
+import { undoToasts, runUndo, dismissUndo } from '../src/lib/undoToast';
 
 const COLUMNS = [
   { id: 'col:idea', name: 'Idea' },
@@ -268,5 +273,28 @@ describe('KanbanBoard per-status Add task', () => {
   it('is not offered on the done status', () => {
     const r = render(KanbanBoard, { project: mkProject(), tasks: [] });
     expect(r.getAllByText('+ Add task')).toHaveLength(COLUMNS.length - 1);
+  });
+});
+
+describe('KanbanBoard archive Undo', () => {
+  afterEach(() => { for (const t of get(undoToasts)) dismissUndo(t.key); });
+
+  it('archiving a card offers Undo, which restores it', async () => {
+    const { container } = render(KanbanBoard, { project: mkProject(), tasks: [mkTask()] });
+    const menu = await openCardMenu(container);
+    const archive = [...menu.querySelectorAll('.card-menu-item')].find(b => b.textContent!.trim() === 'Archive') as HTMLButtonElement;
+    await fireEvent.click(archive);
+    await vi.waitFor(() => expect(get(undoToasts).map(t => t.msg)).toEqual(['Archived "Movable task"']));
+    await runUndo(get(undoToasts)[0].key);
+    expect(unarchiveTask).toHaveBeenCalledWith('task:1');
+  });
+
+  it('Archive all offers Undo for exactly the tasks it archived', async () => {
+    archiveColumnTasks.mockResolvedValueOnce(['task:1', 'task:9']);
+    const { getByLabelText } = render(KanbanBoard, { project: mkProject(), tasks: [mkTask()] });
+    await fireEvent.click(getByLabelText('Archive all tasks in Idea'));
+    await vi.waitFor(() => expect(get(undoToasts).map(t => t.msg)).toEqual(['Archived 2 tasks from "Idea"']));
+    await runUndo(get(undoToasts)[0].key);
+    expect(unarchiveTask.mock.calls.map(c => c[0]).sort()).toEqual(['task:1', 'task:9']);
   });
 });
