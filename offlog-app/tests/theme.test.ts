@@ -113,6 +113,15 @@ describe('theme — native status bar', () => {
     expect(document.body.classList.contains('reduce-motion')).toBe(false);
   });
 
+  it('the in-app Reduce transparency switch puts body.reduce-transparency on, which makes glass solid', async () => {
+    const { setReduceTransparency, getReduceTransparency } = await import('../src/lib/theme');
+    setReduceTransparency(true);
+    expect(getReduceTransparency()).toBe(true);
+    expect(document.body.classList.contains('reduce-transparency')).toBe(true);
+    setReduceTransparency(false);
+    expect(document.body.classList.contains('reduce-transparency')).toBe(false);
+  });
+
   it('keeps the browser theme-color in step with the strip', async () => {
     const meta = document.createElement('meta');
     meta.setAttribute('name', 'theme-color');

@@ -8,6 +8,7 @@ const MODE_KEY = 'theme_mode';
 const LEGACY_DARK_KEY = 'dark'; // legacy key: presence alone meant "dark"
 const CONTRAST_KEY = 'high_contrast';
 const REDUCE_MOTION_KEY = 'reduce_motion';
+const REDUCE_TRANSPARENCY_KEY = 'reduce_transparency';
 
 function prefersDark(): boolean {
   return typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-color-scheme: dark)').matches;
@@ -54,6 +55,18 @@ export function setReduceMotion(on: boolean): void {
   applyTheme();
 }
 
+// Makes every .glass surface solid (app.css). Needed in-app because Android
+// passes no system setting to prefers-reduced-transparency.
+export function getReduceTransparency(): boolean {
+  return !!localStorage.getItem(REDUCE_TRANSPARENCY_KEY);
+}
+
+export function setReduceTransparency(on: boolean): void {
+  if (on) localStorage.setItem(REDUCE_TRANSPARENCY_KEY, '1');
+  else localStorage.removeItem(REDUCE_TRANSPARENCY_KEY);
+  applyTheme();
+}
+
 export function prefersReducedMotion(): boolean {
   return getReduceMotion() || (typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 }
@@ -69,6 +82,7 @@ export function applyTheme(): void {
   // Zeroes every --dur-* token (app.css), so CSS transitions honour the
   // in-app switch too, not only motion.ts's Svelte transitions.
   document.body.classList.toggle('reduce-motion', getReduceMotion());
+  document.body.classList.toggle('reduce-transparency', getReduceTransparency());
   syncTauriWindowTheme(dark);
   syncAndroidStatusBar(dark || onHero);
   syncBrowserThemeColor(dark);

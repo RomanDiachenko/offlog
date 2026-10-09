@@ -278,6 +278,55 @@ body {
   /* An unticked check circle/box: 3:1 against the card is the floor for a
      control boundary (WCAG 1.4.11); --faint at 60% fell short in both themes. */
   --check-ring: color-mix(in srgb, var(--faint) 75%, transparent);
+
+  /* Fluid glass: floating chrome only (bars, menus, sheets, toasts), never
+     content. Text sits on it, so the fill stays mostly opaque. Light values
+     here; body.dark below overrides. */
+  --glass-fill:  color-mix(in srgb, var(--surface) 68%, transparent);
+  --glass-solid: color-mix(in srgb, var(--surface) 96%, var(--bg));
+  --glass-edge:  color-mix(in srgb, var(--text) 9%, transparent);
+  --glass-hi:    color-mix(in srgb, var(--surface) 70%, transparent);
+  --glass-blur:  blur(16px) saturate(150%);
+  --glow:        color-mix(in srgb, var(--accent) 14%, transparent);
+}
+body.dark {
+  --glass-fill: color-mix(in srgb, var(--surface) 62%, transparent);
+  --glass-edge: color-mix(in srgb, var(--text) 10%, transparent);
+  --glass-hi:   color-mix(in srgb, var(--text) 7%, transparent);
+  --glow:       color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+/* Solid by default; translucent only where blur exists and nobody asked for
+   less transparency (the OS query, or the in-app switch -- Android feeds the
+   query nothing). Blur reads the pixels behind this element only: never put
+   it under a parent with opacity, filter or clip-path, and never animate the
+   blur or nest glass in glass. */
+.glass {
+  background: var(--glass-solid);
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 8px 28px rgba(0,0,0,.14);
+}
+@supports (backdrop-filter: blur(1px)) {
+  @media (prefers-reduced-transparency: no-preference) {
+    body:not(.reduce-transparency) .glass { background: var(--glass-fill); backdrop-filter: var(--glass-blur); }
+  }
+}
+@media (prefers-contrast: more) {
+  .glass { background: var(--surface); border: 2px solid var(--border-strong); }
+}
+
+/* Selected, Fluid style: a neutral pill and weight carry the state; the
+   accent glow is drawn once on ::after and only its opacity ever animates.
+   Hover never glows, and keyboard focus keeps its own outline. */
+.is-selected {
+  position: relative;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: var(--text); font-weight: 600;
+}
+.is-selected::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 8px var(--glow);
+  transition: opacity var(--dur-small) var(--ease-standard);
 }
 
 html, body { margin: 0; padding: 0; height: 100%; color: var(--text); background: var(--bg); }

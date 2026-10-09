@@ -633,7 +633,7 @@
       {:else if Desktop && $activeProject}
       <div class="view-fade" in:fade={viewIn} out:fade={viewOut}>
         <div class="fluid-stage" style:--space={activeSpace ? soften(activeSpace.color) : 'var(--accent)'}>
-        <header class="board-header fluid">
+        <header class="board-header fluid glass">
           <button class="hamburger" on:click={() => sidebarOpen = true} aria-label="Menu">
             <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
               <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
@@ -688,7 +688,7 @@
                    removes it from the accessible-name computation too, so
                    without it the button has no accessible name at all
                    once collapsed. -->
-              <button class="view-btn" class:active={currentView === v.key} on:click={() => setView(v.key)} aria-label={v.label} title={v.label}>
+              <button class="view-btn" class:active={currentView === v.key} class:is-selected={currentView === v.key} on:click={() => setView(v.key)} aria-label={v.label} title={v.label}>
                 {@html ICONS[v.key]}
                 <span class="view-label" aria-hidden="true">{v.label}</span>
               </button>
@@ -900,19 +900,12 @@
       radial-gradient(60% 140% at 12% 0%, color-mix(in srgb, var(--space) 8%, transparent), transparent 70%),
       radial-gradient(45% 120% at 88% 10%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 70%);
   }
-  .board-header.fluid {
-    border: 1px solid color-mix(in srgb, var(--on-hero) 10%, transparent); border-radius: 18px;
-    background: color-mix(in srgb, var(--surface) 55%, transparent);
-    backdrop-filter: blur(22px) saturate(160%);
-    box-shadow: 0 8px 30px rgba(0,0,0,.18), inset 0 1px 0 color-mix(in srgb, var(--on-hero) 8%, transparent);
-    padding: 12px 18px;
-  }
+  /* Surface, edge and blur come from app.css's .glass. */
+  .board-header.fluid { border-radius: 18px; padding: 12px 18px; }
   .board-header.fluid .search-filter-group, .board-header.fluid .view-seg { background: transparent; border-color: transparent; }
-  /* Emphasis by light, not a filled button. */
-  .board-header.fluid .view-btn.active {
-    background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--text);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 18px color-mix(in srgb, var(--accent) 40%, transparent);
-  }
+  /* The selected view is app.css's .is-selected (pill + glow); this only
+     lifts the old solid button look that .view-btn.active draws elsewhere. */
+  .board-header.fluid .view-btn.active { background: color-mix(in srgb, var(--text) 8%, transparent); box-shadow: none; }
 
   /* Hamburger — hidden on desktop, shown on mobile */
   .hamburger {

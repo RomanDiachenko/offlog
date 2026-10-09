@@ -20,7 +20,7 @@
   import { getSyncUrl, getPairedHostUuid, getPairedHostName, getDefaultReminderTime, setDefaultReminderTime, getWeekStartsMonday, setWeekStartsMonday, getTimeFormat24h, setTimeFormat24h, getQuietHours, setQuietHours, getNotificationsEnabled, setNotificationsEnabled, isAppLockEnabled, setAppLockPin, clearAppLockPin, getAppLockTimeoutMinutes, setAppLockTimeoutMinutes, getAppLockHint, isNativePlatform, isAppLockBiometricEnabled, setAppLockBiometricEnabled, syncPrivacyScreen, isHapticsEnabled, setHapticsEnabled, isPrivacyScreenEnabled, setPrivacyScreenEnabled } from '../../../config';
   import { fmtLastSynced, localDateStr } from '../../utils';
   import { checkExactAlarmPermission, rescheduleAll } from '../../notifications';
-  import { getThemeMode, setThemeMode, getHighContrast, setHighContrast, getReduceMotion, setReduceMotion, type ThemeMode } from '../../theme';
+  import { getThemeMode, setThemeMode, getHighContrast, setHighContrast, getReduceMotion, setReduceMotion, getReduceTransparency, setReduceTransparency, type ThemeMode } from '../../theme';
   import { trapFocus } from '../../focusTrap';
   import { fade } from 'svelte/transition';
   import { scrimIn, scrimOut } from '../../motion';
@@ -50,6 +50,8 @@
   function toggleHighContrast() { highContrast = !highContrast; setHighContrast(highContrast); }
   let reduceMotion = getReduceMotion();
   function toggleReduceMotion() { reduceMotion = !reduceMotion; setReduceMotion(reduceMotion); }
+  let reduceTransparency = getReduceTransparency();
+  function toggleReduceTransparency() { reduceTransparency = !reduceTransparency; setReduceTransparency(reduceTransparency); }
   let hapticsEnabled = isHapticsEnabled();
   function toggleHaptics() { hapticsEnabled = !hapticsEnabled; setHapticsEnabled(hapticsEnabled); }
   let weekStartsMonday = getWeekStartsMonday();
@@ -437,7 +439,7 @@
     <AppearanceSettings phone
       {themeMode} {selectThemeMode} {weekStartsMonday} {setWeekStart}
       {timeFormat24h} {setTimeFormat} {highContrast} {toggleHighContrast}
-      {reduceMotion} {toggleReduceMotion} {hapticsEnabled} {toggleHaptics}
+      {reduceMotion} {toggleReduceMotion} {reduceTransparency} {toggleReduceTransparency} {hapticsEnabled} {toggleHaptics}
     />
   {:else if page === 'notifications'}
     <RemindersPage

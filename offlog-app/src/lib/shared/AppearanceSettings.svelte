@@ -12,6 +12,8 @@
   export let toggleHighContrast: () => void;
   export let reduceMotion: boolean;
   export let toggleReduceMotion: () => void;
+  export let reduceTransparency: boolean;
+  export let toggleReduceTransparency: () => void;
   export let hapticsEnabled: boolean;
   export let toggleHaptics: () => void;
   // The phone page drops the hints its labels already make obvious.
@@ -98,6 +100,14 @@
                   </button>
                 </div>
                 {#if !phone}<p class="setting-hint">Turns off panel/dialog slide and fade animations throughout the app.</p>{/if}
+
+                <div class="setting-row">
+                  <div class="setting-label">Reduce transparency</div>
+                  <button class="toggle-btn" class:on={reduceTransparency} on:click={toggleReduceTransparency} aria-label="Toggle reduce transparency" role="switch" aria-checked={reduceTransparency}>
+                    <span class="toggle-knob"></span>
+                  </button>
+                </div>
+                {#if !phone}<p class="setting-hint">Makes see-through bars and panels solid.</p>{/if}
 
                 {#if isNativePlatform()}
                   <div class="setting-row">

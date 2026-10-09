@@ -95,10 +95,12 @@ vi.mock('../src/lib/autoBackup', () => ({
   getAutoBackupUsage: (...a: unknown[]) => getAutoBackupUsage(...a),
 }));
 
+const setReduceTransparency = vi.hoisted(() => vi.fn());
 vi.mock('../src/lib/theme', () => ({
   getThemeMode: () => 'system', setThemeMode: vi.fn(),
   getHighContrast: () => false, setHighContrast: vi.fn(),
   getReduceMotion: () => false, setReduceMotion: vi.fn(),
+  getReduceTransparency: () => false, setReduceTransparency: (...a: unknown[]) => setReduceTransparency(...a),
   // motion.ts reads this to decide whether to zero every duration, and the
   // panel now animates on mount -- so it is called as soon as this component
   // renders, not only when a transition happens to run.
@@ -463,5 +465,17 @@ describe('SettingsPanel Windows shortcut switch', () => {
     await fireEvent.click(toggle);
     await vi.waitFor(() => expect(showError).toHaveBeenCalledWith('Could not turn the shortcut off. Please try again.'));
     expect(toggle.getAttribute('aria-checked')).toBe('true');
+  });
+});
+
+describe('SettingsPanel reduce transparency', () => {
+  it('switches glass off and back on', async () => {
+    const { getByLabelText } = render(SettingsPanel, { initialCategory: 'appearance' });
+    const sw = getByLabelText('Toggle reduce transparency');
+    await fireEvent.click(sw);
+    expect(setReduceTransparency).toHaveBeenLastCalledWith(true);
+    expect(sw.getAttribute('aria-checked')).toBe('true');
+    await fireEvent.click(sw);
+    expect(setReduceTransparency).toHaveBeenLastCalledWith(false);
   });
 });

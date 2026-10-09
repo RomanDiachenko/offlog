@@ -761,6 +761,12 @@ low has no hue of its own (`--border-strong`), so green keeps meaning done. Deri
 | `--overdue-bg` / `--overdue-ink` | `#F8E4E4` / `#AB3730` | `#351A21` / `#EA7F8C` | late chips and counts |
 | `--toggle-knob` | `#FFFFFF` | `#FFFFFF` | fixed — track carries the theme swap |
 | `--inverse-surface` / `--on-inverse` / `--inverse-accent` | `#2B313D` / `#F3F4F6` / `#A9B0F0` | `#353B49` / `#F3F4F6` / `#A9B0F0` | phone snackbar and bulk-select bar; a raised grey in dark mode, never a near-white slab |
+| `--glass-fill` / `--glass-solid` | `--surface` 68% / `--surface` 96% + `--bg` | `--surface` 62% / same | Fluid glass: the see-through fill, and the solid one used when blur is missing or transparency is reduced |
+| `--glass-edge` / `--glass-hi` | `--text` 9% / `--surface` 70% | `--text` 10% / `--text` 7% | the glass hairline and its inset top highlight |
+| `--glass-blur` | `blur(16px) saturate(150%)` | same | the one blur; never animated, never above ~16–20px |
+| `--glow` | `--accent` 14% | `--accent` 18% | the halo of a selected item (`.is-selected`), kept faint on purpose |
+
+**Fluid glass** (`.glass` and `.is-selected` in app.css) is for floating chrome only: bars, menus, sheets, toasts, the board header. Never cards, rows, columns or forms, and never glass inside glass. It is solid by default and turns see-through only where `backdrop-filter` works and neither `prefers-reduced-transparency` nor Settings → Reduce transparency (`body.reduce-transparency`; Android feeds the media query nothing) asks otherwise. A parent with `opacity`, `filter` or `clip-path` confines the blur. Selected means a neutral pill plus weight, with the faint accent glow on `::after`; hover never glows.
 
 The saturated colours are deliberately muted (OKLCH chroma ×0.8, same hue and
 lightness, every text pair still AA). User-picked space and tag colours are

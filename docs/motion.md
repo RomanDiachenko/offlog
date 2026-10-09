@@ -78,6 +78,12 @@ fits, the element probably belongs to a family that already exists.
 
 ## What each thing gets
 
+### Selection glow
+`.is-selected` (app.css) draws its accent glow once on `::after`; only that
+layer's opacity may animate (`--dur-small`), never `box-shadow` itself, which
+repaints every frame. No idle pulsing or breathing. Under Reduce Motion the glow
+simply appears.
+
 ### Dialogs and modals
 `dialogIn`/`dialogOut` when the dialog centres itself with
 `top:50%; left:50%; transform: translate(-50%,-50%)` — the offset is baked into

@@ -22,6 +22,7 @@ const setSyncEnabled = vi.fn();
 const clearPairedHost = vi.fn();
 const setThemeMode = vi.fn();
 const setHighContrast = vi.fn();
+const setReduceTransparency = vi.fn();
 const setAppLockPin = vi.fn();
 const syncNow = vi.fn();
 vi.mock('@capacitor/share', () => ({ Share: { share: (...a: unknown[]) => m.share(...a) } }));
@@ -97,6 +98,7 @@ vi.mock('../src/lib/theme', () => ({
   getThemeMode: () => 'system', setThemeMode: (...a: unknown[]) => setThemeMode(...a),
   getHighContrast: () => false, setHighContrast: (...a: unknown[]) => setHighContrast(...a),
   getReduceMotion: () => false, setReduceMotion: vi.fn(),
+  getReduceTransparency: () => false, setReduceTransparency: (...a: unknown[]) => setReduceTransparency(...a),
   prefersReducedMotion: () => true,
 }));
 const confirmAction = vi.fn();
@@ -151,6 +153,12 @@ describe('phone settings pages', () => {
     const { getByRole, getByText } = render(SettingsPage, { page: 'security' });
     expect(getByRole('heading', { name: 'App lock' })).toBeTruthy();
     expect(getByText('Set a PIN')).toBeTruthy();
+  });
+
+  it('Reduce transparency is a switch on Appearance', async () => {
+    const { getByLabelText } = render(SettingsPage, { page: 'appearance' });
+    await fireEvent.click(getByLabelText('Toggle reduce transparency'));
+    expect(setReduceTransparency).toHaveBeenLastCalledWith(true);
   });
 
   it('a toggle row switches from anywhere on the row, once per tap', async () => {

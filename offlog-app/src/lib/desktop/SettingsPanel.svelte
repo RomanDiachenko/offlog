@@ -28,7 +28,7 @@
   import { showError, modalOpen } from '../store';
   import { closeOnBack, isTopLayer } from '../modalStack';
   import { trapFocus } from '../focusTrap';
-  import { getThemeMode, setThemeMode, getHighContrast, setHighContrast, getReduceMotion, setReduceMotion, type ThemeMode } from '../theme';
+  import { getThemeMode, setThemeMode, getHighContrast, setHighContrast, getReduceMotion, setReduceMotion, getReduceTransparency, setReduceTransparency, type ThemeMode } from '../theme';
   import { fade, scale } from 'svelte/transition';
   import { scrimIn, scrimOut, dialogIn, dialogOut, centredIn, centredOut, viewIn, exitMs } from '../motion';
   import { fmtConflictValue, conflictFieldLabel } from '../shared/conflictFormat';
@@ -186,6 +186,11 @@
   // theme.ts's prefersReducedMotion(), read live by motion.ts) — for
   // anyone who finds motion distracting but hasn't touched that system
   // setting. Takes effect on the next transition trigger, no reload needed.
+  let reduceTransparency = getReduceTransparency();
+  function toggleReduceTransparency() {
+    reduceTransparency = !reduceTransparency;
+    setReduceTransparency(reduceTransparency);
+  }
   let reduceMotion = getReduceMotion();
   function toggleReduceMotion() {
     reduceMotion = !reduceMotion;
@@ -1155,7 +1160,7 @@
               <AppearanceSettings
                 {themeMode} {selectThemeMode} {weekStartsMonday} {setWeekStart}
                 {timeFormat24h} {setTimeFormat} {highContrast} {toggleHighContrast}
-                {reduceMotion} {toggleReduceMotion} {hapticsEnabled} {toggleHaptics}
+                {reduceMotion} {toggleReduceMotion} {reduceTransparency} {toggleReduceTransparency} {hapticsEnabled} {toggleHaptics}
               />
 
             {:else if activeCategory === 'notifications'}
