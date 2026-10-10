@@ -550,6 +550,18 @@ describe('phone Project screen — project menu', () => {
     expect(updateProject).toHaveBeenLastCalledWith('project:p', { name: 'House' });
   });
 
+  it('Rename, Move and Archived tasks each step back to the menu without writing', async () => {
+    findProjectsByName.mockResolvedValue([]);
+    const r = setup();
+    await openMore(r);
+    for (const [item, back] of [['Rename', 'Cancel'], ['Move to another space', 'Cancel'], ['Archived tasks', 'Back']]) {
+      await fireEvent.click(r.getByText(item));
+      await fireEvent.click(await r.findByText(back));
+      await waitFor(() => r.getByText('Edit statuses'));
+    }
+    expect(updateProject).not.toHaveBeenCalled();
+  });
+
   it('a failed rename surfaces an error and keeps the old name', async () => {
     findProjectsByName.mockResolvedValue([]);
     updateProject.mockRejectedValue(new Error('boom'));

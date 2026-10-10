@@ -162,12 +162,14 @@
     {:else}
       <p class="p-empty">No archived tasks.</p>
     {/if}
+    <button class="p-row cancel" on:click={() => view = 'main'}>Back</button>
   {:else if view === 'rename'}
     <!-- svelte-ignore a11y-autofocus -->
     <input class="p-fld" bind:value={newName} aria-label="Project name" autofocus enterkeyhint="done"
       on:keydown={(e) => { if (e.key === 'Enter') rename(); }} />
     {#if dupHint}<p class="p-say">{dupHint}</p>{/if}
     <button class="p-go" disabled={!newName.trim()} on:click={rename}>Save</button>
+    <button class="p-row cancel" on:click={() => view = 'main'}>Cancel</button>
   {:else if view === 'move'}
     <div class="p-group">
       {#each spaceList as sp (sp._id)}
@@ -178,6 +180,7 @@
         </button>
       {/each}
     </div>
+    <button class="p-row cancel" on:click={() => view = 'main'}>Cancel</button>
   {:else}
     <p class="p-say">
       Deletes <b>{project.name}</b>{#if total}{' and its '}<b>{total} {total === 1 ? 'task' : 'tasks'}</b>{#if archived.length}, archived ones included{/if}{/if}. Can’t be undone.
