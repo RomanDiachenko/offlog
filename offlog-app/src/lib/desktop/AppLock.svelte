@@ -217,13 +217,13 @@
     40%, 60% { transform: translateX(8px); }
   }
   .lock-icon { color: var(--accent); margin-bottom: 6px; }
-  .lock-title { font-size: 1.15rem; font-weight: 700; color: var(--text); }
-  .lock-sub { font-size: .85rem; color: var(--muted); margin-bottom: 18px; }
+  .lock-title { font-size: var(--fs-t); font-weight: 700; color: var(--text); }
+  .lock-sub { font-size: var(--fs-m); color: var(--muted); margin-bottom: 18px; }
   .lock-input {
     width: 100%; text-align: center; letter-spacing: .4em;
-    font-size: 1.3rem; padding: .6rem .7rem;
-    border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm);
-    background: var(--surface); color: var(--text); outline: none;
+    font-size: var(--fs-t); padding: .6rem .7rem;
+    border: 1px solid transparent; border-radius: var(--radius-sm);
+    background: var(--field-bg); color: var(--text); outline: none;
     transition: border-color var(--dur-hover) var(--ease-hover);
     /* text-align:center centers the typed dots but leaves the caret
        jumping around mid-field as you type, which reads as broken.
@@ -233,19 +233,19 @@
   }
   .lock-input:focus { border-color: var(--accent); }
   .lock-input:disabled { opacity: .6; }
-  .lock-input-code { letter-spacing: .1em; font-size: 1.05rem; text-transform: uppercase; font-family: var(--mono); }
-  .lock-hint { font-size: .78rem; margin-top: 10px; text-align: center; }
+  .lock-input-code { letter-spacing: .1em; font-size: var(--fs-xl); text-transform: uppercase; font-family: var(--mono); }
+  .lock-hint { font-size: var(--fs-s); margin-top: 10px; text-align: center; }
   .lock-hint-error { color: var(--danger); }
   .lock-submit {
     width: 100%; margin-top: 14px; padding: .6rem; border: none; border-radius: var(--radius-sm);
-    background: var(--accent); color: var(--on-accent); font-size: .9rem; font-weight: 600;
+    background: var(--accent); color: var(--on-accent); font-size: var(--fs-l); font-weight: 600;
     cursor: pointer; transition: opacity var(--dur-hover) var(--ease-hover);
   }
   .lock-submit:disabled { opacity: .45; cursor: default; }
   .lock-submit:not(:disabled):hover { opacity: .88; }
   .lock-forgot {
     margin-top: 14px; background: none; border: none; cursor: pointer;
-    font-size: .78rem; color: var(--faint); text-decoration: underline;
+    font-size: var(--fs-s); color: var(--faint); text-decoration: underline;
   }
   .lock-forgot:hover { color: var(--muted); }
 
@@ -253,8 +253,8 @@
   .lock-confirm-row { display: flex; gap: 10px; width: 100%; }
   .lock-confirm-row .lock-submit { flex: 1; margin-top: 0; }
   .lock-cancel {
-    flex: 1; padding: .6rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    background: var(--surface); color: var(--text); font-size: .9rem; font-weight: 600;
+    flex: 1; padding: .6rem; border: 1px solid transparent; border-radius: var(--radius-sm);
+    background: var(--field-bg); color: var(--text); font-size: var(--fs-l); font-weight: 600;
     cursor: pointer; transition: background var(--dur-hover) var(--ease-hover);
   }
   .lock-cancel:hover { background: var(--hover); }

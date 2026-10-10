@@ -262,8 +262,8 @@
   .search-panel {
     position: fixed; top: 15vh; left: 50%; transform: translateX(-50%);
     width: min(580px, 95vw); z-index: 401;
-    background: var(--surface); border: 1px solid var(--border-strong);
-    border-radius: 14px; box-shadow: var(--elev-3);
+    background: var(--surface); border: 1px solid var(--glass-edge);
+    border-radius: var(--r-l); box-shadow: var(--elev-3);
     display: flex; flex-direction: column; overflow: hidden;
   }
 
@@ -274,12 +274,12 @@
   .search-icon { color: var(--faint); flex-shrink: 0; }
   .search-input {
     flex: 1; border: none; background: none; outline: none;
-    font-size: 16px; color: var(--text); font-family: inherit;
+    font-size: var(--fs-xl); color: var(--text); font-family: inherit;
   }
   .search-input::placeholder { color: var(--faint); }
   .clear-btn {
     background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: 13px; padding: 2px 5px;
+    color: var(--faint); font-size: var(--fs-m); padding: 2px 5px;
     border-radius: 4px; transition: color var(--dur-hover) var(--ease-hover);
   }
   .clear-btn:hover { color: var(--text); }
@@ -287,7 +287,7 @@
   .results { max-height: 55vh; overflow-y: auto; }
 
   .section-label {
-    padding: 8px 16px 4px; font-family: var(--mono); font-size: 10px;
+    padding: 8px 16px 4px; font-family: var(--mono); font-size: var(--fs-2xs);
     text-transform: uppercase; letter-spacing: .08em; color: var(--faint);
   }
 
@@ -306,24 +306,24 @@
   .prio-bar { width: 3px; height: 32px; border-radius: 2px; flex-shrink: 0; }
 
   .result-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .result-title { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .result-title { font-size: var(--fs-m); font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .result-title :global(mark) { background: color-mix(in srgb, var(--accent) 25%, transparent); color: var(--accent-ink); border-radius: 2px; padding: 0 1px; }
-  .result-tags { font-size: 11px; color: var(--faint); font-family: var(--mono); }
-  .result-match-hint { font-size: 11px; color: var(--faint); font-style: italic; }
+  .result-tags { font-size: var(--fs-xs); color: var(--faint); font-family: var(--mono); }
+  .result-match-hint { font-size: var(--fs-xs); color: var(--faint); font-style: italic; }
 
   .result-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
-  .result-proj { font-family: var(--mono); font-size: 10.5px; color: var(--faint); white-space: nowrap; }
-  .result-due { font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+  .result-proj { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); white-space: nowrap; }
+  .result-due { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--muted); }
   .result-due.overdue { color: var(--danger); }
 
-  .hint { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 24px 16px; text-align: center; color: var(--faint); font-size: 13.5px; }
+  .hint { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 24px 16px; text-align: center; color: var(--faint); font-size: var(--fs-m); }
   /* Styled as a terminal empty state, matching every other view's, so it
      doesn't read as search still being in progress. */
-  .hint-empty { font-size: 14.5px; color: var(--muted); padding: 32px 16px; }
+  .hint-empty { font-size: var(--fs-l); color: var(--muted); padding: 32px 16px; }
 
   .footer {
     display: flex; gap: 16px; padding: 8px 16px;
     border-top: 1px solid var(--border);
-    font-family: var(--mono); font-size: 10.5px; color: var(--faint);
+    font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
   }
 </style>

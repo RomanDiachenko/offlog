@@ -179,33 +179,33 @@
     display: flex; align-items: center; gap: 8px;
     padding: 20px 24px 4px; flex-shrink: 0;
   }
-  .panel-title { font-size: 16px; font-weight: 700; flex: 1; letter-spacing: -.015em; }
+  .panel-title { font-size: var(--fs-xl); font-weight: 700; flex: 1; letter-spacing: -.015em; }
 
   .cf-sub {
-    padding: 0 24px 16px; font-family: var(--mono); font-size: 11px; color: var(--faint);
+    padding: 0 24px 16px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
     border-bottom: 1px solid var(--border); flex-shrink: 0; line-height: 1.5;
   }
 
   .close-btn {
-    background: none; border: none; cursor: pointer; font-size: 14px;
-    color: var(--faint); padding: 4px 6px; border-radius: 6px;
+    background: none; border: none; cursor: pointer; font-size: var(--fs-m);
+    color: var(--faint); padding: 4px 6px; border-radius: var(--r-s);
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .close-btn:hover { background: var(--hover); color: var(--text); }
 
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px; }
-  .empty { color: var(--faint); font-size: 13.5px; padding: 12px 0; line-height: 1.5; }
+  .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; line-height: 1.5; }
 
   .row {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 0; border-bottom: 1px solid var(--border);
   }
   .row-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-  .name { font-size: 13.5px; color: var(--text); font-weight: 500; }
-  .type { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
+  .name { font-size: var(--fs-m); color: var(--text); font-weight: 500; }
+  .type { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); }
 
   .row-edit-trigger {
-    background: none; border: none; padding: 2px 4px; margin: -2px -4px; border-radius: 6px;
+    background: none; border: none; padding: 2px 4px; margin: -2px -4px; border-radius: var(--r-s);
     text-align: left; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover);
   }
   .row-edit-trigger:hover { background: var(--hover); }
@@ -213,15 +213,15 @@
   .row-editing { flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 0; }
   .row-edit-actions { display: flex; gap: 6px; width: 100%; justify-content: flex-end; }
   .edit-cancel-btn, .edit-save-btn {
-    padding: .4rem .75rem; border-radius: var(--radius-sm); font-size: .8rem; font-weight: 500; cursor: pointer;
-    border: 1px solid var(--border-strong); background: var(--bg); color: var(--text);
+    padding: .4rem .75rem; border-radius: var(--radius-sm); font-size: var(--fs-s); font-weight: 500; cursor: pointer;
+    border: 1px solid transparent; background: var(--field-bg); color: var(--text);
   }
   .edit-save-btn { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   .edit-save-btn:disabled { opacity: .5; cursor: not-allowed; }
 
   .delete-btn {
     background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: 1rem; padding: .15rem .5rem; border-radius: 6px;
+    color: var(--faint); font-size: var(--fs-xl); padding: .15rem .5rem; border-radius: var(--r-s);
     flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .delete-btn:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); color: color-mix(in srgb, var(--danger) 82%, var(--text)); }
@@ -231,13 +231,13 @@
     padding: 14px 24px 24px; border-top: 1px solid var(--border); flex-shrink: 0;
   }
   .name-input {
-    padding: .45rem .6rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    background: var(--bg); color: var(--text); font-size: .85rem; flex: 1; min-width: 90px;
+    padding: .45rem .6rem; border: 1px solid transparent; border-radius: var(--radius-sm);
+    background: var(--field-bg); color: var(--text); font-size: var(--fs-m); flex: 1; min-width: 90px;
   }
   .type-select { flex: 1; min-width: 90px; }
   .add-btn {
     padding: .45rem .8rem; border-radius: var(--radius-sm); border: 1px solid var(--accent);
-    background: var(--accent); color: var(--on-accent); font-size: .82rem; font-weight: 500; cursor: pointer;
+    background: var(--accent); color: var(--on-accent); font-size: var(--fs-m); font-weight: 500; cursor: pointer;
     white-space: nowrap;
   }
   .add-btn:disabled { opacity: .5; cursor: not-allowed; }

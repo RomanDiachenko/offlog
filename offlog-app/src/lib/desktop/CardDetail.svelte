@@ -923,14 +923,14 @@
     display: flex; flex-direction: column;
     padding: 1.1rem 1.25rem;
     gap: .55rem;
-    border: 1px solid var(--border); border-radius: var(--radius);
+    border: 1px solid var(--glass-edge); border-radius: var(--radius);
     box-shadow: var(--elev-3);
     overflow-y: auto;
   }
   .panel-header { display: flex; gap: .15rem; align-items: flex-start; }
   .panel-header .title-input { margin-right: .4rem; }
   .title-input {
-    flex: 1; font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em;
+    flex: 1; font-size: var(--fs-xl); font-weight: 700; letter-spacing: -.01em;
     border: none; border-bottom: 1.5px solid transparent;
     background: transparent; padding: .2rem 0;
     color: var(--text); line-height: 1.3;
@@ -942,7 +942,7 @@
   .close-btn {
     background: none; border: none; cursor: pointer;
     width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm);
-    font-size: .85rem; color: var(--faint); padding: 0;
+    font-size: var(--fs-m); color: var(--faint); padding: 0;
     flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .close-btn:hover { background: var(--hover); color: var(--text); }
@@ -960,7 +960,7 @@
   .section-divider { height: 1px; background: var(--border); margin: .05rem 0; }
   label {
     display: flex; flex-direction: column; gap: .22rem;
-    font-family: var(--mono); font-size: .62rem; letter-spacing: .05em;
+    font-family: var(--mono); font-size: var(--fs-2xs); letter-spacing: .05em;
     text-transform: uppercase; color: var(--faint);
   }
   /* Same gap as fields-row's Status/Priority pair (.5rem). The field is
@@ -983,7 +983,7 @@
   }
   .due-shortcut {
     background: var(--col-bg); color: var(--muted); border: none;
-    border-radius: 999px; font-size: .72rem; font-weight: 600; letter-spacing: normal;
+    border-radius: 999px; font-size: var(--fs-xs); font-weight: 600; letter-spacing: normal;
     text-transform: none; font-family: 'Hanken Grotesk', sans-serif;
     padding: 5px 12px; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
     white-space: nowrap; flex-shrink: 0;
@@ -992,13 +992,13 @@
   .due-shortcut.active { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
 
   .extras-panel :global(.reminder-hint) {
-    font-size: .72rem; color: var(--faint); line-height: 1.35;
+    font-size: var(--fs-xs); color: var(--faint); line-height: 1.35;
     background: var(--col-bg); border-radius: var(--radius-sm);
     padding: .4rem .55rem;
   }
 
   .extras-panel :global(.repeat-hint) {
-    font-size: .72rem; color: var(--faint); font-weight: 500;
+    font-size: var(--fs-xs); color: var(--faint); font-weight: 500;
     text-transform: none; letter-spacing: normal; font-family: 'Hanken Grotesk', sans-serif;
     margin-top: .2rem; display: block;
   }
@@ -1011,7 +1011,7 @@
   .extras-panel :global(.repeat-block) { --repeat-ctrl-h: 30px; margin-bottom: .5rem; }
   .extras-panel :global(.repeat-row) {
     display: flex; align-items: center; flex-wrap: wrap; gap: .25rem;
-    font-size: .8rem; color: var(--muted); font-weight: 500;
+    font-size: var(--fs-s); color: var(--muted); font-weight: 500;
     text-transform: none; letter-spacing: normal; font-family: 'Hanken Grotesk', sans-serif;
   }
   /* Widths are tuned to the worst case (Day + Weekdays + Skip, every word
@@ -1027,7 +1027,7 @@
      soaks up anything left over between the word and the chevron. */
   .extras-panel :global(.repeat-select-wrap.compact) { width: 74px; }
   .extras-panel :global(.repeat-select-wrap .cs-trigger) {
-    height: var(--repeat-ctrl-h); box-sizing: border-box; padding: 0 5px; font-size: .8rem;
+    height: var(--repeat-ctrl-h); box-sizing: border-box; padding: 0 5px; font-size: var(--fs-s);
   }
   /* CustomSelect's .cs-panel is `left:0;right:0`, i.e. the full width of
      its trigger -- at this trigger's compact 86px that wraps "Not
@@ -1039,9 +1039,9 @@
   .extras-panel :global(.repeat-interval-input) {
     width: 30px; height: var(--repeat-ctrl-h); box-sizing: border-box;
     text-align: center; flex-shrink: 0;
-    border: 1px solid var(--border-strong); border-radius: 6px;
-    padding: 0 .15rem; font-size: .8rem; color: var(--text);
-    background: var(--bg); font-family: inherit;
+    border: 1px solid transparent; border-radius: var(--r-s);
+    padding: 0 .15rem; font-size: var(--fs-s); color: var(--text);
+    background: var(--field-bg); font-family: inherit;
   }
   .extras-panel :global(.repeat-interval-input:focus) { border-color: var(--accent); outline: none; }
   .extras-panel :global(.repeat-pill) {
@@ -1049,7 +1049,7 @@
     display: flex; align-items: center; justify-content: center;
     background: var(--surface); color: var(--muted);
     border: 1px solid var(--border-strong); border-radius: 999px;
-    font-size: .7rem; font-weight: 600; padding: 0 8px; cursor: pointer;
+    font-size: var(--fs-xs); font-weight: 600; padding: 0 8px; cursor: pointer;
     white-space: nowrap;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
@@ -1073,7 +1073,7 @@
      nothing. var(--muted) still reads as emphasized (the 600 weight)
      without the link color. */
   .extras-panel :global(.repeat-next-preview) {
-    font-size: .72rem; color: var(--muted); font-weight: 600;
+    font-size: var(--fs-xs); color: var(--muted); font-weight: 600;
     text-transform: none; letter-spacing: normal; font-family: 'Hanken Grotesk', sans-serif;
     margin-top: .35rem; display: block;
   }
@@ -1088,7 +1088,7 @@
   .extras-panel :global(.remind-on-due-row) {
     display: flex !important; flex-direction: row !important; align-items: center;
     gap: .4rem; flex: 0 0 auto; white-space: nowrap;
-    font-size: .74rem; color: var(--muted); font-weight: 500;
+    font-size: var(--fs-s); color: var(--muted); font-weight: 500;
     text-transform: none; letter-spacing: normal; font-family: 'Hanken Grotesk', sans-serif;
     padding: .3rem .55rem; border-radius: var(--radius-sm);
     background: var(--col-bg); cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
@@ -1109,12 +1109,12 @@
   .extras-panel :global(.custom-fields) { display: flex; flex-direction: column; gap: .3rem; }
   .extras-panel :global(.custom-field-label) {
     display: flex; flex-direction: column; gap: .22rem;
-    font-family: var(--mono); font-size: .62rem; letter-spacing: .05em;
+    font-family: var(--mono); font-size: var(--fs-2xs); letter-spacing: .05em;
     text-transform: uppercase; color: var(--faint);
   }
   .extras-panel :global(.custom-field-label input) {
-    padding: .38rem .5rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    background: var(--surface); color: var(--text); font-size: .84rem; font-family: inherit;
+    padding: .38rem .5rem; border: 1px solid transparent; border-radius: var(--radius-sm);
+    background: var(--field-bg); color: var(--text); font-size: var(--fs-m); font-family: inherit;
     text-transform: none; letter-spacing: normal;
   }
   /* The native number-input spin buttons read as a stray unstyled OS
@@ -1129,16 +1129,16 @@
   }
   .extras-panel :global(.add-field-btn) {
     align-self: flex-start; background: none; border: none; cursor: pointer;
-    color: var(--accent); font-size: .76rem; font-weight: 500; padding: .15rem 0;
+    color: var(--accent); font-size: var(--fs-s); font-weight: 500; padding: .15rem 0;
   }
   .field-label, .extras-panel :global(.field-label) {
-    font-family: var(--mono); font-size: .62rem; letter-spacing: .05em;
+    font-family: var(--mono); font-size: var(--fs-2xs); letter-spacing: .05em;
     text-transform: uppercase; color: var(--faint);
   }
   .tags-input-row {
     display: flex; flex-wrap: wrap; gap: 5px; align-items: center;
-    padding: .35rem .5rem; border: 1px solid var(--border-strong);
-    border-radius: var(--radius-sm); background: var(--surface); min-height: 34px;
+    padding: .35rem .5rem; border: 1px solid transparent;
+    border-radius: var(--radius-sm); background: var(--field-bg); min-height: 34px;
     cursor: text;
   }
   .tags-input-row:focus-within { border-color: var(--accent); }
@@ -1164,7 +1164,7 @@
   .tag-chip {
     display: inline-flex; align-items: center; gap: 2px;
     background: var(--col-bg); color: var(--text); border-radius: var(--radius-sm);
-    font-size: .74rem; font-weight: 500; padding: 0 2px 0 7px;
+    font-size: var(--fs-s); font-weight: 500; padding: 0 2px 0 7px;
   }
   /* 24x24 hit box, not a 24px glyph: the × glyph stays small and the chip
      keeps its height. Below 24 this fails WCAG 2.2's minimum target size
@@ -1172,7 +1172,7 @@
   .tag-remove {
     display: inline-flex; align-items: center; justify-content: center;
     width: 24px; height: 24px; border-radius: 4px;
-    cursor: pointer; font-size: .9rem; line-height: 1; color: var(--muted);
+    cursor: pointer; font-size: var(--fs-l); line-height: 1; color: var(--muted);
     background: none; border: none;
     /* Box-centered math already puts it dead center of its own 24x24 --
        but a symbol glyph's own vertical center sits higher than a
@@ -1184,7 +1184,7 @@
   .tag-remove:hover { color: var(--danger); }
   .tag-input {
     border: none; background: none; outline: none; min-height: 24px;
-    font-size: .88rem; color: var(--text); min-width: 80px; flex: 1;
+    font-size: var(--fs-m); color: var(--text); min-width: 80px; flex: 1;
   }
   .tag-input::placeholder { color: var(--faint); }
 
@@ -1193,13 +1193,13 @@
   }
   .tag-suggestion, .extras-panel :global(.tag-suggestion) {
     background: var(--col-bg); color: var(--accent); border-radius: 5px;
-    font-size: .78rem; font-weight: 500; padding: 2px 9px; cursor: pointer;
+    font-size: var(--fs-s); font-weight: 500; padding: 2px 9px; cursor: pointer;
     border: 1px solid var(--border); transition: background var(--dur-hover) var(--ease-hover);
   }
   .tag-suggestion:hover, .extras-panel :global(.tag-suggestion:hover) { background: var(--hover); }
   .tag-suggestion-other { color: var(--muted); }
   .tag-suggestions-divider {
-    width: 100%; font-size: .68rem; color: var(--faint); font-weight: 600;
+    width: 100%; font-size: var(--fs-xs); color: var(--faint); font-weight: 600;
     text-transform: uppercase; letter-spacing: .04em; padding: 2px 2px 0;
   }
 
@@ -1207,7 +1207,7 @@
 
   .section-toggle {
     display: flex; align-items: center; gap: 8px;
-    background: var(--col-bg); border: 1px solid var(--border); border-radius: 8px;
+    background: var(--col-bg); border: 1px solid transparent; border-radius: 8px;
     cursor: pointer; padding: .55rem .65rem; width: 100%; text-align: left;
     transition: background var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
@@ -1221,7 +1221,7 @@
      wrap wherever it happens to fit -- that regularly left one line
      nearly full and the other a short, ragged trailer. */
   .details-summary {
-    font-family: 'Hanken Grotesk', sans-serif; font-size: .78rem;
+    font-family: 'Hanken Grotesk', sans-serif; font-size: var(--fs-s);
     text-transform: none; letter-spacing: normal; color: var(--muted);
     flex: 1; display: flex; flex-direction: column; align-items: flex-end;
   }
@@ -1231,10 +1231,10 @@
   .section-toggle:hover .section-chevron { color: var(--text); }
   .notes-field { display: flex; flex-direction: column; gap: .3rem; }
   .notes-counter {
-    font-family: var(--mono); font-size: .68rem; color: var(--faint);
+    font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
     text-align: right; margin-top: 3px;
   }
-  .dup-name-hint, .extras-panel :global(.dup-name-hint) { font-size: .72rem; color: var(--due-soon-ink); margin: 4px 0 0; line-height: 1.3; }
+  .dup-name-hint, .extras-panel :global(.dup-name-hint) { font-size: var(--fs-xs); color: var(--due-soon-ink); margin: 4px 0 0; line-height: 1.3; }
 
   /* .detail-block (the mandatory, always-visible Due date field) stays
      plain -- no card treatment, matching Status/Priority/Tags above. */
@@ -1264,14 +1264,14 @@
 
   .extras-panel :global(.related-field) { display: flex; flex-direction: column; gap: .3rem; }
   .extras-panel :global(.related-row) { display: flex; align-items: center; gap: 7px; }
-  .extras-panel :global(.related-title) { flex: 1; font-size: .84rem; color: var(--text); }
+  .extras-panel :global(.related-title) { flex: 1; font-size: var(--fs-m); color: var(--text); }
   .extras-panel :global(.related-title-link) {
     background: none; border: none; padding: 0; text-align: left;
     cursor: pointer; font-family: inherit;
   }
   .extras-panel :global(.related-title-link:hover) { color: var(--accent); text-decoration: underline; }
   .extras-panel :global(.related-proj) {
-    font-family: var(--mono); font-size: .68rem; color: var(--faint);
+    font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
     text-transform: uppercase; letter-spacing: .03em; white-space: nowrap;
   }
   .extras-panel :global(.related-deleted .related-title) { color: var(--faint); font-style: italic; }
@@ -1280,7 +1280,7 @@
      done/not-done status pill and the badge's active (still-blocking)
      tint are new. */
   .extras-panel :global(.blocked-status) {
-    font-size: .68rem; font-weight: 700; white-space: nowrap;
+    font-size: var(--fs-xs); font-weight: 700; white-space: nowrap;
     padding: 1px 7px; border-radius: 999px;
     color: color-mix(in srgb, var(--danger) 82%, var(--text)); background: color-mix(in srgb, var(--danger) 14%, transparent);
   }
@@ -1294,19 +1294,19 @@
     flex-shrink: 0; width: 17px; height: 17px; border-radius: 5px;
     border: 1.5px solid var(--border-strong); background: var(--surface);
     display: flex; align-items: center; justify-content: center;
-    font-size: .68rem; color: var(--on-accent); cursor: pointer; padding: 0;
+    font-size: var(--fs-xs); color: var(--on-accent); cursor: pointer; padding: 0;
     transition: background var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
   .extras-panel :global(.checklist-check.done) { background: var(--accent); border-color: var(--accent); animation: check-pop var(--dur-small) var(--ease-standard); }
   @keyframes check-pop { from { transform: scale(.7); } to { transform: scale(1); } }
-  .extras-panel :global(.checklist-text) { flex: 1; font-size: .84rem; color: var(--text); transition: color var(--dur-hover) var(--ease-hover); }
+  .extras-panel :global(.checklist-text) { flex: 1; font-size: var(--fs-m); color: var(--text); transition: color var(--dur-hover) var(--ease-hover); }
   .extras-panel :global(.checklist-text.done) { color: var(--faint); text-decoration: line-through; }
   /* 24x24 hit box, not a 24px glyph: the x keeps its size and the row keeps
      its height. Below 24 this fails WCAG 2.2's minimum target size (2.5.8),
      and the same button removes a checklist item, a link, and an attachment
      -- that last one deletes the file permanently. */
   .extras-panel :global(.checklist-remove) {
-    flex-shrink: 0; cursor: pointer; font-size: .9rem; line-height: 1;
+    flex-shrink: 0; cursor: pointer; font-size: var(--fs-l); line-height: 1;
     color: var(--muted); background: none; border: none; padding: 0;
     display: inline-flex; align-items: center; justify-content: center;
     width: 24px; height: 24px; margin: -4px -2px;
@@ -1314,9 +1314,9 @@
   }
   .extras-panel :global(.checklist-remove:hover) { color: var(--danger); }
   .extras-panel :global(.checklist-input) {
-    border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    background: var(--surface); outline: none;
-    font-size: .84rem; color: var(--text); padding: .35rem .5rem;
+    border: 1px solid transparent; border-radius: var(--radius-sm);
+    background: var(--field-bg); outline: none;
+    font-size: var(--fs-m); color: var(--text); padding: .35rem .5rem;
   }
   .extras-panel :global(.checklist-input:focus) { border-color: var(--accent); }
   .extras-panel :global(.checklist-input::placeholder) { color: var(--faint); }
@@ -1327,7 +1327,7 @@
   .extras-panel :global(.attachment-open) {
     flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0;
     background: none; border: none; padding: .2rem 0; text-align: left; cursor: pointer;
-    font-family: inherit; color: var(--text); border-radius: 6px;
+    font-family: inherit; color: var(--text); border-radius: var(--r-s);
   }
   .extras-panel :global(.attachment-open:hover .attachment-name) { color: var(--accent); text-decoration: underline; }
   .extras-panel :global(.attachment-thumb) {
@@ -1339,13 +1339,13 @@
     display: flex; align-items: center; justify-content: center;
     background: var(--surface); border: 1px solid var(--border); color: var(--faint);
   }
-  .extras-panel :global(.attachment-name) { flex: 1; font-size: .84rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .extras-panel :global(.attachment-name) { flex: 1; font-size: var(--fs-m); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .extras-panel :global(.attachment-size) {
-    font-family: var(--mono); font-size: .68rem; color: var(--faint); flex-shrink: 0;
+    font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint); flex-shrink: 0;
   }
   .extras-panel :global(.attach-file-btn) {
-    align-self: flex-start; font-size: .82rem; color: var(--accent); cursor: pointer;
-    padding: .3rem .2rem; border-radius: 6px; transition: background var(--dur-hover) var(--ease-hover);
+    align-self: flex-start; font-size: var(--fs-m); color: var(--accent); cursor: pointer;
+    padding: .3rem .2rem; border-radius: var(--r-s); transition: background var(--dur-hover) var(--ease-hover);
     background: none; border: none; font-family: inherit;
   }
   .extras-panel :global(.attach-file-btn:hover) { background: var(--hover); }
@@ -1354,13 +1354,13 @@
     flex: 1; resize: vertical; min-height: 90px;
     padding: .55rem .65rem; border: 1px solid var(--border);
     border-radius: var(--radius-sm); background: var(--bg); color: var(--text);
-    font-family: 'Hanken Grotesk', sans-serif; font-size: .85rem; line-height: 1.5;
+    font-family: 'Hanken Grotesk', sans-serif; font-size: var(--fs-m); line-height: 1.5;
   }
   textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); }
   button {
     padding: .38rem .8rem; border-radius: var(--radius-sm);
     border: 1px solid var(--border-strong); cursor: pointer;
-    background: var(--surface); color: var(--text); font-size: .82rem; font-weight: 500;
+    background: var(--surface); color: var(--text); font-size: var(--fs-m); font-weight: 500;
   }
 
   .menu-wrap { position: relative; }
@@ -1379,7 +1379,7 @@
   .menu-item {
     display: flex; align-items: center; gap: 9px;
     background: none; border: none; border-radius: var(--radius-sm);
-    padding: .45rem .6rem; font-size: .82rem; font-weight: 500;
+    padding: .45rem .6rem; font-size: var(--fs-m); font-weight: 500;
     color: var(--text); cursor: pointer; text-align: left;
   }
   .menu-item:hover { background: var(--hover); }

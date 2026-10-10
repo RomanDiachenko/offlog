@@ -176,22 +176,22 @@
     display: flex; align-items: center; gap: 8px;
     padding: 20px 24px 4px; flex-shrink: 0;
   }
-  .panel-title { font-size: 16px; font-weight: 700; flex: 1; letter-spacing: -.015em; }
+  .panel-title { font-size: var(--fs-xl); font-weight: 700; flex: 1; letter-spacing: -.015em; }
 
   .tg-sub {
-    padding: 0 24px 16px; font-family: var(--mono); font-size: 11px; color: var(--faint);
+    padding: 0 24px 16px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
     border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
 
   .close-btn {
-    background: none; border: none; cursor: pointer; font-size: 14px;
-    color: var(--faint); padding: 4px 6px; border-radius: 6px;
+    background: none; border: none; cursor: pointer; font-size: var(--fs-m);
+    color: var(--faint); padding: 4px 6px; border-radius: var(--r-s);
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .close-btn:hover { background: var(--hover); color: var(--text); }
 
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px 24px; }
-  .empty { color: var(--faint); font-size: 13.5px; padding: 12px 0; line-height: 1.5; }
+  .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; line-height: 1.5; }
 
   .row {
     display: flex; align-items: center; gap: 10px;
@@ -200,24 +200,24 @@
 
   .name-btn {
     flex: 1; text-align: left; background: none; border: none; cursor: pointer;
-    font-family: var(--mono); font-size: 13px; color: var(--text); padding: .3rem .4rem; border-radius: 6px;
+    font-family: var(--mono); font-size: var(--fs-m); color: var(--text); padding: .3rem .4rem; border-radius: var(--r-s);
     transition: background var(--dur-hover) var(--ease-hover);
   }
   .name-btn:hover { background: var(--hover); }
 
   .name-input {
-    flex: 1; font-family: var(--mono); font-size: 13px; padding: .3rem .4rem; border-radius: 6px;
+    flex: 1; font-family: var(--mono); font-size: var(--fs-m); padding: .3rem .4rem; border-radius: var(--r-s);
     border: 1.5px solid var(--accent); background: var(--bg); color: var(--text);
   }
 
   .count {
-    font-family: var(--mono); font-size: 11px; color: var(--faint);
-    background: var(--col-bg); padding: 2px 8px; border-radius: 6px; flex-shrink: 0;
+    font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
+    background: var(--col-bg); padding: 2px 8px; border-radius: var(--r-s); flex-shrink: 0;
   }
 
   .delete-btn {
     background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: 1rem; padding: .15rem .5rem; border-radius: 6px;
+    color: var(--faint); font-size: var(--fs-xl); padding: .15rem .5rem; border-radius: var(--r-s);
     flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .delete-btn:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); color: color-mix(in srgb, var(--danger) 82%, var(--text)); }
@@ -245,8 +245,8 @@
   .swatch-active { border-color: var(--text); }
   .swatch-auto {
     margin-left: 4px; background: none; border: 1px solid var(--border-strong);
-    color: var(--faint); font-family: var(--mono); font-size: 10.5px;
-    padding: 2px 8px; border-radius: 6px; cursor: pointer;
+    color: var(--faint); font-family: var(--mono); font-size: var(--fs-2xs);
+    padding: 2px 8px; border-radius: var(--r-s); cursor: pointer;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .swatch-auto:hover { background: var(--hover); color: var(--text); }

@@ -68,11 +68,11 @@
   button {
     padding: .38rem .8rem; border-radius: var(--radius-sm);
     border: 1px solid var(--border-strong); cursor: pointer;
-    background: var(--surface); color: var(--text); font-size: .82rem; font-weight: 500;
+    background: var(--surface); color: var(--text); font-size: var(--fs-m); font-weight: 500;
   }
   label {
     display: flex; flex-direction: column; gap: .22rem;
-    font-family: var(--mono); font-size: .62rem; letter-spacing: .05em;
+    font-family: var(--mono); font-size: var(--fs-2xs); letter-spacing: .05em;
     text-transform: uppercase; color: var(--faint);
   }
 </style>

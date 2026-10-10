@@ -154,7 +154,7 @@
 </script>
 
 <div class="agenda">
-  <div class="fluid-stage">
+  <div class="fluid-stage over-scroll">
   <div class="agenda-header fluid-panel glass">
     <button class="hamburger" on:click={() => dispatch('menu')} aria-label="Menu">
       <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
@@ -390,13 +390,13 @@
     flex-shrink: 0;
   }
   .title-block { min-width: 0; }
-  .agenda-title { margin: 0 0 3px; font-size: 20px; font-weight: 700; letter-spacing: -.015em; }
-  .agenda-count { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+  .agenda-title { margin: 0 0 3px; font-size: var(--fs-t); font-weight: 700; letter-spacing: -.015em; }
+  .agenda-count { font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint); }
 
   .hamburger {
     display: none;
     background: none; border: none; cursor: pointer;
-    color: var(--text); padding: 4px; border-radius: 6px; margin-top: 1px;
+    color: var(--text); padding: 4px; border-radius: var(--r-s); margin-top: 1px;
     flex-shrink: 0; align-items: center; justify-content: center;
     transition: background var(--dur-hover) var(--ease-hover);
   }
@@ -424,7 +424,7 @@
     display: flex; align-items: center; justify-content: center;
     height: 26px; box-sizing: border-box; padding: 0 12px;
     border: none; border-radius: 8px; background: transparent; color: var(--muted);
-    font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
+    font-size: var(--fs-s); font-weight: 600; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .mode-btn:hover { background: var(--rail-hover); color: var(--text); }
   .mode-btn.active, .mode-btn.active:hover { background: var(--surface); color: var(--text); }
@@ -432,12 +432,12 @@
   /* Shared by any calendar-style nav bar (currently just Month's) --
      prev/next arrows plus a centered period label. */
   .cal-nav-btn {
-    background: none; border: 1px solid var(--border-strong); border-radius: 6px; cursor: pointer;
-    color: var(--muted); font-size: 1rem; line-height: 1; padding: 3px 10px;
+    background: var(--field-bg); border: 1px solid transparent; border-radius: var(--r-s); cursor: pointer;
+    color: var(--muted); font-size: var(--fs-xl); line-height: 1; padding: 3px 10px;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .cal-nav-btn:hover { background: var(--hover); color: var(--text); }
-  .cal-label { font-size: .85rem; font-weight: 700; color: var(--text); }
+  .cal-label { font-size: var(--fs-m); font-weight: 700; color: var(--text); }
 
   .month-nav {
     display: flex; align-items: center; justify-content: center; position: relative;
@@ -460,8 +460,8 @@
        full padded box, so plain 50% sits 4px above where
        .month-nav-center's flex-centered content actually falls. */
     position: absolute; top: calc(50% + 4px); right: 9%; transform: translateY(-50%);
-    background: none; border: 1px solid var(--border-strong); border-radius: 6px;
-    color: var(--accent); font-size: .78rem; font-weight: 600;
+    background: var(--field-bg); border: 1px solid transparent; border-radius: var(--r-s);
+    color: var(--accent); font-size: var(--fs-s); font-weight: 600;
     padding: 4px 12px; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover);
   }
   .month-today-btn:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
@@ -489,11 +489,11 @@
        hugging its own small content. */
     display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
     grid-template-rows: auto; grid-auto-rows: 78px;
-    border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border); border-radius: var(--r-m); overflow: hidden;
     margin: 12px 0;
   }
   .month-dow {
-    font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
+    font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase; letter-spacing: .06em;
     color: var(--faint); text-align: center; padding: 6px 4px;
     background: var(--col-bg); border-bottom: 1px solid var(--border);
   }
@@ -518,9 +518,9 @@
      the desktop row layout and the mobile column layout. */
   .month-daynum {
     display: flex; align-items: center; justify-content: center;
-    min-height: 20px; font-size: .78rem; font-weight: 700; color: var(--text);
+    min-height: 20px; font-size: var(--fs-s); font-weight: 700; color: var(--text);
   }
-  .month-cell.today .month-daynum, .month-cell.selected .month-daynum { border-radius: 50%; width: 20px; height: 20px; font-size: .72rem; }
+  .month-cell.today .month-daynum, .month-cell.selected .month-daynum { border-radius: 50%; width: 20px; height: 20px; font-size: var(--fs-xs); }
   .month-cell.today .month-daynum { color: var(--accent-ink); box-shadow: inset 0 0 0 1.5px var(--accent); }
   .month-cell.selected .month-daynum { color: var(--on-accent); background: var(--accent); box-shadow: none; }
   /* Desktop: day number top-left, dots pinned to the cell's top-right
@@ -540,29 +540,29 @@
      crammed into the cell itself. */
   .month-titles { display: flex; flex-direction: column; gap: 1px; width: 100%; }
   .month-title-chip {
-    font-size: .68rem; color: var(--text); width: 100%;
+    font-size: var(--fs-xs); color: var(--text); width: 100%;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .month-more { font-size: .64rem; color: var(--faint); }
+  .month-more { font-size: var(--fs-2xs); color: var(--faint); }
 
   .month-day-panel {
     border-top: 1px solid var(--border); padding: 14px 0 4px;
   }
   .month-day-panel-head {
     display: flex; align-items: center; justify-content: space-between;
-    font-size: .85rem; font-weight: 700; color: var(--text); margin-bottom: 10px;
+    font-size: var(--fs-m); font-weight: 700; color: var(--text); margin-bottom: 10px;
   }
   .month-day-close {
-    background: none; border: none; color: var(--faint); font-size: 1.1rem;
-    line-height: 1; cursor: pointer; padding: 2px 6px; border-radius: 6px;
+    background: none; border: none; color: var(--faint); font-size: var(--fs-xl);
+    line-height: 1; cursor: pointer; padding: 2px 6px; border-radius: var(--r-s);
   }
   .month-day-close:hover { background: var(--hover); color: var(--text); }
 
   .month-add-card-btn {
     display: flex; align-items: center; gap: 6px;
     width: 100%; margin-top: 6px; padding: 9px 10px;
-    border: 1px dashed var(--border-strong); border-radius: 10px;
-    background: none; color: var(--muted); font-size: .82rem; font-weight: 500;
+    border: 1px dashed var(--border-strong); border-radius: var(--r-m);
+    background: none; color: var(--muted); font-size: var(--fs-m); font-weight: 500;
     cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
   .month-add-card-btn:hover { background: var(--hover); color: var(--accent); border-color: var(--accent); }
@@ -577,21 +577,21 @@
     .month-cell { padding: 4px 3px; }
     .month-scroll { padding: 0 12px 12px; }
     .month-nav { padding: 10px 12px 4px; }
-    .month-today-btn { right: 12px; font-size: .72rem; padding: 4px 9px; }
+    .month-today-btn { right: 12px; font-size: var(--fs-xs); padding: 4px 9px; }
   }
 
   .agenda-body {
-    flex: 1; min-height: 0; overflow-y: auto;
+    flex: 1; min-height: 0; overflow-y: auto; scrollbar-gutter: stable;
     padding: 20px 28px 40px;
     width: 100%; box-sizing: border-box;
   }
 
-  .empty { color: var(--faint); font-size: 14px; padding: 12px 0; }
+  .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; }
 
   section { margin-bottom: 24px; }
 
   .group-label {
-    font-family: var(--mono); font-size: 10.5px; text-transform: uppercase;
+    font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
     letter-spacing: .08em; font-weight: 700;
     display: flex; align-items: center; gap: 8px;
     margin-bottom: 8px; padding-bottom: 6px;
@@ -609,7 +609,7 @@
        swap; --success needs its own override below since it stays bright
        in both themes rather than swapping. */
     color: var(--on-accent); opacity: .9;
-    font-size: 9px; padding: 1px 5px; border-radius: 8px; font-weight: 700;
+    font-size: var(--fs-2xs); padding: 1px 5px; border-radius: 8px; font-weight: 700;
   }
   /* background can't use currentColor here — that would read the badge's
      own `color` (white) rather than the parent label's color, so each
@@ -623,7 +623,7 @@
     display: grid;
     grid-template-columns: 20px 1fr auto;
     align-items: center; gap: 10px;
-    padding: 10px 14px; border-radius: 10px;
+    padding: 10px 14px; border-radius: var(--r-m);
     border: 1px solid var(--border); border-left: 2px solid var(--prio-color, var(--border));
     background: var(--surface);
     margin-bottom: 5px; cursor: pointer;
@@ -646,18 +646,18 @@
      width, with no breakpoint needed. */
   .task-body { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .task-title {
-    font-size: 14px; font-weight: 500; color: var(--text);
+    font-size: var(--fs-m); font-weight: 500; color: var(--text);
     min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
   .proj-badge {
-    font-family: var(--mono); font-size: 10px; color: var(--faint);
+    font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
   .due-chip {
-    font-family: var(--mono); font-size: 11px; font-weight: 500;
-    padding: 3px 9px; border-radius: 6px; white-space: nowrap;
+    font-family: var(--mono); font-size: var(--fs-xs); font-weight: 500;
+    padding: 3px 9px; border-radius: var(--r-s); white-space: nowrap;
   }
   .due-chip.overdue { background: var(--overdue-bg); color: var(--overdue-ink); }
   .due-chip.week    { background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success-ink); }
@@ -670,13 +670,13 @@
   @media (max-width: 700px) {
     .agenda-header { padding: 14px 16px 10px; }
     .agenda-body   { padding: 14px 14px 32px; }
-    .agenda-title  { font-size: 17px; }
+    .agenda-title  { font-size: var(--fs-xl); }
   }
 
   /* Small — collapse chip to short form */
   @media (max-width: 440px) {
     .task-row  { padding: 9px 10px; gap: 8px; }
-    .task-title { font-size: 13px; }
-    .due-chip  { font-size: 10px; padding: 2px 6px; }
+    .task-title { font-size: var(--fs-m); }
+    .due-chip  { font-size: var(--fs-2xs); padding: 2px 6px; }
   }
 </style>

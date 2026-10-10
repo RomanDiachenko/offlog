@@ -96,8 +96,23 @@
      var(--mono) for a distinct uppercase/letter-spacing/size treatment
      that has nothing to do with which typeface renders it. */
   --mono: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --radius: 12px;
-  --radius-sm: 8px;
+  /* Radius scale: inner controls, fields and buttons, cards and columns,
+     dialogs and floating panels. --radius / --radius-sm are the card and
+     field steps under their older names. */
+  --r-s: 8px;
+  --r-m: 10px;
+  --r-l: 14px;
+  --r-xl: 20px;
+  --radius: var(--r-l);
+  --radius-sm: var(--r-m);
+  /* Desktop type scale (the phone has its own, --p-fs-*, in phone.css). */
+  --fs-2xs: 10px;
+  --fs-xs: 11px;
+  --fs-s: 12.5px;
+  --fs-m: 13.5px;
+  --fs-l: 15px;
+  --fs-xl: 17px;
+  --fs-t: 20px;
   /* Motion tokens, Material 3's easing set and duration scale.
      https://m3.material.io/styles/motion/easing-and-duration
 
@@ -288,6 +303,9 @@ body {
      buttons, or a lone 34px square on it; hover is --rail-hover. */
   --rail-bg:     color-mix(in srgb, var(--text) 6%, transparent);
   --rail-hover:  color-mix(in srgb, var(--text) 7%, transparent);
+  /* Desktop fields and secondary buttons: a soft fill, no outline (a
+     transparent 1px border keeps the box size; focus colours it). */
+  --field-bg:    color-mix(in srgb, var(--text) 5%, transparent);
 
   /* Elevation, three levels and nothing in between: resting content
      (cards, rows, tiles), floating chrome (headers, bars, toasts, a lifted
@@ -347,7 +365,10 @@ body.high-contrast .glass { background: var(--surface); border: 2px solid var(--
     radial-gradient(60% 140% at 12% 0%, color-mix(in srgb, var(--space, var(--accent)) 8%, transparent), transparent 70%),
     radial-gradient(45% 120% at 88% 10%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 70%);
 }
-.fluid-panel { border-radius: 18px; padding: 12px 18px; }
+.fluid-panel { border-radius: var(--r-xl); padding: 12px 18px; }
+/* Above a body that scrolls (with scrollbar-gutter: stable), the panel's
+   right edge clears the 10px scrollbar so it lines up with the content. */
+.fluid-stage.over-scroll { padding-right: calc(28px + 10px); }
 
 /* Selected, Fluid style: a neutral pill and weight carry the state; the
    accent glow is drawn once on ::after and only its opacity ever animates.
@@ -418,6 +439,7 @@ a { -webkit-tap-highlight-color: transparent; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* calm scrollbars */
+/* The 10px width is also in .fluid-stage.over-scroll: change both. */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb {
   background: var(--border-strong);

@@ -104,14 +104,14 @@
   .update-panel {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
     z-index: 701; width: min(400px, 90vw);
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--glass-edge); border-radius: var(--radius);
     box-shadow: var(--elev-3);
     padding: 1.5rem 1.6rem 1.6rem;
   }
-  .update-title { margin: 0 0 .9rem; font-size: .95rem; font-weight: 600; color: var(--text); }
+  .update-title { margin: 0 0 .9rem; font-size: var(--fs-l); font-weight: 600; color: var(--text); }
   .update-notes {
     margin: 0 0 1.1rem; padding: .7rem .8rem; max-height: 200px; overflow-y: auto;
-    font-size: .8rem; line-height: 1.5;
+    font-size: var(--fs-s); line-height: 1.5;
     color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
   }
   .update-notes :global(p) { margin: 0 0 .5rem; }
@@ -122,7 +122,7 @@
   .update-notes :global(ul:last-child) { margin-bottom: 0; }
   .update-notes :global(li) { margin-bottom: .3rem; }
   .update-notes :global(li:last-child) { margin-bottom: 0; }
-  .update-hint { margin: 0 0 1.1rem; font-size: .8rem; color: var(--muted); line-height: 1.5; }
+  .update-hint { margin: 0 0 1.1rem; font-size: var(--fs-s); color: var(--muted); line-height: 1.5; }
   .progress-track {
     height: 8px; border-radius: 4px; background: var(--bg); border: 1px solid var(--border);
     overflow: hidden; margin-bottom: .5rem;
@@ -130,8 +130,8 @@
   .progress-fill { height: 100%; background: var(--accent); transition: width var(--dur-small) var(--ease-standard); }
   .update-actions { display: flex; justify-content: flex-end; gap: .6rem; margin-top: .8rem; }
   .later-btn, .primary-btn {
-    padding: .5rem 1rem; border-radius: var(--radius-sm); font-size: .85rem; font-weight: 600; cursor: pointer;
-    border: 1px solid var(--border-strong); background: var(--bg); color: var(--text);
+    padding: .5rem 1rem; border-radius: var(--radius-sm); font-size: var(--fs-m); font-weight: 600; cursor: pointer;
+    border: 1px solid transparent; background: var(--field-bg); color: var(--text);
     transition: background var(--dur-hover) var(--ease-hover), opacity var(--dur-hover) var(--ease-hover);
   }
   .later-btn:hover { background: var(--hover); }

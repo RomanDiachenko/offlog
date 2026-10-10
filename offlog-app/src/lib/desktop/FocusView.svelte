@@ -239,7 +239,7 @@
 </script>
 
 <div class="focus">
-  <div class="fluid-stage">
+  <div class="fluid-stage over-scroll">
   <div class="fc-header fluid-panel glass">
     <button class="hamburger" on:click={() => dispatch('menu')} aria-label="Menu">
       <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
@@ -369,13 +369,13 @@
     flex-shrink: 0;
   }
   .title-block { min-width: 0; flex: 1; }
-  .fc-title { margin: 0 0 3px; font-size: 20px; font-weight: 700; letter-spacing: -.015em; }
-  .fc-count { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+  .fc-title { margin: 0 0 3px; font-size: var(--fs-t); font-weight: 700; letter-spacing: -.015em; }
+  .fc-count { font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint); }
 
   .hamburger {
     display: none;
     background: none; border: none; cursor: pointer;
-    color: var(--text); padding: 4px; border-radius: 6px; margin-top: 1px;
+    color: var(--text); padding: 4px; border-radius: var(--r-s); margin-top: 1px;
     flex-shrink: 0; align-items: center; justify-content: center;
     transition: background var(--dur-hover) var(--ease-hover);
   }
@@ -385,8 +385,8 @@
      filled) but scaled down for a header button — matching the footer
      CTA's size exactly is too big for this spot. */
   .reset-btn {
-    background: none; border: 1.5px solid var(--border-strong); color: var(--muted);
-    font-size: 13px; font-weight: 700; padding: 8px 18px; border-radius: 9px; cursor: pointer;
+    background: var(--field-bg); border: 1px solid transparent; color: var(--muted);
+    font-size: var(--fs-m); font-weight: 700; padding: 8px 18px; border-radius: var(--r-m); cursor: pointer;
     flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
     /* header is align-items:flex-start — this button sits centered
        against the row instead. */
@@ -404,13 +404,13 @@
   .palette-btn:hover { color: var(--text); background: color-mix(in srgb, var(--text) 12%, transparent); }
 
   .fc-body {
-    flex: 1; min-height: 0; overflow-y: auto;
+    flex: 1; min-height: 0; overflow-y: auto; scrollbar-gutter: stable;
     padding: 20px 28px 40px;
     width: 100%; box-sizing: border-box;
   }
 
-  .picker-hint { color: var(--faint); font-size: 12.5px; margin: 0 0 16px; max-width: 640px; }
-  .empty { color: var(--faint); font-size: 14px; padding: 12px 0; }
+  .picker-hint { color: var(--faint); font-size: var(--fs-s); margin: 0 0 16px; max-width: 640px; }
+  .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; }
 
   /* The corkboard. flex-wrap, not a grid with fixed tracks, so
      differently-sized notes can sit next to each other naturally instead
@@ -427,9 +427,9 @@
     position: relative;
     display: flex; flex-direction: column; gap: 10px;
     background: var(--surface);
-    border: 1px solid var(--border);
+    border: 1px solid transparent;
     border-top: 2px solid var(--prio-color, var(--border));
-    border-radius: 7px;
+    border-radius: var(--r-s);
     padding: 14px 16px;
     cursor: pointer;
     box-shadow: var(--elev-1);
@@ -451,10 +451,10 @@
   .note-sm { flex: 1 1 160px; max-width: 220px; }
   .note-md { flex: 1 1 210px; max-width: 280px; }
   .note-lg { flex: 1 1 260px; max-width: 340px; padding: 18px 20px; }
-  .note-lg .note-title { font-size: 15px; }
+  .note-lg .note-title { font-size: var(--fs-l); }
 
   .note-title {
-    font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.4;
+    font-size: var(--fs-m); font-weight: 600; color: var(--text); line-height: 1.4;
     padding-right: 22px; /* clears the absolutely-positioned .check corner */
     /* standard `line-clamp` paired with the -webkit- prefix -- the prefixed
        property is still what most engines act on, but the unprefixed one is
@@ -467,7 +467,7 @@
     display: grid;
     grid-template-columns: 20px 1fr auto;
     align-items: center; gap: 12px;
-    padding: 14px 16px; border-radius: 7px;
+    padding: 14px 16px; border-radius: var(--r-s);
     border: 1px solid var(--border); border-left: 2px solid var(--prio-color, var(--border));
     background: var(--surface);
     margin-bottom: 8px; cursor: pointer;
@@ -475,22 +475,22 @@
   }
   .task-row:hover { background: var(--hover); box-shadow: var(--elev-1); }
   .remove-btn {
-    background: none; border: none; padding: 6px; border-radius: 6px; cursor: pointer;
+    background: none; border: none; padding: 6px; border-radius: var(--r-s); cursor: pointer;
     color: var(--faint); display: flex; align-items: center; justify-content: center;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .remove-btn:hover { background: var(--hover); color: var(--text); }
   .add-more-btn {
-    width: 100%; padding: 12px 16px; border-radius: 7px; cursor: pointer;
+    width: 100%; padding: 12px 16px; border-radius: var(--r-s); cursor: pointer;
     background: none; border: 1.5px dashed var(--border-strong); color: var(--muted);
-    font-size: 13px; font-weight: 600; text-align: left;
+    font-size: var(--fs-m); font-weight: 600; text-align: left;
     transition: border-color var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .add-more-btn:hover { border-color: var(--accent); color: var(--text); }
 
   .suggest-chip {
-    font-family: var(--mono); font-size: 10px; font-weight: 600;
-    padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+    font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 600;
+    padding: 3px 8px; border-radius: var(--r-s); white-space: nowrap;
   }
   .suggest-chip.pinned    { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent-ink); }
   .suggest-chip.overdue   { background: var(--overdue-bg); color: var(--overdue-ink); }
@@ -534,7 +534,7 @@
      look — it has room to spare and pairs visually with .suggest-chip. */
   .task-row .task-body { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .task-title {
-    font-size: 15px; font-weight: 600; color: var(--text);
+    font-size: var(--fs-l); font-weight: 600; color: var(--text);
     min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   /* Plain text, not a chip. The general .proj-badge rule below (used by
@@ -542,14 +542,14 @@
      explicit `none`/`0` clears — setting other properties here does not
      shadow them. */
   .task-row .proj-badge {
-    font-family: var(--mono); font-size: 10px; color: var(--faint);
+    font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
     background: none; padding: 0;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
   .proj-badge {
-    font-family: var(--mono); font-size: 10px; color: var(--faint);
-    background: var(--col-bg); padding: 2px 8px; border-radius: 6px;
+    font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
+    background: var(--col-bg); padding: 2px 8px; border-radius: var(--r-s);
     white-space: nowrap;
   }
 
@@ -563,7 +563,7 @@
   .commit-btn {
     width: auto; min-width: 240px;
     background: var(--accent); color: var(--on-accent); border: 1.5px solid var(--accent);
-    font-size: 15px; font-weight: 700; padding: 13px 32px; border-radius: 12px;
+    font-size: var(--fs-l); font-weight: 700; padding: 13px 32px; border-radius: var(--r-l);
     cursor: pointer; transition: opacity var(--dur-hover) var(--ease-hover);
   }
   .commit-btn:disabled { opacity: .4; cursor: not-allowed; }
@@ -577,7 +577,7 @@
     .fc-header { padding: 14px 16px 10px; }
     .fc-body   { padding: 14px 14px 32px; }
     .fc-footer { padding: 12px 16px; }
-    .fc-title  { font-size: 17px; }
+    .fc-title  { font-size: var(--fs-xl); }
     .board { gap: 14px; }
     .note-sm, .note-md, .note-lg { flex-basis: calc(50% - 7px); max-width: none; }
   }

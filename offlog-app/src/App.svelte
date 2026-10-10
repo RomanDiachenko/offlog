@@ -901,7 +901,7 @@
   .hamburger {
     display: none;
     background: none; border: none; cursor: pointer;
-    color: var(--text); padding: 4px; border-radius: 6px;
+    color: var(--text); padding: 4px; border-radius: var(--r-s);
     flex-shrink: 0; align-items: center; justify-content: center;
     transition: background var(--dur-hover) var(--ease-hover);
   }
@@ -910,12 +910,12 @@
   .title-block { min-width: 0; }
   .breadcrumb {
     display: flex; align-items: center; gap: 6px;
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em;
+    font-family: var(--mono); font-size: var(--fs-2xs); letter-spacing: .06em;
     text-transform: uppercase; color: var(--faint); margin-bottom: 3px;
   }
   .bc-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
   .board-title {
-    margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -.015em;
+    margin: 0; font-size: var(--fs-t); font-weight: 700; letter-spacing: -.015em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
@@ -939,7 +939,7 @@
   .view-btn {
     display: flex; align-items: center; justify-content: center; gap: 7px;
     height: 26px; box-sizing: border-box;
-    border: none; cursor: pointer; font-family: inherit; font-size: 12.5px;
+    border: none; cursor: pointer; font-family: inherit; font-size: var(--fs-s);
     font-weight: 600; padding: 0 10px; border-radius: 8px;
     background: transparent; color: var(--muted);
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
@@ -950,14 +950,14 @@
 
   .empty-state {
     display: flex; flex-direction: column; align-items: flex-start;
-    gap: 1rem; padding: 16px 24px; color: var(--muted); font-size: .95rem;
+    gap: 1rem; padding: 16px 24px; color: var(--muted); font-size: var(--fs-l);
   }
   .empty-state span { margin: auto; align-self: center; }
 
   .loading {
     display: flex; align-items: center; justify-content: center; gap: 9px;
     height: 100dvh; color: var(--faint);
-    font-family: var(--mono); font-size: .8rem; letter-spacing: .04em;
+    font-family: var(--mono); font-size: var(--fs-s); letter-spacing: .04em;
   }
   /* On the phone it continues the launch splash (same --hero colour, see
      android colors.xml splashBg) until Home's hero takes over. */
@@ -969,27 +969,27 @@
     height: 100dvh; padding: 24px; text-align: center; gap: 10px;
     background: var(--bg); color: var(--text);
   }
-  .crash-recovery h2 { margin: 0; font-size: 18px; }
-  .crash-msg { color: var(--danger); font-size: 13px; max-width: 380px; }
-  .crash-hint { color: var(--faint); font-size: 12.5px; max-width: 380px; line-height: 1.5; }
+  .crash-recovery h2 { margin: 0; font-size: var(--fs-xl); }
+  .crash-msg { color: var(--danger); font-size: var(--fs-m); max-width: 380px; }
+  .crash-hint { color: var(--faint); font-size: var(--fs-s); max-width: 380px; line-height: 1.5; }
   .retry-btn {
     margin-top: 8px; padding: 8px 20px; border-radius: var(--radius-sm);
     border: 1px solid var(--text); background: var(--text); color: var(--bg);
-    cursor: pointer; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-size: var(--fs-m); font-weight: 600;
   }
 
   /* ── Update banner (desktop only) ── */
   .update-banner {
     position: fixed; bottom: 24px; left: 24px; z-index: 300;
     display: flex; align-items: center; gap: .9rem;
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--glass-edge); border-radius: var(--radius);
     box-shadow: var(--elev-3);
-    padding: .7rem 1rem; font-size: .85rem; color: var(--text);
+    padding: .7rem 1rem; font-size: var(--fs-m); color: var(--text);
   }
   .update-banner-actions { display: flex; gap: .5rem; flex-shrink: 0; }
   .update-banner-dismiss, .update-banner-view {
-    padding: .35rem .7rem; border-radius: var(--radius-sm); font-size: .78rem; font-weight: 600; cursor: pointer;
-    border: 1px solid var(--border-strong); background: var(--bg); color: var(--text);
+    padding: .35rem .7rem; border-radius: var(--radius-sm); font-size: var(--fs-s); font-weight: 600; cursor: pointer;
+    border: 1px solid transparent; background: var(--field-bg); color: var(--text);
   }
   .update-banner-view { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   .update-banner-dismiss:hover { background: var(--hover); }
@@ -1011,21 +1011,21 @@
   .scrim { display: flex; align-items: center; justify-content: center; }
   .shortcuts-panel {
     position: relative; z-index: 401;
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--glass-edge); border-radius: var(--radius);
     padding: 1.25rem 1.4rem; width: min(360px, 90vw);
     box-shadow: var(--elev-3);
   }
   .shortcuts-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem; }
-  .shortcuts-head h3 { margin: 0; font-size: 1rem; letter-spacing: -.01em; }
+  .shortcuts-head h3 { margin: 0; font-size: var(--fs-xl); letter-spacing: -.01em; }
   .shortcuts-close {
     background: var(--hover); border: none; cursor: pointer;
-    width: 26px; height: 26px; border-radius: 6px; color: var(--muted); font-size: .8rem;
+    width: 26px; height: 26px; border-radius: var(--r-s); color: var(--muted); font-size: var(--fs-s);
   }
   .shortcuts-close:hover { background: var(--border-strong); color: var(--text); }
   .shortcuts-list { display: flex; flex-direction: column; gap: .6rem; }
-  .shortcut-row { display: flex; align-items: center; gap: .3rem; font-size: .85rem; color: var(--text); }
+  .shortcut-row { display: flex; align-items: center; gap: .3rem; font-size: var(--fs-m); color: var(--text); }
   .shortcut-row kbd {
-    font-family: var(--mono); font-size: .74rem; background: var(--col-bg);
+    font-family: var(--mono); font-size: var(--fs-s); background: var(--col-bg);
     border: 1px solid var(--border-strong); border-radius: 5px; padding: .15rem .4rem;
   }
   .shortcut-desc { margin-left: .5rem; color: var(--muted); }
@@ -1036,15 +1036,15 @@
     /* --on-accent, not hardcoded #fff — --danger is a light red-pink in
        dark mode, where #fff drops to 2.77:1 contrast. */
     background: var(--danger); color: var(--on-accent);
-    padding: 11px 18px; border-radius: 10px;
-    font-size: 13.5px; font-weight: 500;
+    padding: 11px 18px; border-radius: var(--r-m);
+    font-size: var(--fs-m); font-weight: 500;
     box-shadow: var(--elev-2);
     z-index: 1000; white-space: nowrap;
   }
 
   :global(body.phone) .toast-stack { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   :global(body.phone) .error-toast {
-    left: 12px; right: 12px; transform: none; white-space: normal; border-radius: 12px; padding: 14px 16px;
+    left: 12px; right: 12px; transform: none; white-space: normal; border-radius: var(--r-l); padding: 14px 16px;
     bottom: auto; top: calc(12px + env(safe-area-inset-top, 0px));
     pointer-events: none;
   }
@@ -1058,21 +1058,21 @@
   .toast {
     display: flex; align-items: center; gap: 10px;
     color: var(--text);
-    padding: 11px 14px; border-radius: 10px;
-    font-size: 13.5px; font-weight: 500;
+    padding: 11px 14px; border-radius: var(--r-m);
+    font-size: var(--fs-m); font-weight: 500;
     pointer-events: all;
     white-space: nowrap;
   }
   .toast-msg { flex: 1; }
   .toast-undo {
     background: var(--accent); color: var(--on-accent); border: none; cursor: pointer;
-    padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;
+    padding: 4px 10px; border-radius: var(--r-s); font-size: var(--fs-s); font-weight: 700;
     transition: opacity var(--dur-hover) var(--ease-hover);
   }
   .toast-undo:hover { opacity: .85; }
   .toast-close {
     background: none; border: none; cursor: pointer; color: inherit;
-    opacity: .5; font-size: 13px; padding: 0 2px;
+    opacity: .5; font-size: var(--fs-m); padding: 0 2px;
   }
   .toast-close:hover { opacity: 1; }
 
@@ -1084,7 +1084,7 @@
     .mobile-scrim { display: block; }
     .hamburger { display: flex; }
     .board-header { padding: 12px 16px 10px; gap: 10px; }
-    .board-title { font-size: 17px; }
+    .board-title { font-size: var(--fs-xl); }
     .breadcrumb { display: none; }
     .view-label { display: none; }
     .view-btn { padding: 0 9px; }

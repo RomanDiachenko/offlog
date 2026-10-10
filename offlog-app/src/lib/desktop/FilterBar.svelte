@@ -203,7 +203,7 @@
     display: flex; align-items: center; justify-content: center; gap: 5px;
     height: 26px; box-sizing: border-box;
     background: none; border: none; border-radius: 8px;
-    color: var(--muted); font-size: 12.5px; font-weight: 500;
+    color: var(--muted); font-size: var(--fs-s); font-weight: 500;
     padding: 0 10px; cursor: pointer; white-space: nowrap;
     transition: color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
@@ -215,11 +215,11 @@
     min-width: 14px; height: 14px; padding: 0 3px;
     display: flex; align-items: center; justify-content: center;
     background: var(--accent); color: var(--on-accent);
-    border-radius: 7px; font-size: 9.5px; font-weight: 700; line-height: 1;
+    border-radius: var(--r-s); font-size: var(--fs-2xs); font-weight: 700; line-height: 1;
   }
 
   .menu-label {
-    font-family: var(--mono); font-size: .6rem; text-transform: uppercase;
+    font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
     letter-spacing: .08em; color: var(--faint); padding: 6px 2px 2px;
   }
   .menu-divider { height: 1px; background: var(--border); margin: 8px -6px 0; }
@@ -233,9 +233,9 @@
   .prio-chips { display: flex; gap: 3px; flex-wrap: wrap; }
   .prio-chip {
     display: flex; align-items: center; gap: 5px;
-    border: 1px solid var(--border-strong); border-radius: 7px;
+    border: 1px solid var(--border-strong); border-radius: var(--r-s);
     background: var(--bg); color: var(--muted);
-    font-size: 12px; font-weight: 500; padding: 5px 9px;
+    font-size: var(--fs-s); font-weight: 500; padding: 5px 9px;
     cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
   .prio-chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
@@ -247,21 +247,21 @@
   .field-filter-selects { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .field-filter-remove {
     flex-shrink: 0; background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: .95rem; line-height: 1;
-    padding: .3rem .3rem; border-radius: 6px; margin-top: 2px;
+    color: var(--faint); font-size: var(--fs-l); line-height: 1;
+    padding: .3rem .3rem; border-radius: var(--r-s); margin-top: 2px;
   }
   .field-filter-remove:hover { color: color-mix(in srgb, var(--danger) 82%, var(--text)); background: color-mix(in srgb, var(--danger) 10%, transparent); }
   .add-field-filter-btn {
     width: 100%; text-align: left; background: none; border: none; cursor: pointer;
-    color: var(--accent); font-size: .78rem; font-weight: 600;
+    color: var(--accent); font-size: var(--fs-s); font-weight: 600;
     padding: .3rem .2rem; margin-top: 2px;
   }
   .add-field-filter-btn:hover { text-decoration: underline; }
 
   .clear-all {
     width: 100%;
-    background: none; border: 1px solid var(--border-strong); border-radius: 7px;
-    color: var(--muted); font-size: 11.5px; padding: 5px 10px; cursor: pointer;
+    background: var(--field-bg); border: 1px solid transparent; border-radius: var(--r-s);
+    color: var(--muted); font-size: var(--fs-xs); padding: 5px 10px; cursor: pointer;
     transition: color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
   .clear-all:hover { color: var(--danger); border-color: var(--danger); }
@@ -269,27 +269,27 @@
   .filter-menu { width: 280px; min-width: 0; }
   .filter-save-row { display: flex; gap: 6px; padding: 2px; }
   .filter-name-input {
-    flex: 1; min-width: 0; font-size: .8rem; padding: .4rem .5rem;
-    border: 1px solid var(--border-strong); border-radius: 6px; background: var(--bg); color: var(--text);
+    flex: 1; min-width: 0; font-size: var(--fs-s); padding: .4rem .5rem;
+    border: 1px solid transparent; border-radius: var(--r-s); background: var(--field-bg); color: var(--text);
   }
   .filter-save-btn {
-    background: var(--accent); color: var(--on-accent); border: none; border-radius: 6px;
-    padding: .4rem .6rem; font-size: .78rem; font-weight: 600; cursor: pointer;
+    background: var(--accent); color: var(--on-accent); border: none; border-radius: var(--r-s);
+    padding: .4rem .6rem; font-size: var(--fs-s); font-weight: 600; cursor: pointer;
   }
   .filter-save-btn:disabled { opacity: .5; cursor: default; }
   .filter-list { display: flex; flex-direction: column; gap: 1px; margin-top: 4px; border-top: 1px solid var(--border); padding-top: 4px; }
   .filter-row { display: flex; align-items: center; gap: 4px; }
   .filter-apply-btn {
     flex: 1; text-align: left; background: none; border: none; cursor: pointer;
-    padding: .35rem .5rem; border-radius: 6px; font-size: .8rem; color: var(--text);
+    padding: .35rem .5rem; border-radius: var(--r-s); font-size: var(--fs-s); color: var(--text);
   }
   .filter-apply-btn:hover { background: var(--hover); }
   .filter-del-btn {
     background: none; border: none; cursor: pointer; color: var(--faint);
-    font-size: .85rem; padding: .2rem .4rem; border-radius: 6px; flex-shrink: 0;
+    font-size: var(--fs-m); padding: .2rem .4rem; border-radius: var(--r-s); flex-shrink: 0;
   }
   .filter-del-btn:hover { color: color-mix(in srgb, var(--danger) 82%, var(--text)); background: color-mix(in srgb, var(--danger) 10%, transparent); }
-  .filter-empty { padding: .5rem; text-align: center; color: var(--faint); font-size: .78rem; }
+  .filter-empty { padding: .5rem; text-align: center; color: var(--faint); font-size: var(--fs-s); }
 
   @media (max-width: 600px) {
     .action-label { display: none; }

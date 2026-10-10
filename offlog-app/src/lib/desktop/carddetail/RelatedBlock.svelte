@@ -59,6 +59,6 @@
   button {
     padding: .38rem .8rem; border-radius: var(--radius-sm);
     border: 1px solid var(--border-strong); cursor: pointer;
-    background: var(--surface); color: var(--text); font-size: .82rem; font-weight: 500;
+    background: var(--surface); color: var(--text); font-size: var(--fs-m); font-weight: 500;
   }
 </style>

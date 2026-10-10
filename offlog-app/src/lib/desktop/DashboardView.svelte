@@ -102,7 +102,7 @@
 </script>
 
 <div class="dash">
-  <div class="fluid-stage">
+  <div class="fluid-stage over-scroll">
   <div class="dash-header fluid-panel glass">
     <button class="hamburger" on:click={() => dispatch('menu')} aria-label="Menu">
       <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
@@ -321,14 +321,14 @@
     flex-shrink: 0;
   }
   .title-block { min-width: 0; }
-  .dash-title { margin: 0 0 3px; font-size: 20px; font-weight: 700; letter-spacing: -.015em; }
-  .dash-sub { font-family: var(--mono); font-size: 11px; color: var(--faint); display: block; }
+  .dash-title { margin: 0 0 3px; font-size: var(--fs-t); font-weight: 700; letter-spacing: -.015em; }
+  .dash-sub { font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint); display: block; }
   .dash-week { margin-top: 2px; }
 
   .hamburger {
     display: none;
     background: none; border: none; cursor: pointer;
-    color: var(--text); padding: 4px; border-radius: 6px; margin-top: 1px;
+    color: var(--text); padding: 4px; border-radius: var(--r-s); margin-top: 1px;
     flex-shrink: 0; align-items: center; justify-content: center;
     transition: background var(--dur-hover) var(--ease-hover);
   }
@@ -348,29 +348,29 @@
   .palette-btn:hover { color: var(--text); background: color-mix(in srgb, var(--text) 12%, transparent); }
 
   .dash-body {
-    flex: 1; min-height: 0; overflow-y: auto;
+    flex: 1; min-height: 0; overflow-y: auto; scrollbar-gutter: stable;
     padding: 20px 28px 32px;
     display: flex; flex-direction: column;
   }
 
   /* "Daily Brief" card, full-width above the two-column layout. */
   .brief {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface); border: 1px solid transparent; border-radius: var(--r-l);
     padding: 14px 20px; margin-bottom: 20px; cursor: pointer;
     display: flex; flex-direction: column; gap: 8px;
-    transition: border-color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
+    transition: border-color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover); box-shadow: var(--elev-1);
   }
-  .brief:hover { border-color: var(--accent); box-shadow: var(--elev-2); }
+  .brief:hover { box-shadow: var(--elev-2); }
   .brief-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .brief-label {
-    font-family: var(--mono); font-size: 10.5px; text-transform: uppercase;
+    font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
     letter-spacing: .08em; font-weight: 700; color: var(--faint);
   }
-  .brief-count { font-family: var(--mono); font-size: 11.5px; color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
-  .brief-empty { font-size: 13px; color: var(--faint); }
+  .brief-count { font-family: var(--mono); font-size: var(--fs-xs); color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .brief-empty { font-size: var(--fs-m); color: var(--faint); }
   .brief-tasks { display: flex; flex-wrap: wrap; gap: 8px 16px; }
   .brief-task {
-    font-size: 13.5px; color: var(--text); position: relative; padding-left: 16px;
+    font-size: var(--fs-m); color: var(--text); position: relative; padding-left: 16px;
   }
   .brief-task::before {
     content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
@@ -397,13 +397,13 @@
   .view-all {
     background: none; border: none; cursor: pointer;
     color: var(--faint);
-    font-size: 11px; padding: 8px 12px 0; text-align: left;
+    font-size: var(--fs-xs); padding: 8px 12px 0; text-align: left;
     transition: opacity var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .view-all:hover { opacity: 1; color: var(--muted); }
 
   .section-title {
-    font-family: var(--mono); font-size: 10.5px; text-transform: uppercase;
+    font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
     letter-spacing: .08em; font-weight: 700; color: var(--faint);
     margin-bottom: 10px;
   }
@@ -425,12 +425,12 @@
        .proj-name's min-height below. */
   }
   .proj-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface); border: 1px solid transparent; border-radius: var(--r-l);
     padding: 18px 20px; cursor: pointer;
     transition: border-color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover), transform var(--dur-hover) var(--ease-hover);
-    display: flex; flex-direction: column; gap: 8px;
+    display: flex; flex-direction: column; gap: 8px; box-shadow: var(--elev-1);
   }
-  .proj-card:hover { border-color: var(--accent); box-shadow: var(--elev-2); transform: translateY(-1px); }
+  .proj-card:hover { box-shadow: var(--elev-2); transform: translateY(-1px); }
 
   .proj-card-top { display: flex; align-items: center; gap: 6px; }
   .space-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
@@ -438,28 +438,28 @@
      instead of overflowing its row (flex items default to a content-based
      min-width). The grid's grid-auto-rows: minmax(130px, auto) absorbs the
      resulting variable heights. */
-  .space-name { font-family: var(--mono); font-size: 10px; color: var(--faint); text-transform: uppercase; letter-spacing: .05em; min-width: 0; overflow-wrap: break-word; }
+  .space-name { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); text-transform: uppercase; letter-spacing: .05em; min-width: 0; overflow-wrap: break-word; }
   /* min-height reserves 2 lines' worth of title height unconditionally, so
      every card budgets the same space whether or not its title wraps and
      the grid stays uniform without truncating 2-line titles. */
-  .proj-name { font-size: 16px; font-weight: 700; line-height: 1.3; min-height: 2.6em; color: var(--text); overflow-wrap: break-word; margin-top: 2px; }
+  .proj-name { font-size: var(--fs-xl); font-weight: 700; line-height: 1.3; min-height: 2.6em; color: var(--text); overflow-wrap: break-word; margin-top: 2px; }
   /* Chips, not bare wrapped text — at narrow card widths plain text runs
      wrap onto separate lines with uneven spacing. Pill chips still wrap,
      but each reads as one self-contained unit. */
   .proj-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: auto; padding-top: 8px; }
   .stat {
-    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    font-family: var(--mono); font-size: var(--fs-xs); color: var(--muted);
     display: inline-flex; align-items: center; gap: 3px;
-    padding: 3px 8px; border-radius: 20px; background: var(--hover);
+    padding: 3px 8px; border-radius: var(--r-xl); background: var(--hover);
     white-space: nowrap;
   }
   .progress { height: 4px; border-radius: 4px; background: var(--hover); overflow: hidden; }
   .progress span { display: block; height: 100%; border-radius: 4px; background: var(--success); }
-  .proj-meta { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+  .proj-meta { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: var(--fs-s); color: var(--muted); }
   .pinned-stat { color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 14%, transparent); }
   .overdue-stat { color: color-mix(in srgb, var(--danger) 82%, var(--text)); background: color-mix(in srgb, var(--danger) 14%, transparent); }
 
-  .task-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border-radius: 10px; overflow: hidden; }
+  .task-list { display: flex; flex-direction: column; gap: 1px; background: color-mix(in srgb, var(--text) 6%, transparent); border-radius: var(--r-l); overflow: hidden; box-shadow: var(--elev-1); }
   .task-row {
     display: flex; align-items: stretch; gap: 9px;
     padding: 9px 12px; background: var(--surface);
@@ -474,17 +474,17 @@
      pattern) — cramming all three onto one line inside the 320px right
      column forces heavy truncation. */
   .task-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-  .task-title { font-size: 13px; font-weight: 500; color: var(--text); overflow-wrap: break-word; }
+  .task-title { font-size: var(--fs-m); font-weight: 500; color: var(--text); overflow-wrap: break-word; }
   .task-proj {
-    font-family: var(--mono); font-size: 10px; color: var(--faint);
+    font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
     overflow-wrap: break-word;
   }
   .task-due { color: var(--muted); }
   .task-due.overdue { color: var(--danger); }
 
-  .all-good { color: var(--faint); font-size: 13px; padding: 6px 0; }
-  .no-projects { grid-column: 1 / -1; color: var(--faint); font-size: 13px; padding: 6px 0; }
-  .loading { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 3rem; color: var(--faint); font-family: var(--mono); font-size: .8rem; }
+  .all-good { color: var(--faint); font-size: var(--fs-m); padding: 6px 0; }
+  .no-projects { grid-column: 1 / -1; color: var(--faint); font-size: var(--fs-m); padding: 6px 0; }
+  .loading { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 3rem; color: var(--faint); font-family: var(--mono); font-size: var(--fs-s); }
 
   /* ── Responsive ── */
   @media (max-width: 900px) {

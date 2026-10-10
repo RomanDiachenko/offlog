@@ -1536,7 +1536,7 @@
     /* This panel is a sibling of <aside class="sidebar">, not a descendant —
        it already inherits the real global :root/body.dark variables
        directly. No local overrides needed. */
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--glass-edge); border-radius: var(--radius);
     width: min(640px, 92vw);
     display: flex; flex-direction: column;
     box-shadow: var(--elev-3);
@@ -1562,12 +1562,12 @@
     width: 190px; flex-shrink: 0; display: flex; flex-direction: column; gap: .1rem;
     border-right: 1px solid var(--border); padding: 1.1rem .6rem; overflow-y: auto;
   }
-  .nav-title { margin: 0 0 .5rem; padding: 0 .5rem; font-size: 1rem; letter-spacing: -.01em; }
+  .nav-title { margin: 0 0 .5rem; padding: 0 .5rem; font-size: var(--fs-xl); letter-spacing: -.01em; }
   .nav-item {
     display: flex; align-items: center; gap: .55rem;
     background: none; border: none; cursor: pointer; text-align: left;
     padding: .55rem .55rem; border-radius: var(--radius-sm);
-    color: var(--muted); font-size: .84rem; font-weight: 500;
+    color: var(--muted); font-size: var(--fs-m); font-weight: 500;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .nav-item svg { flex-shrink: 0; opacity: .8; }
@@ -1576,7 +1576,7 @@
   .nav-item.active { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
   .nav-item.active svg { opacity: 1; color: var(--accent); }
   .nav-badge, .detail-content :global(.nav-badge) {
-    font-family: var(--mono); font-size: .62rem; font-weight: 700;
+    font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 700;
     background: var(--due-soon-bg); color: var(--due-soon-ink);
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
@@ -1593,11 +1593,11 @@
 
   .settings-detail { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
   .detail-head { display: none; align-items: center; gap: .5rem; padding: 1rem 1.25rem .5rem; flex-shrink: 0; }
-  .detail-title { font-weight: 700; font-size: .95rem; }
+  .detail-title { font-weight: 700; font-size: var(--fs-l); }
   .back-btn {
     display: none; align-items: center; gap: .2rem;
     background: none; border: none; cursor: pointer; color: var(--accent);
-    font-size: .85rem; font-weight: 600; padding: .2rem;
+    font-size: var(--fs-m); font-weight: 600; padding: .2rem;
   }
   .detail-content {
     flex: 1; overflow-y: auto; padding: 1.25rem 1.4rem;
@@ -1644,7 +1644,7 @@
   }
   .detail-content :global(.setting-section-title) {
     display: flex; align-items: center; gap: .4rem;
-    font-family: var(--mono); font-size: .62rem; text-transform: uppercase;
+    font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
     letter-spacing: .08em; color: var(--muted); font-weight: 600;
   }
   .detail-content :global(.setting-section-title)::before {
@@ -1652,7 +1652,7 @@
     background: var(--accent); flex-shrink: 0;
   }
   .setting-row, .detail-content :global(.setting-row) { display: flex; align-items: center; gap: .75rem; }
-  .setting-hint, .detail-content :global(.setting-hint) { margin: 0; font-size: .74rem; color: var(--muted); line-height: 1.5; }
+  .setting-hint, .detail-content :global(.setting-hint) { margin: 0; font-size: var(--fs-s); color: var(--muted); line-height: 1.5; }
   /* Pulls a status line up against the row it reports on, instead of
      sitting a full group-gap away as if it were a separate setting. */
   .detail-content :global(.setting-hint.compact-hint) { margin-top: -.3rem; }
@@ -1665,9 +1665,9 @@
     color: var(--success-ink); background: color-mix(in srgb, var(--success) 14%, transparent);
     padding: .5rem .65rem; border-radius: var(--radius-sm); font-weight: 600;
   }
-  .detail-content :global(.setting-label) { font-size: .88rem; color: var(--text); flex: 1; }
-  .detail-content :global(.setting-value) { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .storage-info, .detail-content :global(.storage-info) { font-family: var(--mono); font-size: .72rem; color: var(--muted); flex: 1; }
+  .detail-content :global(.setting-label) { font-size: var(--fs-m); color: var(--text); flex: 1; }
+  .detail-content :global(.setting-value) { font-size: var(--fs-m); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .storage-info, .detail-content :global(.storage-info) { font-family: var(--mono); font-size: var(--fs-xs); color: var(--muted); flex: 1; }
   /* "Devices seen recently" always includes this device's own writes
      (they're logged like any other edit) mixed in with remote ones --
      nothing else says which entry that is, so matching it against
@@ -1676,7 +1676,7 @@
   .detail-content :global(.device-name-row) { display: inline-flex; align-items: center; gap: 6px; }
 
   .detail-content :global(.this-device-tag) {
-    font-family: 'Hanken Grotesk', sans-serif; font-size: .68rem; font-weight: 600;
+    font-family: 'Hanken Grotesk', sans-serif; font-size: var(--fs-xs); font-weight: 600;
     line-height: 1; display: inline-flex; align-items: center;
     color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 10%, transparent);
     padding: 3px 6px; border-radius: 999px;
@@ -1686,9 +1686,9 @@
      demoted to a small mono detail line underneath, not the first thing
      a non-technical person sees. */
   .detail-content :global(.storage-summary) { display: flex; flex-direction: column; gap: 2px; }
-  .detail-content :global(.storage-headline) { font-size: .9rem; color: var(--text); font-weight: 500; }
+  .detail-content :global(.storage-headline) { font-size: var(--fs-l); color: var(--text); font-weight: 500; }
   .detail-content :global(.storage-headline-warn) { color: var(--danger); }
-  .detail-content :global(.storage-detail) { font-family: var(--mono); font-size: .7rem; color: var(--muted); }
+  .detail-content :global(.storage-detail) { font-family: var(--mono); font-size: var(--fs-xs); color: var(--muted); }
 
   .detail-content :global(.project-export-select) { flex: 1; min-width: 0; }
 
@@ -1698,7 +1698,7 @@
   .btn-primary {
     padding: .35rem .8rem; border-radius: var(--radius-sm);
     border: 1px solid var(--accent); cursor: pointer;
-    background: var(--accent); color: var(--on-accent); font-size: .8rem; font-weight: 600;
+    background: var(--accent); color: var(--on-accent); font-size: var(--fs-s); font-weight: 600;
     white-space: nowrap;
   }
   .btn-primary:hover { opacity: .9; }
@@ -1706,29 +1706,29 @@
 
   .field-label, .detail-content :global(.field-label) {
     display: flex; flex-direction: column; gap: .35rem;
-    font-family: var(--mono); font-size: .68rem; letter-spacing: .06em;
+    font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: .06em;
     text-transform: uppercase; color: var(--muted);
   }
   .field-label input, .detail-content :global(.field-label input) {
-    padding: .5rem .6rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    background: var(--surface); color: var(--text); font-size: .9rem;
+    padding: .5rem .6rem; border: 1px solid transparent; border-radius: var(--radius-sm);
+    background: var(--field-bg); color: var(--text); font-size: var(--fs-l);
   }
   .field-label input:focus, .detail-content :global(.field-label input:focus) { outline: none; border-color: var(--accent); }
   .field-label input:disabled, .detail-content :global(.field-label input:disabled) { opacity: .5; cursor: default; }
 
   /* No overflow clip on the track: it would cut off the selected glow. */
   .detail-content :global(.theme-segment) {
-    display: flex; background: var(--col-bg); border-radius: 10px; padding: 3px; gap: 2px; flex-shrink: 0;
+    display: flex; background: var(--col-bg); border-radius: var(--r-m); padding: 3px; gap: 2px; flex-shrink: 0;
   }
   .detail-content :global(.theme-seg-btn) {
-    padding: .3rem .75rem; border: none; border-radius: 7px; background: transparent; color: var(--muted);
-    font-size: .8rem; font-weight: 500; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
+    padding: .3rem .75rem; border: none; border-radius: var(--r-s); background: transparent; color: var(--muted);
+    font-size: var(--fs-s); font-weight: 500; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .detail-content :global(.theme-seg-btn:hover) { background: var(--hover); color: var(--text); }
   .detail-content :global(.theme-seg-btn.active) { background: var(--surface); color: var(--text); font-weight: 600; }
 
   .detail-content :global(.toggle-btn) {
-    width: 42px; height: 24px; border-radius: 12px; border: none; cursor: pointer;
+    width: 42px; height: 24px; border-radius: var(--r-l); border: none; cursor: pointer;
     background: var(--switch-off); position: relative; transition: background var(--dur-hover) var(--ease-hover);
     flex-shrink: 0; padding: 0;
   }
@@ -1742,8 +1742,8 @@
 
   .export-btn, .detail-content :global(.export-btn) {
     padding: .35rem .8rem; border-radius: var(--radius-sm);
-    border: 1px solid var(--border-strong); cursor: pointer;
-    background: var(--surface); color: var(--text); font-size: .8rem; font-weight: 500;
+    border: 1px solid transparent; cursor: pointer;
+    background: var(--field-bg); color: var(--text); font-size: var(--fs-s); font-weight: 500;
     white-space: nowrap;
   }
   .export-btn:hover, .detail-content :global(.export-btn:hover) { background: var(--hover); }
@@ -1765,7 +1765,7 @@
     transition: background var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
   .detail-content :global(.link-row:hover) { background: var(--hover); border-color: var(--border-strong); }
-  .detail-content :global(.link-row-title) { flex: 1; font-size: .88rem; font-weight: 600; color: var(--text); }
+  .detail-content :global(.link-row-title) { flex: 1; font-size: var(--fs-m); font-weight: 600; color: var(--text); }
   .detail-content :global(.link-row-compact) { padding: .5rem .9rem; }
   .detail-content :global(.link-row-compact .link-row-title) { font-weight: 500; }
   .detail-content :global(.link-row svg) { flex-shrink: 0; opacity: .5; }
@@ -1773,23 +1773,23 @@
 
   .conflict-item {
     display: flex; flex-direction: column; gap: .3rem;
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: .5rem .65rem;
+    background: var(--surface); border: 1px solid transparent; border-radius: var(--radius-sm);
+    padding: .5rem .65rem; box-shadow: var(--elev-1);
   }
-  .conflict-item-title { font-size: .8rem; font-weight: 600; color: var(--text); }
+  .conflict-item-title { font-size: var(--fs-s); font-weight: 600; color: var(--text); }
   .conflict-item-type { font-weight: 400; color: var(--faint); }
   .conflict-item-row { display: flex; align-items: center; gap: .75rem; }
-  .conflict-item-meta { font-size: .72rem; color: var(--muted); flex: 1; }
+  .conflict-item-meta { font-size: var(--fs-xs); color: var(--muted); flex: 1; }
 
   /* What actually differs. Without this the screen asks a person to choose
      between two device names and two timestamps, with no way to see what
      either choice costs. */
-  .conflict-diff-note { font-size: .72rem; color: var(--muted); }
+  .conflict-diff-note { font-size: var(--fs-xs); color: var(--muted); }
   .conflict-version {
     display: flex; flex-direction: column; gap: .2rem;
     border-top: 1px solid var(--border); padding-top: .4rem; margin-top: .2rem;
   }
-  .conflict-field { display: flex; gap: .5rem; font-size: .74rem; line-height: 1.45; }
+  .conflict-field { display: flex; gap: .5rem; font-size: var(--fs-s); line-height: 1.45; }
   .conflict-field-name { color: var(--faint); min-width: 5.5rem; flex-shrink: 0; }
   .conflict-field-value { color: var(--text); word-break: break-word; }
 
@@ -1804,7 +1804,7 @@
   .maint-step-icon {
     width: 18px; height: 18px; flex-shrink: 0; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: .7rem; font-weight: 700; color: var(--faint);
+    font-size: var(--fs-xs); font-weight: 700; color: var(--faint);
     border: 1.5px solid var(--border-strong);
   }
   .maint-step-icon.done    { color: var(--success-ink); border-color: var(--success); background: color-mix(in srgb, var(--success) 14%, transparent); }
@@ -1820,15 +1820,15 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .maint-step-label { font-size: .84rem; color: var(--text); flex: 1; }
-  .maint-step-note { font-size: .72rem; color: var(--faint); text-align: right; white-space: nowrap; }
+  .maint-step-label { font-size: var(--fs-m); color: var(--text); flex: 1; }
+  .maint-step-note { font-size: var(--fs-xs); color: var(--faint); text-align: right; white-space: nowrap; }
 
   .integrity-list {
     display: flex; flex-direction: column; gap: 3px;
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
     padding: .5rem .65rem; max-height: 140px; overflow-y: auto;
   }
-  .integrity-row { font-size: .74rem; color: var(--muted); line-height: 1.4; }
+  .integrity-row { font-size: var(--fs-s); color: var(--muted); line-height: 1.4; }
 
   .settings-actions {
     display: flex; justify-content: flex-end; gap: .5rem;
@@ -1836,8 +1836,8 @@
   }
   .settings-actions button {
     padding: .45rem .95rem; border-radius: var(--radius-sm);
-    border: 1px solid var(--border-strong); cursor: pointer;
-    background: var(--surface); color: var(--text); font-size: .85rem; font-weight: 500;
+    border: 1px solid transparent; cursor: pointer;
+    background: var(--field-bg); color: var(--text); font-size: var(--fs-m); font-weight: 500;
   }
   .save-btn { background: var(--text) !important; color: var(--bg) !important; border-color: var(--text) !important; }
 
@@ -1852,17 +1852,17 @@
     position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
     z-index: 301; width: min(420px, 90vw); max-height: min(80vh, 560px);
     display: flex; flex-direction: column;
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--glass-edge); border-radius: var(--radius);
     box-shadow: var(--elev-3);
   }
   .mini-modal-head {
     display: flex; align-items: center; justify-content: space-between;
     padding: 1rem 1.1rem; border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
-  .mini-modal-title { font-weight: 700; font-size: .95rem; }
+  .mini-modal-title { font-weight: 700; font-size: var(--fs-l); }
   .mini-modal-close {
     background: none; border: none; cursor: pointer; color: var(--faint);
-    font-size: .85rem; padding: .2rem .4rem; border-radius: var(--radius-sm);
+    font-size: var(--fs-m); padding: .2rem .4rem; border-radius: var(--radius-sm);
   }
   .mini-modal-close:hover { background: var(--hover); color: var(--text); }
   .mini-modal-body {
@@ -1884,7 +1884,7 @@
 
   .recovery-modal { max-width: 420px; }
   .recovery-code {
-    font-family: var(--mono); font-size: 1.3rem; font-weight: 700; letter-spacing: .08em;
+    font-family: var(--mono); font-size: var(--fs-t); font-weight: 700; letter-spacing: .08em;
     text-align: center; color: var(--accent); background: var(--col-bg);
     border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
     padding: .8rem; margin: .6rem 0;
@@ -1892,7 +1892,7 @@
   .recovery-copy-btn { display: block; margin: 0 auto .8rem; }
   .recovery-ack-row {
     display: flex !important; flex-direction: row !important; align-items: center; gap: .5rem;
-    font-size: .82rem; color: var(--text); text-transform: none; letter-spacing: normal;
+    font-size: var(--fs-m); color: var(--text); text-transform: none; letter-spacing: normal;
     font-family: 'Hanken Grotesk', sans-serif; cursor: pointer;
   }
   .recovery-ack-row input[type=checkbox] { accent-color: var(--accent); cursor: pointer; width: 15px; height: 15px; margin: 0; }

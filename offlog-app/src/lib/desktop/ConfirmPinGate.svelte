@@ -80,23 +80,23 @@
 <style>
   /* Mirrors SettingsPanel's .field-label/.export-btn look — scoped CSS
      doesn't cross the component boundary, so the tokens are restated. */
-  .gate-message { font-size: .8rem; color: var(--muted); line-height: 1.45; margin: 0 0 10px; }
+  .gate-message { font-size: var(--fs-s); color: var(--muted); line-height: 1.45; margin: 0 0 10px; }
   .gate-label {
     display: flex; flex-direction: column; gap: .35rem;
-    font-family: var(--mono); font-size: .68rem; letter-spacing: .06em;
+    font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: .06em;
     text-transform: uppercase; color: var(--faint);
   }
   .gate-label input {
-    padding: .5rem .6rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    background: var(--surface); color: var(--text); font-size: .9rem;
+    padding: .5rem .6rem; border: 1px solid transparent; border-radius: var(--radius-sm);
+    background: var(--field-bg); color: var(--text); font-size: var(--fs-l);
   }
   .gate-label input:focus { outline: none; border-color: var(--accent); }
-  .gate-error { font-size: .78rem; color: var(--danger); margin: 8px 0 0; }
+  .gate-error { font-size: var(--fs-s); color: var(--danger); margin: 8px 0 0; }
   .gate-row { display: flex; gap: 8px; margin-top: 12px; }
   .gate-btn {
     padding: .35rem .8rem; border-radius: var(--radius-sm);
-    border: 1px solid var(--border-strong); cursor: pointer;
-    background: var(--surface); color: var(--text); font-size: .8rem; font-weight: 500;
+    border: 1px solid transparent; cursor: pointer;
+    background: var(--field-bg); color: var(--text); font-size: var(--fs-s); font-weight: 500;
     white-space: nowrap;
   }
   .gate-btn:hover:not(:disabled) { background: var(--hover); }

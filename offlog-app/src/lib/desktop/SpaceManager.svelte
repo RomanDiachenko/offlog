@@ -276,11 +276,11 @@
     display: flex; align-items: center; gap: 8px;
     padding: 20px 24px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
-  .panel-title { font-size: 16px; font-weight: 700; flex: 1; letter-spacing: -.015em; }
+  .panel-title { font-size: var(--fs-xl); font-weight: 700; flex: 1; letter-spacing: -.015em; }
 
   .close-btn {
-    background: none; border: none; cursor: pointer; font-size: 14px;
-    color: var(--faint); padding: 4px 6px; border-radius: 6px;
+    background: none; border: none; cursor: pointer; font-size: var(--fs-m);
+    color: var(--faint); padding: 4px 6px; border-radius: var(--r-s);
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .close-btn:hover { background: var(--hover); color: var(--text); }
@@ -299,7 +299,7 @@
   .icon-picker-wrap { position: relative; flex-shrink: 0; }
   .icon-btn {
     width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
-    background: none; border: 1px solid var(--border); border-radius: 6px; cursor: pointer;
+    background: none; border: 1px solid var(--border); border-radius: var(--r-s); cursor: pointer;
     color: var(--faint); transition: border-color var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .icon-btn:hover { border-color: var(--accent); color: var(--text); }
@@ -313,7 +313,7 @@
   }
   .icon-opt {
     width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
-    background: none; border: none; border-radius: 6px; cursor: pointer;
+    background: none; border: none; border-radius: var(--r-s); cursor: pointer;
     color: var(--muted); transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .icon-opt:hover { background: var(--hover); color: var(--text); }
@@ -322,21 +322,21 @@
 
   .name-btn {
     flex: 1; text-align: left; background: none; border: none; cursor: pointer;
-    font-size: 14px; color: var(--text); padding: .3rem .4rem; border-radius: 6px;
+    font-size: var(--fs-m); color: var(--text); padding: .3rem .4rem; border-radius: var(--r-s);
     transition: background var(--dur-hover) var(--ease-hover);
   }
   .name-btn:hover { background: var(--hover); }
 
   .name-input {
-    flex: 1; font-size: 14px; padding: .3rem .4rem; border-radius: 6px;
+    flex: 1; font-size: var(--fs-m); padding: .3rem .4rem; border-radius: var(--r-s);
     border: 1.5px solid var(--accent); background: var(--bg); color: var(--text);
   }
-  .dup-name-hint { font-size: .72rem; color: var(--due-soon-ink); margin: -4px 0 8px; line-height: 1.3; }
+  .dup-name-hint { font-size: var(--fs-xs); color: var(--due-soon-ink); margin: -4px 0 8px; line-height: 1.3; }
 
   .reorder-btns { display: flex; gap: 2px; flex-shrink: 0; }
   .reorder-btns button {
     background: none; border: none; cursor: pointer; color: var(--faint);
-    padding: .25rem .4rem; border-radius: 6px; font-size: 13px;
+    padding: .25rem .4rem; border-radius: var(--r-s); font-size: var(--fs-m);
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .reorder-btns button:hover:not(:disabled) { background: var(--hover); color: var(--text); }
@@ -344,14 +344,14 @@
 
   .delete-btn {
     background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: 1rem; padding: .15rem .5rem; border-radius: 6px;
+    color: var(--faint); font-size: var(--fs-xl); padding: .15rem .5rem; border-radius: var(--r-s);
     flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .delete-btn:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); color: color-mix(in srgb, var(--danger) 82%, var(--text)); }
 
   .add-btn {
     background: none; border: none; cursor: pointer; color: var(--accent);
-    font-size: 13.5px; font-weight: 500; padding: .6rem .4rem; text-align: left;
+    font-size: var(--fs-m); font-weight: 500; padding: .6rem .4rem; text-align: left;
   }
   .add-btn:hover { text-decoration: underline; }
 

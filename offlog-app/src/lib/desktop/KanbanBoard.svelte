@@ -438,7 +438,7 @@
     touchOffX = touch.clientX - rect.left;
     touchOffY = touch.clientY - rect.top;
     touchGhost = el.cloneNode(true) as HTMLElement;
-    touchGhost.style.cssText = `position:fixed;pointer-events:none;z-index:9999;width:${rect.width}px;opacity:.8;box-shadow:0 8px 24px rgba(0,0,0,.18);border-radius:12px;left:${rect.left}px;top:${rect.top}px;transition:none;transform:rotate(1.5deg);`;
+    touchGhost.style.cssText = `position:fixed;pointer-events:none;z-index:9999;width:${rect.width}px;opacity:.8;box-shadow:0 8px 24px rgba(0,0,0,.18);border-radius:var(--r-l);left:${rect.left}px;top:${rect.top}px;transition:none;transform:rotate(1.5deg);`;
     document.body.appendChild(touchGhost);
     hapticDragStart();
   }
@@ -807,7 +807,7 @@
 
 <style>
   .board-empty-hint {
-    color: var(--faint); font-size: 13px; padding: .75rem 1.75rem 0;
+    color: var(--faint); font-size: var(--fs-m); padding: .75rem 1.75rem 0;
   }
   .board {
     display: flex;
@@ -865,10 +865,10 @@
   }
   .col-header:active { cursor: grabbing; }
 
-  .col-name { font-weight: 600; font-size: .9rem; color: var(--text); letter-spacing: -.005em; }
+  .col-name { font-weight: 600; font-size: var(--fs-l); color: var(--text); letter-spacing: -.005em; }
   .col-header-spacer { flex: 1; }
   .col-name-input {
-    flex: 1; font-weight: 600; font-size: .9rem;
+    flex: 1; font-weight: 600; font-size: var(--fs-l);
     border: none; border-bottom: 1.5px solid var(--accent);
     background: transparent; color: var(--text); padding: 0;
   }
@@ -880,9 +880,9 @@
   .col-count {
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 20px; height: 20px;
-    font-family: var(--mono); font-size: .68rem; font-weight: 600;
+    font-family: var(--mono); font-size: var(--fs-xs); font-weight: 600;
     color: var(--muted); background: var(--surface);
-    border-radius: 20px; padding: 0 .4rem;
+    border-radius: var(--r-xl); padding: 0 .4rem;
   }
   /* All three action buttons share one fixed 24x24 flex box — mixing
      padding-only, font-size-driven and flex-box sizing here leaves them
@@ -892,7 +892,7 @@
     display: flex; align-items: center; justify-content: center;
     width: 24px; height: 24px;
     background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: 1rem; line-height: 1;
+    color: var(--faint); font-size: var(--fs-xl); line-height: 1;
     border-radius: 5px; opacity: 0;
     transition: opacity var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
@@ -938,7 +938,7 @@
   .card-pin { display: inline-flex; color: var(--accent); vertical-align: -1px; margin-right: 5px; }
 
   .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; }
-  .card-title { font-size: .92rem; font-weight: 600; line-height: 1.4; color: var(--text); flex: 1; }
+  .card-title { font-size: var(--fs-l); font-weight: 600; line-height: 1.4; color: var(--text); flex: 1; }
   .card-menu-wrap { position: relative; flex-shrink: 0; margin: -5px -5px 0 0; }
   .card-menu-trigger {
     display: flex; align-items: center; justify-content: center;
@@ -957,14 +957,14 @@
   .card-menu-item {
     display: flex; align-items: center; gap: 8px;
     background: none; border: none; border-radius: var(--radius-sm);
-    padding: .4rem .55rem; font-size: .78rem; font-weight: 500;
+    padding: .4rem .55rem; font-size: var(--fs-s); font-weight: 500;
     color: var(--text); cursor: pointer; text-align: left;
   }
   .card-menu-item:hover { background: var(--hover); }
   .card-menu-item svg { flex-shrink: 0; color: var(--muted); }
   .card-menu-divider { height: 1px; background: var(--border); margin: .25rem .15rem; }
   .card-menu-label {
-    font-family: var(--mono); font-size: .64rem; font-weight: 600;
+    font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 600;
     text-transform: uppercase; letter-spacing: .06em;
     color: var(--faint); padding: .3rem .55rem .15rem;
   }
@@ -974,9 +974,9 @@
   .card-meta { display: flex; align-items: center; gap: .4rem; margin-top: .65rem; flex-wrap: wrap; }
   .meta-badge {
     display: inline-flex; align-items: center; gap: 4px;
-    font-family: var(--mono); font-size: .68rem; font-weight: 500;
+    font-family: var(--mono); font-size: var(--fs-xs); font-weight: 500;
     color: var(--muted); background: var(--hover);
-    padding: .18rem .5rem; border-radius: 20px;
+    padding: .18rem .5rem; border-radius: var(--r-xl);
   }
   /* Colored fills are reserved for urgent time alerts, so only overdue
      gets one; every other date (soon or comfortably future) keeps the
@@ -999,14 +999,14 @@
   .card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: .55rem; }
   .card-tag {
     display: inline-flex; align-items: center; gap: 5px;
-    font-size: 11px; font-weight: 500; color: var(--text);
-    padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+    font-size: var(--fs-xs); font-weight: 500; color: var(--text);
+    padding: 2px 8px; border-radius: var(--r-xl); white-space: nowrap;
   }
   .card-tag-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
   .add-card-btn {
     border: 1.5px dashed var(--border-strong); background: none; cursor: pointer;
-    color: var(--faint); font-size: .82rem; font-weight: 500;
+    color: var(--faint); font-size: var(--fs-m); font-weight: 500;
     text-align: center; padding: .5rem;
     border-radius: var(--radius-sm); width: 100%;
     transition: color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
@@ -1016,14 +1016,14 @@
   .quick-add-form, .add-col-form { display: flex; flex-direction: column; gap: .45rem; }
   .quick-input {
     padding: .5rem .6rem; border: 1.5px solid var(--accent);
-    border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: .88rem;
+    border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: var(--fs-m);
   }
   .quick-input:focus { outline: none; }
   .quick-add-actions { display: flex; gap: .4rem; }
   .quick-add-actions button {
     padding: .35rem .8rem; border-radius: var(--radius-sm);
-    border: 1px solid var(--border-strong); cursor: pointer;
-    background: var(--surface); color: var(--text); font-size: .82rem; font-weight: 500;
+    border: 1px solid transparent; cursor: pointer;
+    background: var(--field-bg); color: var(--text); font-size: var(--fs-m); font-weight: 500;
   }
   .add-btn { background: var(--text) !important; color: var(--bg) !important; border-color: var(--text) !important; }
 
@@ -1032,7 +1032,7 @@
   .add-col-btn {
     background: none; border: 1.5px dashed var(--border-strong);
     border-radius: var(--radius); color: var(--faint); cursor: pointer;
-    padding: .7rem 1.2rem; font-size: .85rem; font-weight: 600; white-space: nowrap;
+    padding: .7rem 1.2rem; font-size: var(--fs-m); font-weight: 600; white-space: nowrap;
     transition: border-color var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .add-col-btn:hover { border-color: var(--accent); color: var(--accent); }

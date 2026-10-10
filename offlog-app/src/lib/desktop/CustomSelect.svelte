@@ -125,8 +125,8 @@
 
   .cs-trigger {
     width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    padding: .45rem .6rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    background: var(--surface); color: var(--text); font-size: .88rem; font-family: inherit;
+    padding: .45rem .6rem; border: 1px solid transparent; border-radius: var(--radius-sm);
+    background: var(--field-bg); color: var(--text); font-size: var(--fs-m); font-family: inherit;
     cursor: pointer; text-align: left; transition: border-color var(--dur-hover) var(--ease-hover);
   }
   .cs-trigger:hover { border-color: var(--border-strong); }
@@ -150,12 +150,12 @@
   .cs-panel.placement-up { top: auto; bottom: calc(100% + 6px); }
 
   .cs-group-label {
-    font-family: var(--mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .06em;
+    font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase; letter-spacing: .06em;
     color: var(--faint); padding: .35rem .5rem .15rem;
   }
   .cs-option {
     display: block; width: 100%; text-align: left; background: none; border: none; cursor: pointer;
-    padding: .4rem .55rem; border-radius: 6px; font-size: .85rem; color: var(--text);
+    padding: .4rem .55rem; border-radius: var(--r-s); font-size: var(--fs-m); color: var(--text);
   }
   .cs-option.highlighted { background: var(--hover); }
   .cs-option.selected { background: var(--sel-fill); color: var(--text); font-weight: 600; }

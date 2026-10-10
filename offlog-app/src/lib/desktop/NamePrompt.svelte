@@ -185,24 +185,24 @@
   .prompt-panel {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
     z-index: 701; width: min(360px, 90vw);
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--glass-edge); border-radius: var(--radius);
     box-shadow: var(--elev-3);
     padding: 1.35rem 1.5rem;
   }
 
-  .prompt-title { margin: 0 0 .4rem; font-size: .95rem; font-weight: 600; color: var(--text); }
-  .prompt-hint { margin: 0 0 .9rem; font-size: .8rem; color: var(--muted); line-height: 1.5; }
+  .prompt-title { margin: 0 0 .4rem; font-size: var(--fs-l); font-weight: 600; color: var(--text); }
+  .prompt-hint { margin: 0 0 .9rem; font-size: var(--fs-s); color: var(--muted); line-height: 1.5; }
   .prompt-input {
     width: 100%; box-sizing: border-box; padding: .5rem .7rem; margin-bottom: 1.2rem;
-    border-radius: var(--radius-sm); border: 1px solid var(--border-strong);
-    background: var(--bg); color: var(--text); font-size: .9rem;
+    border-radius: var(--radius-sm); border: 1px solid transparent;
+    background: var(--field-bg); color: var(--text); font-size: var(--fs-l);
   }
   .prompt-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 
   .prompt-actions { display: flex; justify-content: flex-end; gap: .6rem; margin-top: .3rem; }
   .skip-btn, .save-btn {
-    padding: .5rem 1rem; border-radius: var(--radius-sm); font-size: .85rem; font-weight: 600; cursor: pointer;
-    border: 1px solid var(--border-strong); background: var(--bg); color: var(--text);
+    padding: .5rem 1rem; border-radius: var(--radius-sm); font-size: var(--fs-m); font-weight: 600; cursor: pointer;
+    border: 1px solid transparent; background: var(--field-bg); color: var(--text);
     transition: background var(--dur-hover) var(--ease-hover), opacity var(--dur-hover) var(--ease-hover);
   }
   .skip-btn:hover { background: var(--hover); }
@@ -210,17 +210,17 @@
   .save-btn:hover { opacity: .88; }
 
   .pref-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: .85rem; gap: .6rem; }
-  .pref-label { font-size: .85rem; color: var(--text); font-weight: 600; }
+  .pref-label { font-size: var(--fs-m); color: var(--text); font-weight: 600; }
   .pref-label-group { display: flex; flex-direction: column; gap: .15rem; }
-  .pref-sublabel { font-size: .74rem; color: var(--muted); font-weight: 400; }
-  .pref-toggle { display: flex; background: var(--col-bg); border-radius: 10px; padding: 3px; gap: 2px; flex-shrink: 0; }
+  .pref-sublabel { font-size: var(--fs-s); color: var(--muted); font-weight: 400; }
+  .pref-toggle { display: flex; background: var(--col-bg); border-radius: var(--r-m); padding: 3px; gap: 2px; flex-shrink: 0; }
   .pref-toggle button {
-    padding: .35rem .65rem; font-size: .78rem; font-weight: 600; cursor: pointer;
-    border: none; border-radius: 7px; background: transparent; color: var(--muted);
+    padding: .35rem .65rem; font-size: var(--fs-s); font-weight: 600; cursor: pointer;
+    border: none; border-radius: var(--r-s); background: transparent; color: var(--muted);
   }
   .pref-toggle button.active { background: var(--surface); color: var(--text); }
   .notif-btn {
-    padding: .35rem .75rem; border-radius: var(--radius-sm); font-size: .78rem; font-weight: 600; cursor: pointer;
+    padding: .35rem .75rem; border-radius: var(--radius-sm); font-size: var(--fs-s); font-weight: 600; cursor: pointer;
     border: 1px solid var(--accent); background: transparent; color: var(--accent);
     flex-shrink: 0;
   }

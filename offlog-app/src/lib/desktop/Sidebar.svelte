@@ -872,7 +872,7 @@
      breathing room before the nav lives on .sidebar-top's padding-bottom
      instead. */
   .logo {
-    font-family: var(--mono); font-weight: 600; font-size: .68rem; text-transform: uppercase;
+    font-family: var(--mono); font-weight: 600; font-size: var(--fs-xs); text-transform: uppercase;
     letter-spacing: .14em; padding: .1rem .35rem; color: var(--faint);
   }
 
@@ -1002,7 +1002,7 @@
     width: 100%; border: none; cursor: pointer; text-align: left;
     padding: .42rem .55rem; border-radius: var(--radius-sm);
     background: none; color: var(--muted);
-    font-weight: 600; font-size: .85rem; letter-spacing: -.01em;
+    font-weight: 600; font-size: var(--fs-m); letter-spacing: -.01em;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
   .nav-btn svg { flex-shrink: 0; opacity: .85; }
@@ -1047,10 +1047,10 @@
   .space-chevron.open { transform: rotate(90deg); }
   .space-icon {
     width: 22px; height: 22px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-    border-radius: 7px;
+    border-radius: var(--r-s);
   }
   .space-icon :global(svg) { width: 13px; height: 13px; }
-  .space-name { font-size: .84rem; font-weight: 600; flex: 1; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .space-name { font-size: var(--fs-m); font-weight: 600; flex: 1; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .space-projects {
     display: flex; flex-direction: column; gap: .02rem;
     padding: .1rem 0 .3rem 1.55rem;
@@ -1094,7 +1094,7 @@
 
   .project-btn {
     flex: 1; background: none; border: none; cursor: pointer;
-    padding: .38rem .55rem; color: var(--muted); font-size: .85rem;
+    padding: .38rem .55rem; color: var(--muted); font-size: var(--fs-m);
     text-align: left; transition: color var(--dur-hover) var(--ease-hover);
   }
   .project-row.active .project-btn { color: var(--text); font-weight: 600; }
@@ -1102,7 +1102,7 @@
 
   .proj-delete-btn {
     background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: 1rem; padding: .15rem .35rem;
+    color: var(--faint); font-size: var(--fs-xl); padding: .15rem .35rem;
     border-radius: 4px;
     opacity: 0; transition: opacity var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
     line-height: 1;
@@ -1113,26 +1113,26 @@
   .new-project-form { display: flex; flex-direction: column; gap: 6px; }
   .edit-project-form { padding: 4px 0 6px; }
   .new-project-input {
-    padding: .35rem .55rem; font-size: .85rem;
+    padding: .35rem .55rem; font-size: var(--fs-m);
     border: 1.5px solid var(--accent); border-radius: var(--radius-sm);
     background: var(--surface); color: var(--text); width: 100%;
   }
   .new-project-input:focus { outline: none; }
-  .dup-name-hint { font-size: .72rem; color: var(--due-soon-ink); margin: 0; line-height: 1.3; }
+  .dup-name-hint { font-size: var(--fs-xs); color: var(--due-soon-ink); margin: 0; line-height: 1.3; }
 
   .template-toggle {
     background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: .76rem; text-align: left; padding: 0 .1rem;
+    color: var(--faint); font-size: var(--fs-s); text-align: left; padding: 0 .1rem;
     transition: color var(--dur-hover) var(--ease-hover);
   }
   .template-toggle:hover { color: var(--accent); }
   .template-checkbox {
     display: flex; align-items: center; gap: 6px;
-    font-size: .78rem; color: var(--muted); cursor: pointer; padding: 0 .1rem;
+    font-size: var(--fs-s); color: var(--muted); cursor: pointer; padding: 0 .1rem;
   }
   .template-actions { display: flex; gap: 6px; justify-content: flex-end; }
   .template-actions button {
-    padding: .3rem .6rem; font-size: .78rem; border-radius: var(--radius-sm);
+    padding: .3rem .6rem; font-size: var(--fs-s); border-radius: var(--radius-sm);
     border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); cursor: pointer;
   }
   .template-create-btn {
@@ -1146,7 +1146,7 @@
      in this tree to mark passive "current state". */
   .add-project-btn {
     background: none; border: none; cursor: pointer;
-    color: var(--accent); font-size: .82rem; font-weight: 500; text-align: left;
+    color: var(--accent); font-size: var(--fs-m); font-weight: 500; text-align: left;
     padding: .4rem .55rem; transition: color var(--dur-hover) var(--ease-hover);
   }
   .add-project-btn:hover { color: var(--text); }
@@ -1187,13 +1187,13 @@
     width: 33px; height: 33px; padding: 0; flex-shrink: 0;
     min-width: 0; position: relative;
     display: flex; align-items: center; justify-content: center;
-    background: var(--hover); border: 1px solid transparent;
-    border-radius: 8px; cursor: pointer;
+    background: none; border: 1px solid transparent;
+    border-radius: var(--r-m); cursor: pointer;
     color: var(--muted);
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
   .icon-btn svg { flex-shrink: 0; opacity: .85; }
-  .icon-btn:hover { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+  .icon-btn:hover { background: var(--rail-hover); color: var(--text); }
 
   /* No glow or border tint, and the icon color itself is blended toward
      var(--muted) (the button's default): full-strength semantic colors
@@ -1221,7 +1221,7 @@
        --due-soon-ink, a light amber in dark mode where #fff drops to
        1.67:1. --on-accent's white/dark-text split fits this token's
        per-theme lightness. */
-    color: var(--on-accent); font-family: var(--mono); font-size: .55rem; font-weight: 700;
+    color: var(--on-accent); font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 700;
     min-width: 13px; height: 13px; border-radius: 999px; padding: 0 3px;
     display: inline-flex; align-items: center; justify-content: center;
     border: 1.5px solid var(--sidebar-bg);

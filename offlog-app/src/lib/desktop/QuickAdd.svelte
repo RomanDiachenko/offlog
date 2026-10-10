@@ -233,17 +233,17 @@
   .panel {
     position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
     width: min(480px, 95vw); z-index: 501;
-    background: var(--surface); border: 1px solid var(--border-strong);
-    border-radius: 14px; box-shadow: var(--elev-3);
+    background: var(--surface); border: 1px solid var(--glass-edge);
+    border-radius: var(--r-l); box-shadow: var(--elev-3);
     padding: 16px 18px; display: flex; flex-direction: column; gap: 12px;
   }
 
   .panel-head { display: flex; align-items: center; justify-content: space-between; }
-  .panel-title { font-size: 11px; font-family: var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 700; }
+  .panel-title { font-size: var(--fs-xs); font-family: var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 700; }
 
   .help-btn {
-    width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border-strong);
-    background: none; color: var(--faint); font-size: 11px; font-weight: 700;
+    width: 18px; height: 18px; border-radius: 50%; border: 1px solid transparent;
+    background: var(--field-bg); color: var(--faint); font-size: var(--fs-xs); font-weight: 700;
     line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
@@ -251,22 +251,22 @@
 
   .help-panel {
     border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    background: var(--bg); padding: 10px 12px; font-size: 12px;
+    background: var(--bg); padding: 10px 12px; font-size: var(--fs-s);
   }
   .help-title { color: var(--muted); margin-bottom: 8px; line-height: 1.4; }
   .help-list { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 0; }
-  .help-list dt { color: var(--faint); font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em; align-self: baseline; }
+  .help-list dt { color: var(--faint); font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase; letter-spacing: .03em; align-self: baseline; }
   .help-list dd { margin: 0; color: var(--text); }
   .help-list code {
-    font-family: var(--mono); font-size: 11px; background: var(--col-bg);
+    font-family: var(--mono); font-size: var(--fs-xs); background: var(--col-bg);
     padding: 1px 5px; border-radius: 4px; color: var(--accent);
   }
-  .help-example { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); color: var(--faint); font-style: italic; font-size: 11px; }
+  .help-example { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); color: var(--faint); font-style: italic; font-size: var(--fs-xs); }
 
   .title-input {
-    width: 100%; border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm);
-    padding: .55rem .7rem; font-size: 15px; font-family: inherit;
-    background: var(--bg); color: var(--text); outline: none;
+    width: 100%; border: 1px solid transparent; border-radius: var(--radius-sm);
+    padding: .55rem .7rem; font-size: var(--fs-l); font-family: inherit;
+    background: var(--field-bg); color: var(--text); outline: none;
     transition: border-color var(--dur-hover) var(--ease-hover);
     box-sizing: border-box;
   }
@@ -277,10 +277,10 @@
      rendered when something was actually recognized, so a plain-text
      quick add (the common case) shows nothing extra. */
   .parsed-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -4px; }
-  .dup-name-hint { font-size: .72rem; color: var(--due-soon-ink); margin: -4px 0 0; line-height: 1.3; }
+  .dup-name-hint { font-size: var(--fs-xs); color: var(--due-soon-ink); margin: -4px 0 0; line-height: 1.3; }
   .chip {
-    font-family: var(--mono); font-size: 10.5px; font-weight: 600;
-    letter-spacing: .02em; padding: 3px 8px; border-radius: 20px;
+    font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 600;
+    letter-spacing: .02em; padding: 3px 8px; border-radius: var(--r-xl);
     background: var(--col-bg); color: var(--muted);
   }
   .chip-date { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent-ink); }
@@ -297,15 +297,15 @@
 
   .cancel-btn {
     padding: .42rem .85rem; border-radius: var(--radius-sm);
-    border: 1px solid var(--border-strong); cursor: pointer;
-    background: var(--surface); color: var(--muted); font-size: .85rem; font-weight: 500;
+    border: 1px solid transparent; cursor: pointer;
+    background: var(--field-bg); color: var(--muted); font-size: var(--fs-m); font-weight: 500;
   }
   .cancel-btn:hover { color: var(--text); }
 
   .add-btn {
     padding: .42rem .85rem; border-radius: var(--radius-sm);
     border: none; cursor: pointer;
-    background: var(--accent); color: var(--on-accent); font-size: .85rem; font-weight: 600;
+    background: var(--accent); color: var(--on-accent); font-size: var(--fs-m); font-weight: 600;
     transition: opacity var(--dur-hover) var(--ease-hover);
   }
   .add-btn:disabled { opacity: .45; cursor: default; }

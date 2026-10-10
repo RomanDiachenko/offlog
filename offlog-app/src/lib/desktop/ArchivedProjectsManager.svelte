@@ -146,22 +146,22 @@
     display: flex; align-items: center; gap: 8px;
     padding: 20px 24px 4px; flex-shrink: 0;
   }
-  .panel-title { font-size: 16px; font-weight: 700; flex: 1; letter-spacing: -.015em; }
+  .panel-title { font-size: var(--fs-xl); font-weight: 700; flex: 1; letter-spacing: -.015em; }
 
   .ap-sub {
-    padding: 0 24px 16px; font-family: var(--mono); font-size: 11px; color: var(--faint);
+    padding: 0 24px 16px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
     border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
 
   .close-btn {
-    background: none; border: none; cursor: pointer; font-size: 14px;
-    color: var(--faint); padding: 4px 6px; border-radius: 6px;
+    background: none; border: none; cursor: pointer; font-size: var(--fs-m);
+    color: var(--faint); padding: 4px 6px; border-radius: var(--r-s);
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .close-btn:hover { background: var(--hover); color: var(--text); }
 
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px 24px; }
-  .empty { color: var(--faint); font-size: 13.5px; padding: 12px 0; line-height: 1.5; }
+  .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; line-height: 1.5; }
 
   .picker-row {
     display: flex; align-items: center; gap: 8px;
@@ -170,7 +170,7 @@
   .picker-select { flex: 1; min-width: 0; }
   .archive-btn {
     flex-shrink: 0; background: var(--accent); border: none; cursor: pointer;
-    color: var(--on-accent); font-size: 13px; font-weight: 600; padding: .48rem .8rem;
+    color: var(--on-accent); font-size: var(--fs-m); font-weight: 600; padding: .48rem .8rem;
     border-radius: var(--radius-sm); transition: opacity var(--dur-hover) var(--ease-hover);
   }
   .archive-btn:hover:not(:disabled) { opacity: .88; }
@@ -180,18 +180,18 @@
     display: flex; align-items: center; gap: 10px;
     padding: 8px 0; border-bottom: 1px solid var(--border);
   }
-  .name { flex: 1; font-size: 13.5px; color: var(--text); }
+  .name { flex: 1; font-size: var(--fs-m); color: var(--text); }
 
   .restore-btn {
     flex-shrink: 0; background: none; border: none; cursor: pointer;
-    color: var(--accent); font-size: 12.5px; font-weight: 600; padding: .3rem .5rem;
-    border-radius: 6px;
+    color: var(--accent); font-size: var(--fs-s); font-weight: 600; padding: .3rem .5rem;
+    border-radius: var(--r-s);
   }
   .restore-btn:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
 
   .delete-btn {
     flex-shrink: 0; background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: 1rem; padding: .15rem .5rem; border-radius: 6px;
+    color: var(--faint); font-size: var(--fs-xl); padding: .15rem .5rem; border-radius: var(--r-s);
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .delete-btn:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); color: color-mix(in srgb, var(--danger) 82%, var(--text)); }

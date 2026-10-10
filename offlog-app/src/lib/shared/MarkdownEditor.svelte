@@ -60,9 +60,9 @@
 
 <style>
   .md-editor {
-    border: 1px solid var(--border);
+    border: 1px solid transparent;
     border-radius: var(--radius-sm);
-    background: var(--bg);
+    background: var(--field-bg);
     min-height: 90px;
     overflow: hidden;
   }

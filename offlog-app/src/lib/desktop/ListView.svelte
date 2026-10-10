@@ -751,8 +751,8 @@
   /* ── List panel — toolbar + grid share one outer border/radius so they
      read as a single structured surface instead of two floating cards ── */
   .list-panel {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 13px; overflow: hidden; margin-bottom: 20px;
+    background: var(--surface); border: 1px solid transparent; box-shadow: var(--elev-1);
+    border-radius: var(--r-l); overflow: hidden; margin-bottom: 20px;
   }
   /* One row, guaranteed, at every viewport width — no wrapping, no
      horizontal scrolling, no breakpoints. This only works because the
@@ -770,7 +770,7 @@
   /* Genuine footnote -- outside the table panel entirely, muted, small,
      out of the way of the actual data. */
   .sort-hint {
-    font-size: 10.5px; color: var(--faint);
+    font-size: var(--fs-2xs); color: var(--faint);
     padding: 0 4px; margin: 10px 0 4px;
   }
   /* Touch screens have no Shift key, so the hint describes nothing they can do. */
@@ -778,7 +778,7 @@
 
   .search-box {
     display: flex; align-items: center; gap: 7px;
-    background: var(--bg); border: 1px solid var(--border-strong);
+    background: var(--field-bg); border: 1px solid transparent;
     border-radius: 8px; padding: 6px 10px;
     flex: 1 1 auto; min-width: 110px; max-width: 280px;
   }
@@ -786,13 +786,13 @@
   .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
   .search-box svg { color: var(--faint); flex-shrink: 0; }
   .search-input {
-    border: none; background: none; font-size: 13px; color: var(--text);
+    border: none; background: none; font-size: var(--fs-m); color: var(--text);
     width: 100%; outline: none; min-width: 0;
   }
   .search-input::placeholder { color: var(--faint); }
   .clear-x {
     background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: 14px; padding: 0; line-height: 1;
+    color: var(--faint); font-size: var(--fs-m); padding: 0; line-height: 1;
     flex-shrink: 0;
   }
   .clear-x:hover { color: var(--text); }
@@ -806,7 +806,7 @@
     display: flex; align-items: center; justify-content: center; gap: 5px;
     height: 26px; box-sizing: border-box;
     background: none; border: none; border-radius: 8px;
-    color: var(--muted); font-size: 12.5px; font-weight: 500;
+    color: var(--muted); font-size: var(--fs-s); font-weight: 500;
     padding: 0 10px; cursor: pointer; white-space: nowrap;
     transition: color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
@@ -823,14 +823,14 @@
   .col-menu--fixed { position: fixed; right: auto; z-index: 210; width: 190px; }
   .col-menu-item {
     display: flex; align-items: center; gap: 8px;
-    padding: .35rem .5rem; border-radius: 6px; font-size: .82rem; color: var(--text); cursor: pointer;
+    padding: .35rem .5rem; border-radius: var(--r-s); font-size: var(--fs-m); color: var(--text); cursor: pointer;
   }
   .col-menu-item:hover { background: var(--hover); }
   .select-rows-item { justify-content: space-between; cursor: default; }
   .select-rows-item:hover { background: none; }
 
   .toggle-mini {
-    width: 30px; height: 17px; border-radius: 9px; border: none; cursor: pointer;
+    width: 30px; height: 17px; border-radius: var(--r-m); border: none; cursor: pointer;
     background: var(--switch-off); position: relative; transition: background var(--dur-hover) var(--ease-hover);
     flex-shrink: 0; padding: 0;
   }
@@ -866,8 +866,8 @@
   }
 
   .grid-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 13px;
-    overflow: hidden; width: max-content; min-width: 100%;
+    background: var(--surface); border: 1px solid transparent; border-radius: var(--r-l);
+    overflow: hidden; width: max-content; min-width: 100%; box-shadow: var(--elev-1);
   }
   /* Nested inside .list-panel (the main grid) — panel already provides
      the border/radius/background, so the grid itself stays flush. */
@@ -887,7 +887,7 @@
   }
   .head-spacer { width: 24px; }
   .th-btn {
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+    font-family: var(--mono); font-size: var(--fs-2xs); letter-spacing: .06em; text-transform: uppercase;
     color: var(--faint); text-align: left;
     background: none; border: none; cursor: grab; padding: 11px 0;
     display: flex; align-items: center; gap: 5px; transition: color var(--dur-hover) var(--ease-hover);
@@ -900,7 +900,7 @@
      column to the left or right of this one. */
   .th-btn.drag-over-left { box-shadow: inset 3px 0 0 var(--accent); }
   .th-btn.drag-over-right { box-shadow: inset -3px 0 0 var(--accent); }
-  .sort-icon { font-size: 10px; opacity: .6; }
+  .sort-icon { font-size: var(--fs-2xs); opacity: .6; }
 
   .grid-row {
     position: relative;
@@ -940,18 +940,18 @@
     padding: 5px 6px 5px 12px; margin-bottom: 8px;
     background: var(--rail-bg); border-radius: 11px;
   }
-  .bulk-count { font-size: 12.5px; font-weight: 600; color: var(--text); margin-right: 4px; }
+  .bulk-count { font-size: var(--fs-s); font-weight: 600; color: var(--text); margin-right: 4px; }
   .bulk-sel-wrap { width: 150px; }
   .bulk-input {
     border: 1px solid transparent; border-radius: 8px;
     background: var(--surface); color: var(--text);
-    font-size: 12.5px; padding: 5px 8px;
+    font-size: var(--fs-s); padding: 5px 8px;
     width: 130px;
   }
   .bulk-btn {
     border: 1px solid transparent; border-radius: 8px;
     background: var(--surface); color: var(--text);
-    font-size: 12.5px; font-weight: 500; padding: 5px 10px; cursor: pointer;
+    font-size: var(--fs-s); font-weight: 500; padding: 5px 10px; cursor: pointer;
     transition: background var(--dur-hover) var(--ease-hover);
   }
   .bulk-btn:hover { background: color-mix(in srgb, var(--text) 6%, var(--surface)); }
@@ -979,27 +979,27 @@
   /* No truncation, anywhere in the grid — plain nowrap, never
      text-overflow: ellipsis. Long content makes the row (and the whole
      grid, via .grid-scroll) wider instead of hiding characters. */
-  .cell-title { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; }
+  .cell-title { font-size: var(--fs-m); font-weight: 500; color: var(--text); white-space: nowrap; }
   .recur-mark { display: inline-flex; align-items: center; color: var(--muted); opacity: .75; vertical-align: middle; margin-left: 4px; }
 
-  .cell-status { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
-  .cell-prio { display: flex; align-items: center; gap: 7px; color: var(--text); font-size: 12.5px; white-space: nowrap; }
+  .cell-status { color: var(--muted); font-size: var(--fs-s); white-space: nowrap; }
+  .cell-prio { display: flex; align-items: center; gap: 7px; color: var(--text); font-size: var(--fs-s); white-space: nowrap; }
   .prio-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .cell-due { font-family: var(--mono); font-size: 11.5px; white-space: nowrap; }
-  .cell-date { font-family: var(--mono); font-size: 11px; color: var(--faint); white-space: nowrap; text-transform: capitalize; }
+  .cell-due { font-family: var(--mono); font-size: var(--fs-xs); white-space: nowrap; }
+  .cell-date { font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint); white-space: nowrap; text-transform: capitalize; }
 
   .cell-tags { display: flex; flex-wrap: wrap; gap: 5px; }
   .tag {
-    font-size: 11px; color: var(--muted); background: var(--col-bg);
-    padding: 2px 8px; border-radius: 6px; white-space: nowrap;
+    font-size: var(--fs-xs); color: var(--muted); background: var(--col-bg);
+    padding: 2px 8px; border-radius: var(--r-s); white-space: nowrap;
   }
 
-  .empty { padding: 3rem; text-align: center; color: var(--faint); font-size: .88rem; }
+  .empty { padding: 3rem; text-align: center; color: var(--faint); font-size: var(--fs-m); }
 
   /* ── Archived ────────────────────────────────────────────────────────── */
   .archived-section { padding: 16px 0 0; }
   .archived-label {
-    font-family: var(--mono); font-size: 10.5px; text-transform: uppercase;
+    font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
     letter-spacing: .08em; color: var(--faint); font-weight: 700;
     padding: 0 4px 8px;
   }
@@ -1011,10 +1011,10 @@
   }
   .archived-row:last-child { border-bottom: none; }
   .archived-row:hover { opacity: .85; background: var(--hover); }
-  .archived-title { flex: 1; min-width: 0; text-decoration: line-through; color: var(--muted); font-size: 14px; white-space: nowrap; }
+  .archived-title { flex: 1; min-width: 0; text-decoration: line-through; color: var(--muted); font-size: var(--fs-m); white-space: nowrap; }
   .unarchive-btn {
-    background: none; border: 1px solid var(--border-strong); border-radius: 6px;
-    color: var(--muted); font-size: 11px; padding: 3px 8px; cursor: pointer;
+    background: var(--field-bg); border: 1px solid transparent; border-radius: var(--r-s);
+    color: var(--muted); font-size: var(--fs-xs); padding: 3px 8px; cursor: pointer;
     white-space: nowrap; flex-shrink: 0; transition: color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
   .unarchive-btn:hover { color: var(--accent); border-color: var(--accent); }
@@ -1024,14 +1024,14 @@
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
     display: flex; align-items: center; gap: 10px; z-index: 999;
     background: var(--text); color: var(--bg);
-    padding: 11px 14px; border-radius: 10px;
-    font-size: 13.5px; font-weight: 500;
+    padding: 11px 14px; border-radius: var(--r-m);
+    font-size: var(--fs-m); font-weight: 500;
     box-shadow: var(--elev-2);
     white-space: nowrap;
   }
   .undo-btn {
     background: var(--accent); color: var(--on-accent); border: none; cursor: pointer;
-    padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;
+    padding: 4px 10px; border-radius: var(--r-s); font-size: var(--fs-s); font-weight: 700;
     transition: opacity var(--dur-hover) var(--ease-hover);
   }
   .undo-btn:hover { opacity: .85; }

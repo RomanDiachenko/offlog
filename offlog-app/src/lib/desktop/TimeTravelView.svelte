@@ -276,32 +276,32 @@
     display: flex; align-items: center; gap: 8px;
     padding: 20px 24px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
-  .panel-title { font-size: 16px; font-weight: 700; flex: 1; letter-spacing: -.015em; }
+  .panel-title { font-size: var(--fs-xl); font-weight: 700; flex: 1; letter-spacing: -.015em; }
 
   .clear-btn {
-    background: none; border: 1px solid var(--border-strong); border-radius: 6px;
-    cursor: pointer; font-size: 11.5px; font-weight: 500; color: var(--muted);
+    background: var(--field-bg); border: 1px solid transparent; border-radius: var(--r-s);
+    cursor: pointer; font-size: var(--fs-xs); font-weight: 500; color: var(--muted);
     padding: 4px 10px; transition: color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
   .clear-btn:hover { color: var(--danger); border-color: var(--danger); }
 
   .close-btn {
-    background: none; border: none; cursor: pointer; font-size: 14px;
-    color: var(--faint); padding: 4px 6px; border-radius: 6px;
+    background: none; border: none; cursor: pointer; font-size: var(--fs-m);
+    color: var(--faint); padding: 4px 6px; border-radius: var(--r-s);
     transition: color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
   .close-btn:hover { color: var(--text); background: var(--hover); }
 
   .tt-body { flex: 1; overflow-y: auto; padding: 8px 20px 20px; }
-  .empty { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 3rem; text-align: center; color: var(--faint); font-size: .88rem; }
+  .empty { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 3rem; text-align: center; color: var(--faint); font-size: var(--fs-m); }
 
   .day-group { margin-bottom: 16px; }
   .day-head {
     display: flex; align-items: baseline; gap: 10px;
     padding-bottom: 5px; margin-bottom: 5px; border-bottom: 1px solid var(--border);
   }
-  .day-label { font-weight: 700; font-size: 12.5px; }
-  .day-summary { font-family: var(--mono); font-size: 10px; color: var(--faint); }
+  .day-label { font-weight: 700; font-size: var(--fs-s); }
+  .day-summary { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); }
 
   /* Grid, not flex: fixed columns pin every description to the same x
      position regardless of how wide that row's action-pill text is
@@ -312,7 +312,7 @@
   .entry {
     display: grid; grid-template-columns: 60px 1fr auto; column-gap: 10px;
     row-gap: 4px; align-items: start;
-    padding: 7px 8px; margin-bottom: 1px; border-radius: 5px; font-size: 12.5px; line-height: 1.45;
+    padding: 7px 8px; margin-bottom: 1px; border-radius: 5px; font-size: var(--fs-s); line-height: 1.45;
   }
   /* Source pill and time share one flex group in the 3rd (auto-width)
      column rather than two fixed-width columns of their own, so they
@@ -324,7 +324,7 @@
   .entry.clickable:hover { background: var(--hover); }
 
   .action-pill {
-    font-family: var(--mono); font-size: 9.5px; font-weight: 500;
+    font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 500;
     letter-spacing: .03em; text-transform: uppercase;
     padding: 1px 6px; border-radius: 4px;
     justify-self: start; width: fit-content;
@@ -335,11 +335,11 @@
   /* Own row directly under the description, column 2 only -- see the
      .entry comment above for why this isn't an inline suffix. */
   .entry-project {
-    grid-column: 2; font-family: var(--mono); font-size: 10px; color: var(--faint);
+    grid-column: 2; font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
   }
 
   .source-pill {
-    font-family: var(--mono); font-size: 9px; font-weight: 600;
+    font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 600;
     letter-spacing: .04em; text-transform: uppercase;
     padding: 1px 6px; border-radius: 4px;
     background: var(--col-bg); color: var(--muted);
@@ -350,7 +350,7 @@
   /* nowrap, and the column must stay wide enough: a wrapped "09:53 AM"
      inflates the whole row's height (grid rows size to their tallest cell)
      and leaves a stray gap above the project-name row. */
-  .entry-time { font-family: var(--mono); font-size: 10px; color: var(--faint); white-space: nowrap; }
+  .entry-time { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); white-space: nowrap; }
 
   /* align-items: start (not baseline) on .entry sits these flush with the
      top of the row; nudge down to align with the description's cap-height
@@ -361,8 +361,8 @@
   .load-more-btn {
     display: block; margin: 8px auto 0;
     padding: .5rem 1.2rem; border-radius: var(--radius-sm);
-    border: 1px solid var(--border-strong); background: var(--surface); color: var(--text);
-    font-size: .82rem; font-weight: 500; cursor: pointer;
+    border: 1px solid transparent; background: var(--field-bg); color: var(--text);
+    font-size: var(--fs-m); font-weight: 500; cursor: pointer;
     transition: background var(--dur-hover) var(--ease-hover);
   }
   .load-more-btn:hover:not(:disabled) { background: var(--hover); }

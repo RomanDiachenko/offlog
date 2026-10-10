@@ -223,9 +223,9 @@
   .cal-field { position: relative; }
   .cal-trigger {
     display: flex; align-items: center; gap: .45rem; width: 100%;
-    padding: .38rem .5rem; border: 1px solid var(--border-strong);
-    border-radius: var(--radius-sm); background: var(--surface); color: var(--faint);
-    font-size: .84rem; font-family: 'Hanken Grotesk', sans-serif; cursor: pointer;
+    padding: .38rem .5rem; border: 1px solid transparent;
+    border-radius: var(--radius-sm); background: var(--field-bg); color: var(--faint);
+    font-size: var(--fs-m); font-family: 'Hanken Grotesk', sans-serif; cursor: pointer;
     transition: border-color var(--dur-hover) var(--ease-hover);
   }
   .cal-trigger svg { flex-shrink: 0; opacity: .8; }
@@ -238,14 +238,14 @@
      absolute positioning would be clipped by scrollable ancestors. */
   .cal-popover {
     position: fixed; z-index: 220;
-    border-radius: 14px; padding: 12px; width: 318px;
+    border-radius: var(--r-l); padding: 12px; width: 318px;
     /* Sits inside field labels; none of their lettering applies here. */
     text-transform: none; letter-spacing: normal; font-family: 'Hanken Grotesk', sans-serif;
   }
   .cal-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
   .cal-chip, .cal-time {
     padding: .3rem .6rem; border: 0; border-radius: 999px; background: var(--col-bg); color: var(--text);
-    font: inherit; font-size: .76rem; font-weight: 600; cursor: pointer;
+    font: inherit; font-size: var(--fs-s); font-weight: 600; cursor: pointer;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .cal-chip:hover, .cal-time:hover { background: var(--hover); }
@@ -253,14 +253,14 @@
   .cal-header { display: flex; align-items: center; justify-content: space-between; padding: 2px 0 6px; }
   .cal-nav {
     background: none; border: none; cursor: pointer; color: var(--muted);
-    font-size: 1.05rem; line-height: 1; width: 28px; height: 28px; border-radius: 50%;
+    font-size: var(--fs-xl); line-height: 1; width: 28px; height: 28px; border-radius: 50%;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .cal-nav:hover { background: var(--hover); color: var(--text); }
-  .cal-month-label { font-size: .88rem; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+  .cal-month-label { font-size: var(--fs-m); font-weight: 700; color: var(--text); letter-spacing: -.01em; }
 
   .cal-dow { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 2px; }
-  .cal-dow span { text-align: center; font-size: .66rem; font-weight: 600; color: var(--faint); padding: 3px 0; }
+  .cal-dow span { text-align: center; font-size: var(--fs-xs); font-weight: 600; color: var(--faint); padding: 3px 0; }
 
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
   .cal-day {
@@ -269,7 +269,7 @@
   }
   .cal-day span {
     width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: .8rem; font-variant-numeric: tabular-nums;
+    font-size: var(--fs-s); font-variant-numeric: tabular-nums;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .cal-day:hover span { background: var(--hover); }
@@ -278,7 +278,7 @@
   .cal-day-empty { height: 36px; }
 
   .cal-time-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
-  .cal-time-label { font-size: .78rem; color: var(--muted); }
+  .cal-time-label { font-size: var(--fs-s); color: var(--muted); }
   .cal-times { display: flex; flex-wrap: wrap; gap: 5px; }
   .cal-time { display: inline-flex; align-items: center; font-variant-numeric: tabular-nums; }
   .cal-time-box { margin-top: 8px; }
@@ -286,7 +286,7 @@
   .cal-footer { display: flex; justify-content: space-between; margin-top: 10px; }
   .cal-footer-btn {
     padding: .3rem .4rem; border: 0; border-radius: var(--radius-sm); background: none;
-    font: inherit; font-size: .8rem; font-weight: 600; cursor: pointer;
+    font: inherit; font-size: var(--fs-s); font-weight: 600; cursor: pointer;
     transition: background var(--dur-hover) var(--ease-hover);
   }
   .cal-footer-btn:hover { background: var(--hover); }

@@ -67,18 +67,18 @@
   .confirm-panel {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
     z-index: 701; width: min(360px, 90vw);
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--glass-edge); border-radius: var(--radius);
     box-shadow: var(--elev-3);
     padding: 1.35rem 1.5rem;
   }
 
   /* pre-line so a caller can lay out a list; runs of spaces still collapse. */
-  .confirm-msg { margin: 0 0 1.2rem; font-size: .92rem; color: var(--text); line-height: 1.5; white-space: pre-line; }
+  .confirm-msg { margin: 0 0 1.2rem; font-size: var(--fs-l); color: var(--text); line-height: 1.5; white-space: pre-line; }
 
   .confirm-actions { display: flex; justify-content: flex-end; gap: .6rem; }
   .cancel-btn, .ok-btn {
-    padding: .5rem 1rem; border-radius: var(--radius-sm); font-size: .85rem; font-weight: 600; cursor: pointer;
-    border: 1px solid var(--border-strong); background: var(--bg); color: var(--text);
+    padding: .5rem 1rem; border-radius: var(--radius-sm); font-size: var(--fs-m); font-weight: 600; cursor: pointer;
+    border: 1px solid transparent; background: var(--field-bg); color: var(--text);
     transition: background var(--dur-hover) var(--ease-hover), opacity var(--dur-hover) var(--ease-hover);
   }
   .cancel-btn:hover { background: var(--hover); }
