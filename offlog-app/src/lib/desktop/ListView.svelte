@@ -13,6 +13,7 @@
   import CardDetail from './CardDetail.svelte';
   import FilterBar from './FilterBar.svelte';
   import CustomSelect from './CustomSelect.svelte';
+  import PinStar from './PinStar.svelte';
   import { hapticToggle } from '../haptics';
 
   export let project: ProjectDoc;
@@ -616,7 +617,6 @@
         <div
           class="grid-row"
           class:row-selected={selected.has(task._id!)}
-          class:pinned={task.pinned}
           style="--prio-color:{PRIO_COLOR[task.priority]}; grid-template-columns:{gridTemplate}"
           role="button"
           tabindex="0"
@@ -649,6 +649,7 @@
             {/if}
           </button>
           <span class="cell-title">
+            {#if task.pinned}<span class="pin-mark" title="Pinned" aria-label="Pinned"><PinStar size={11} filled={false} stroked /></span>{/if}
             {task.title}
             {#if task.recurrence}
               <span class="recur-mark" title="Repeats {task.recurrence}">
@@ -920,15 +921,8 @@
     width: 3px; border-radius: 2px;
     background: var(--prio-color, var(--border));
   }
-  /* Pinned shows as a short indigo segment interrupting the middle of the
-     row's priority-color left bar (e.g. a yellow-priority row reads
-     yellow / indigo / yellow), not as an icon in the title cell. ::after,
-     since ::before is the base accent bar above. */
-  .grid-row.pinned::after {
-    content: '';
-    position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-    width: 3px; height: 14px; background: var(--accent);
-  }
+  /* Pinned: the same pushpin as a Board card and the phone, before the title. */
+  .pin-mark { display: inline-flex; color: var(--accent); vertical-align: -1px; margin-right: 4px; }
 
   .row-check {
     width: 16px; height: 16px; padding: 0; cursor: pointer;

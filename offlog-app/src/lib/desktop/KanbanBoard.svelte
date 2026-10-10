@@ -643,7 +643,6 @@
             data-task-idx={idx}
             class:dragging={isDragging(task)}
             class:insert-before={dragOverColId === col.id && dragOverIndex === idx}
-            class:pinned={task.pinned}
             draggable="true"
             role="button"
             tabindex="0"
@@ -660,7 +659,7 @@
             style="--prio-color:{PRIORITY_COLOR[task.priority]}"
           >
             <div class="card-top">
-              <span class="card-title">{task.title}</span>
+              <span class="card-title">{#if task.pinned}<span class="card-pin" title="Pinned" aria-label="Pinned"><PinStar size={12} filled={false} stroked /></span>{/if}{task.title}</span>
               <div class="card-menu-wrap">
                 <button
                   type="button"
@@ -676,7 +675,7 @@
                   <div class="card-menu glass pop" bind:this={cardMenuPanelEl} on:click|stopPropagation on:keydown={(e) => { onCardMenuKey(e); e.stopPropagation(); }} in:fly={popIn} out:fly={popOut}>
                     <button type="button" class="card-menu-item" on:click={() => { openCardMenu = null; togglePin(task); }}>
                       <PinStar size={12} filled={task.pinned} stroked />
-                      {task.pinned ? 'Unpin' : 'Pin'}
+                      {task.pinned ? 'Unpin' : 'Pin to top'}
                     </button>
                     <button type="button" class="card-menu-item" on:click={() => { openCardMenu = null; cardArchive(task); }}>
                       <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2" width="11" height="3" rx="1"/><path d="M2.5 5v6.5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V5M5.5 8h3"/></svg>
@@ -936,7 +935,7 @@
   .card.insert-before { box-shadow: inset 0 2px 0 var(--accent), var(--elev-1); }
   /* Pinned reads as a thin accent right edge — mirrors the priority left
      edge, on the opposite side so the two never compete for space. */
-  .card.pinned { border-right: 1px solid var(--accent); }
+  .card-pin { display: inline-flex; color: var(--accent); vertical-align: -1px; margin-right: 5px; }
 
   .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; }
   .card-title { font-size: .92rem; font-weight: 600; line-height: 1.4; color: var(--text); flex: 1; }

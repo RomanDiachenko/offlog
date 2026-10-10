@@ -257,7 +257,7 @@ src/
       UpdateModal.svelte          Desktop update available/downloading/failed
       AppLock.svelte              PIN lock screen; Escape must not dismiss it
       ConfirmPinGate.svelte       Proves the current PIN before changing or removing it
-      PinStar.svelte              The pin star icon
+      PinStar.svelte              The pin mark (a pushpin, as on the phone): pinned Board cards and List rows, and the pin menus
 
     phone/                      The phone shell (PHONE_QUERY, never Tauri); its own chunk, loaded by App.svelte only on a phone
       PhoneApp.svelte             Tabs, screen stacks, nav bar, +, snackbar, keyboard handling

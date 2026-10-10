@@ -110,6 +110,16 @@ afterEach(cleanup);
 
 // The card menu is the only keyboard/touch route to a column change —
 // drag-and-drop cannot be driven without a pointer.
+describe('KanbanBoard pinned card', () => {
+  it('shows a pushpin before the title only when pinned', () => {
+    const { getByLabelText } = render(KanbanBoard, { project: mkProject(), tasks: [{ ...mkTask(), pinned: true }] });
+    expect(getByLabelText('Pinned').closest('.card-title')?.textContent).toBe('Movable task');
+    cleanup();
+    const plain = render(KanbanBoard, { project: mkProject(), tasks: [mkTask()] });
+    expect(plain.queryByLabelText('Pinned')).toBeNull();
+  });
+});
+
 describe('KanbanBoard card menu keyboard', () => {
   it('Escape closes the open menu, from the page or from inside it', async () => {
     const { container } = render(KanbanBoard, { project: mkProject(), tasks: [mkTask()] });
@@ -170,7 +180,7 @@ describe('KanbanBoard "Move to" status', () => {
     const menu = await openCardMenu(container);
 
     expect(menu.querySelector('.card-menu-label')).toBeNull();
-    expect(itemsIn(menu)).toEqual(['Pin', 'Archive', 'Duplicate', 'Delete']);
+    expect(itemsIn(menu)).toEqual(['Pin to top', 'Archive', 'Duplicate', 'Delete']);
   });
 });
 
