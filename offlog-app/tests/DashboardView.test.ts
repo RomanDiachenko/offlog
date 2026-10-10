@@ -136,7 +136,7 @@ describe('DashboardView daily brief', () => {
     const { container } = await renderDash(mkData());
 
     expect(container.querySelector('.brief-empty')!.textContent)
-      .toContain("You haven't picked today's 3 tasks yet");
+      .toContain('No tasks picked for today yet.');
     expect(getTaskById).not.toHaveBeenCalled();
   });
 
@@ -289,9 +289,10 @@ describe('DashboardView project cards', () => {
     }), { openProject: (e) => openProject(e.detail) });
 
     const card = container.querySelector('.proj-card') as HTMLElement;
-    expect(card.querySelector('.proj-meta')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('3 of 7 done Due today');
+    // Overdue takes the due date's place on the one meta line.
+    expect(card.querySelector('.proj-meta')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('3/7 done 3 overdue');
     expect((card.querySelector('.progress span') as HTMLElement).style.width).toBe('43%');
-    expect(card.querySelector('.pinned-stat')!.textContent).toBe('2 pinned');
+    expect(card.querySelector('.pinned-stat')!.getAttribute('aria-label')).toBe('2 pinned');
     expect(card.querySelector('.overdue-stat')!.textContent).toBe('3 overdue');
 
     await fireEvent.click(card);

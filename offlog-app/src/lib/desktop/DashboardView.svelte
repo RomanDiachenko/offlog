@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PinStar from './PinStar.svelte';
   import { soften } from '../tagColors';
   import { onMount, createEventDispatcher } from 'svelte';
   import { getDashboardData, getStorageBreakdown, getTaskById, subscribe } from '../db';
@@ -153,10 +154,11 @@
             {/each}
           </div>
         {:else}
-          <div class="brief-head">
+          <div class="brief-row">
             <span class="brief-label">Today's Focus</span>
+            <span class="brief-empty">No tasks picked for today yet.</span>
+            <span class="brief-go">Choose in Focus ›</span>
           </div>
-          <span class="brief-empty">You haven't picked today's 3 tasks yet — choose them in Focus.</span>
         {/if}
       </div>
 
@@ -182,21 +184,19 @@
                     <span class="space-dot" style="background:{soften(space.color)}"></span>
                     <span class="space-name">{space.name}</span>
                   {/if}
+                  {#if stats.pinned}<span class="stat pinned-stat" title="{stats.pinned} pinned" aria-label="{stats.pinned} pinned"><PinStar size={11} filled={false} stroked />{stats.pinned}</span>{/if}
                 </div>
                 <div class="proj-name">{proj.name}</div>
                 {#if stats.total}
-                  <div class="progress" aria-hidden="true"><span style="width:{Math.round(done / stats.total * 100)}%"></span></div>
                   <div class="proj-meta">
-                    <span>{done} of {stats.total} done</span>
-                    {#if stats.nextDue}<span>{nextDueLabel(stats.nextDue, $today)}</span>{/if}
+                    <span>{done}/{stats.total} done</span>
+                    {#if stats.overdue}<span class="overdue-stat">{stats.overdue} overdue</span>
+                    {:else if stats.nextDue}<span>{nextDueLabel(stats.nextDue, $today)}</span>{/if}
                   </div>
+                  <div class="progress" aria-hidden="true"><span style="width:{Math.round(done / stats.total * 100)}%"></span></div>
                 {:else}
                   <div class="proj-meta"><span>No tasks yet</span></div>
                 {/if}
-                <div class="proj-stats">
-                  {#if stats.pinned}<span class="stat pinned-stat">{stats.pinned} pinned</span>{/if}
-                  {#if stats.overdue}<span class="stat overdue-stat">{stats.overdue} overdue</span>{/if}
-                </div>
               </div>
             {/each}
             {#if data.allProjects.length === 0}
@@ -356,7 +356,7 @@
   /* "Daily Brief" card, full-width above the two-column layout. */
   .brief {
     background: var(--surface); border: 1px solid transparent; border-radius: var(--r-l);
-    padding: 14px 20px; margin-bottom: 20px; cursor: pointer;
+    padding: 12px 18px; margin-bottom: 22px; cursor: pointer;
     display: flex; flex-direction: column; gap: 8px;
     transition: border-color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover); box-shadow: var(--elev-1);
   }
@@ -367,7 +367,9 @@
     letter-spacing: .08em; font-weight: 700; color: var(--faint);
   }
   .brief-count { font-family: var(--mono); font-size: var(--fs-xs); color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
-  .brief-empty { font-size: var(--fs-m); color: var(--faint); }
+  .brief-empty { font-size: var(--fs-m); color: var(--muted); }
+  .brief-row { display: flex; align-items: center; gap: 14px; }
+  .brief-go { margin-left: auto; font-size: var(--fs-s); font-weight: 600; color: var(--accent-ink); white-space: nowrap; }
   .brief-tasks { display: flex; flex-wrap: wrap; gap: 8px 16px; }
   .brief-task {
     font-size: var(--fs-m); color: var(--text); position: relative; padding-left: 16px;
@@ -414,8 +416,7 @@
 
   .project-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    grid-auto-rows: minmax(130px, auto);
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 12px;
     align-content: start;
     /* Don't add align-items:start here. Cards must keep the default
@@ -426,13 +427,14 @@
   }
   .proj-card {
     background: var(--surface); border: 1px solid transparent; border-radius: var(--r-l);
-    padding: 18px 20px; cursor: pointer;
+    padding: 14px 16px 16px; cursor: pointer;
     transition: border-color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover), transform var(--dur-hover) var(--ease-hover);
-    display: flex; flex-direction: column; gap: 8px; box-shadow: var(--elev-1);
+    display: flex; flex-direction: column; gap: 6px; box-shadow: var(--elev-1);
   }
   .proj-card:hover { box-shadow: var(--elev-2); transform: translateY(-1px); }
 
-  .proj-card-top { display: flex; align-items: center; gap: 6px; }
+  /* Fixed height: a pin count must not push the title down on some cards. */
+  .proj-card-top { display: flex; align-items: center; gap: 6px; height: 16px; }
   .space-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
   /* Wrap, never truncate. min-width:0 is required for a flex child to wrap
      instead of overflowing its row (flex items default to a content-based
@@ -442,22 +444,21 @@
   /* min-height reserves 2 lines' worth of title height unconditionally, so
      every card budgets the same space whether or not its title wraps and
      the grid stays uniform without truncating 2-line titles. */
-  .proj-name { font-size: var(--fs-xl); font-weight: 700; line-height: 1.3; min-height: 2.6em; color: var(--text); overflow-wrap: break-word; margin-top: 2px; }
+  .proj-name { font-size: var(--fs-l); font-weight: 700; line-height: 1.3; color: var(--text); overflow-wrap: break-word; margin-bottom: auto; padding-bottom: 6px; }
   /* Chips, not bare wrapped text — at narrow card widths plain text runs
      wrap onto separate lines with uneven spacing. Pill chips still wrap,
      but each reads as one self-contained unit. */
-  .proj-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: auto; padding-top: 8px; }
   .stat {
     font-family: var(--mono); font-size: var(--fs-xs); color: var(--muted);
     display: inline-flex; align-items: center; gap: 3px;
-    padding: 3px 8px; border-radius: var(--r-xl); background: var(--hover);
+    padding: 2px 7px; border-radius: var(--r-xl); background: var(--hover);
     white-space: nowrap;
   }
-  .progress { height: 4px; border-radius: 4px; background: var(--hover); overflow: hidden; }
+  .progress { height: 3px; border-radius: 3px; background: color-mix(in srgb, var(--text) 7%, transparent); overflow: hidden; }
   .progress span { display: block; height: 100%; border-radius: 4px; background: var(--success); }
-  .proj-meta { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: var(--fs-s); color: var(--muted); }
-  .pinned-stat { color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 14%, transparent); }
-  .overdue-stat { color: color-mix(in srgb, var(--danger) 82%, var(--text)); background: color-mix(in srgb, var(--danger) 14%, transparent); }
+  .proj-meta { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: var(--fs-s); color: var(--faint); }
+  .pinned-stat { margin-left: auto; color: var(--accent-ink); background: none; padding: 0; font-family: inherit; line-height: 1; }
+  .overdue-stat { color: var(--overdue-ink); font-weight: 600; }
 
   .task-list { display: flex; flex-direction: column; gap: 1px; background: color-mix(in srgb, var(--text) 6%, transparent); border-radius: var(--r-l); overflow: hidden; box-shadow: var(--elev-1); }
   .task-row {
