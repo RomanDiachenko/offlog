@@ -5,7 +5,14 @@
   import { getRecentLogs, getTaskById, clearLogs, subscribe } from '../db';
   import { projects, showError } from '../store';
   import { describeLog, fmt, entityLabel, ACTION_LABEL } from '../logFormat';
-  import { ACTION_COLOR, fmtDay, localDateStr } from '../utils';
+  // Fixed icons per action (internal constants, never user text).
+  const ACTION_ICON: Record<string, string> = {
+    create: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+    update: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+    move: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+    delete: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>',
+  };
+  import { fmtDay, localDateStr } from '../utils';
   import { closeOnBack, isTopLayer } from '../modalStack';
   import { confirmAction } from '../confirm';
   import { trapFocus } from '../focusTrap';
@@ -209,10 +216,10 @@
                 on:click={() => openEntry(log)}
                 on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEntry(log); } }}
               >
-                <span class="action-pill" style="background:color-mix(in srgb, {ACTION_COLOR[log.action] ?? 'var(--faint)'} 13%, transparent); color:color-mix(in srgb, {ACTION_COLOR[log.action] ?? 'var(--faint)'} 50%, var(--text))">{ACTION_LABEL[log.action] ?? log.action}</span>
+                <span class="action-ic {log.action}" title={ACTION_LABEL[log.action] ?? log.action} aria-label={ACTION_LABEL[log.action] ?? log.action}>{@html ACTION_ICON[log.action] ?? ACTION_ICON.update}</span>
                 <span class="entry-desc">{describeLog(log)}</span>
                 <span class="entry-meta">
-                  <span class="source-pill source-{log.source ?? 'pc'}">{log.source ?? 'pc'}</span>
+                  <span class="entry-source">{log.source === 'mobile' ? 'Phone' : 'PC'}</span>
                   <span class="entry-time">{fmt(log.ts).split(' · ')[1]}</span>
                 </span>
                 {#if log.project_name && entityLabel(log) !== 'project'}
@@ -224,10 +231,10 @@
               <!-- role="listitem" matches entries-list's role="list" above;
                    never focusable since these entries have no click action. -->
               <div class="entry" role="listitem">
-                <span class="action-pill" style="background:color-mix(in srgb, {ACTION_COLOR[log.action] ?? 'var(--faint)'} 13%, transparent); color:color-mix(in srgb, {ACTION_COLOR[log.action] ?? 'var(--faint)'} 50%, var(--text))">{ACTION_LABEL[log.action] ?? log.action}</span>
+                <span class="action-ic {log.action}" title={ACTION_LABEL[log.action] ?? log.action} aria-label={ACTION_LABEL[log.action] ?? log.action}>{@html ACTION_ICON[log.action] ?? ACTION_ICON.update}</span>
                 <span class="entry-desc">{describeLog(log)}</span>
                 <span class="entry-meta">
-                  <span class="source-pill source-{log.source ?? 'pc'}">{log.source ?? 'pc'}</span>
+                  <span class="entry-source">{log.source === 'mobile' ? 'Phone' : 'PC'}</span>
                   <span class="entry-time">{fmt(log.ts).split(' · ')[1]}</span>
                 </span>
                 <!-- Skipped for a project's own create/delete entry — its
@@ -298,21 +305,20 @@
   .day-group { margin-bottom: 16px; }
   .day-head {
     display: flex; align-items: baseline; gap: 10px;
-    padding-bottom: 5px; margin-bottom: 5px; border-bottom: 1px solid var(--border);
+    padding: 0 10px 6px;
   }
   .day-label { font-weight: 700; font-size: var(--fs-s); }
   .day-summary { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); }
 
   /* Grid, not flex: fixed columns pin every description to the same x
-     position regardless of how wide that row's action-pill text is
-     ("Created" vs "Deleted"). With flex the start position shifts per row.
+     position on every row.
      .entry-project is an optional second grid row in column 2 rather than
      an inline suffix, so it always lands in the same place instead of
      wrapping unpredictably with the description. */
   .entry {
-    display: grid; grid-template-columns: 60px 1fr auto; column-gap: 10px;
-    row-gap: 4px; align-items: start;
-    padding: 7px 8px; margin-bottom: 1px; border-radius: 5px; font-size: var(--fs-s); line-height: 1.45;
+    display: grid; grid-template-columns: 24px 1fr auto; column-gap: 12px;
+    row-gap: 2px; align-items: start;
+    padding: 9px 10px; border-radius: var(--r-m); font-size: var(--fs-s); line-height: 1.45;
   }
   /* Source pill and time share one flex group in the 3rd (auto-width)
      column rather than two fixed-width columns of their own, so they
@@ -323,40 +329,33 @@
   .entry.clickable { cursor: pointer; }
   .entry.clickable:hover { background: var(--hover); }
 
-  .action-pill {
-    font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 500;
-    letter-spacing: .03em; text-transform: uppercase;
-    padding: 1px 6px; border-radius: 4px;
-    justify-self: start; width: fit-content;
+  /* The sentence names the action; the icon only helps the eye scan. */
+  .action-ic {
+    width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: var(--field-bg); color: var(--muted);
   }
+  .action-ic.delete { color: var(--overdue-ink); background: color-mix(in srgb, var(--danger) 10%, transparent); }
 
   /* Wraps rather than truncating — this view exists to be read. */
   .entry-desc { grid-column: 2; min-width: 0; color: var(--text); white-space: normal; word-break: break-word; }
   /* Own row directly under the description, column 2 only -- see the
      .entry comment above for why this isn't an inline suffix. */
   .entry-project {
-    grid-column: 2; font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
+    grid-column: 2; font-size: var(--fs-xs); color: var(--faint);
   }
 
-  .source-pill {
-    font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 600;
-    letter-spacing: .04em; text-transform: uppercase;
-    padding: 1px 6px; border-radius: 4px;
-    background: var(--col-bg); color: var(--muted);
-    justify-self: start; width: fit-content;
-  }
-  .source-pill.source-mobile { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-ink); }
+  .entry-source { font-size: var(--fs-2xs); color: var(--faint); }
 
   /* nowrap, and the column must stay wide enough: a wrapped "09:53 AM"
      inflates the whole row's height (grid rows size to their tallest cell)
      and leaves a stray gap above the project-name row. */
-  .entry-time { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); white-space: nowrap; }
+  .entry-time { font-size: var(--fs-2xs); color: var(--faint); white-space: nowrap; }
 
   /* align-items: start (not baseline) on .entry sits these flush with the
      top of the row; nudge down to align with the description's cap-height
      instead of its line-height. Applied to .entry-meta rather than its two
      children so the offset lands once. */
-  .action-pill { margin-top: 2px; }
+  .action-ic { margin-top: -1px; }
 
   .load-more-btn {
     display: block; margin: 8px auto 0;

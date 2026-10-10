@@ -4,7 +4,6 @@
   import { panelIn, panelOut, panelScrimIn, panelScrimOut, exitMs } from '../motion';
   import { getAllDeletedTasks, undoDelete, deleteForever, emptyTrash, subscribe } from '../db';
   import { reloadTasks, showError } from '../store';
-  import { PRIORITY_COLOR as PRIO_COLOR, PRIORITY_LABEL as PRIO_LABEL } from '../constants';
   import { confirmAction } from '../confirm';
   import { closeOnBack, isTopLayer } from '../modalStack';
   import { trapFocus } from '../focusTrap';
@@ -147,7 +146,6 @@
       <div class="item-rows">
         {#each items as t (t._id)}
           <div class="item-row">
-            <span class="prio-bar" style="background:{PRIO_COLOR[t.priority]}" title={PRIO_LABEL[t.priority]}></span>
             <div class="item-main">
               <span class="item-title">{t.title}</span>
               {#if t.project_name}<span class="item-proj">{t.project_name}</span>{/if}
@@ -226,13 +224,12 @@
      Same construction as Dashboard's Today/Pinned/Overdue lists. */
   .item-rows {
     display: flex; flex-direction: column; gap: 1px;
-    background: var(--border); border-radius: var(--r-m); overflow: hidden;
+    background: color-mix(in srgb, var(--text) 6%, transparent); border-radius: var(--r-l); overflow: hidden; box-shadow: var(--elev-1);
   }
   .item-row {
     display: flex; align-items: center; gap: 10px;
     padding: 9px 14px; background: var(--surface);
   }
-  .prio-bar { width: 3px; align-self: stretch; border-radius: 2px; flex-shrink: 0; }
 
   .item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   /* Wrap, never truncate — the app-wide convention for task titles. */
@@ -240,10 +237,10 @@
     font-size: var(--fs-m); font-weight: 500; color: var(--muted);
     overflow-wrap: break-word;
   }
-  .item-proj { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); }
+  .item-proj { font-size: var(--fs-xs); color: var(--faint); }
 
   .item-time {
-    font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
+    font-size: var(--fs-xs); color: var(--faint);
     white-space: nowrap; flex-shrink: 0;
   }
 
