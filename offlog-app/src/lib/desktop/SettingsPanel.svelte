@@ -1631,7 +1631,7 @@
   .detail-content :global(.setting-group) {
     display: flex; flex-direction: column; gap: .6rem;
     background: color-mix(in srgb, var(--text) 4%, transparent);
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    border: 1px solid transparent; border-radius: var(--radius-sm);
     padding: .85rem .9rem;
   }
   /* A slide/fade reveal wrapper (NotificationSettings' Permission/Reminder
@@ -1760,7 +1760,7 @@
 
   .detail-content :global(.link-row) {
     display: flex; align-items: center; gap: .75rem;
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--field-bg); border: 1px solid transparent; border-radius: var(--radius-sm);
     padding: .75rem .9rem; cursor: pointer; text-align: left; width: 100%;
     transition: background var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
@@ -1787,7 +1787,7 @@
   .conflict-diff-note { font-size: var(--fs-xs); color: var(--muted); }
   .conflict-version {
     display: flex; flex-direction: column; gap: .2rem;
-    border-top: 1px solid var(--border); padding-top: .4rem; margin-top: .2rem;
+    padding-top: .4rem; margin-top: .2rem;
   }
   .conflict-field { display: flex; gap: .5rem; font-size: var(--fs-s); line-height: 1.45; }
   .conflict-field-name { color: var(--faint); min-width: 5.5rem; flex-shrink: 0; }
@@ -1832,7 +1832,7 @@
 
   .settings-actions {
     display: flex; justify-content: flex-end; gap: .5rem;
-    padding: .9rem 1.25rem; border-top: 1px solid var(--border); flex-shrink: 0;
+    padding: .9rem 1.25rem; flex-shrink: 0;
   }
   .settings-actions button {
     padding: .45rem .95rem; border-radius: var(--radius-sm);
@@ -1857,7 +1857,7 @@
   }
   .mini-modal-head {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 1rem 1.1rem; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    padding: 1rem 1.1rem; flex-shrink: 0;
   }
   .mini-modal-title { font-weight: 700; font-size: var(--fs-l); }
   .mini-modal-close {
@@ -1879,7 +1879,7 @@
   }
   .mini-modal-actions {
     display: flex; justify-content: flex-end; gap: .5rem;
-    padding: .85rem 1.1rem; border-top: 1px solid var(--border); flex-shrink: 0;
+    padding: .85rem 1.1rem; flex-shrink: 0;
   }
 
   .recovery-modal { max-width: 420px; }

@@ -281,7 +281,7 @@
 
   .panel-head {
     display: flex; align-items: center; gap: 8px;
-    padding: 20px 24px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    padding: 20px 24px 12px; flex-shrink: 0;
   }
   .panel-title { font-size: var(--fs-xl); font-weight: 700; flex: 1; letter-spacing: -.015em; }
 

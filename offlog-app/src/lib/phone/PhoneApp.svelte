@@ -128,7 +128,7 @@
 <div class="phone-shell" class:kb style:--tab-h="{kb ? 0 : tabH}px">
   <div class="screens" bind:this={screensEl}>
     {#key key}
-      <div class="screen" class:flush={top.k === 'home'} class:board={top.k === 'project'} in:screenIn={{ kind: $arrival }} out:screenOut={{ kind: $arrival }}>
+      <div class="screen" class:flush={top.k === 'home'} class:board={top.k === 'project'} class:no-lines={top.k === 'settings' || top.k === 'set'} in:screenIn={{ kind: $arrival }} out:screenOut={{ kind: $arrival }}>
         {#if top.k === 'home'}
           <Home />
         {:else if top.k === 'today' || top.k === 'late' || top.k === 'pinned'}

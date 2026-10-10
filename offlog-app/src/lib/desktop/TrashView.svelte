@@ -189,7 +189,7 @@
 
   .rc-sub {
     padding: 0 24px 16px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
-    border-bottom: 1px solid var(--border); flex-shrink: 0;
+    flex-shrink: 0;
   }
 
   .clear-btn {
@@ -218,18 +218,15 @@
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px 24px; }
   .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; line-height: 1.5; }
 
-  /* A 1px gap of border color between rows plus a rounded .prio-bar
-     segment per row — not a border-left on the row, which renders as one
-     continuous stripe across adjacent rows of the same priority color.
-     Same construction as Dashboard's Today/Pinned/Overdue lists. */
-  .item-rows {
-    display: flex; flex-direction: column; gap: 1px;
-    background: color-mix(in srgb, var(--text) 6%, transparent); border-radius: var(--r-l); overflow: hidden; box-shadow: var(--elev-1);
-  }
+  /* Rows sit straight on the panel, like History's: no dividers, a tint
+     on hover. */
+  .item-rows { display: flex; flex-direction: column; gap: 2px; }
   .item-row {
     display: flex; align-items: center; gap: 10px;
-    padding: 9px 14px; background: var(--surface);
+    padding: 9px 10px; border-radius: var(--r-m);
+    transition: background var(--dur-hover) var(--ease-hover);
   }
+  .item-row:hover { background: var(--hover); }
 
   .item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   /* Wrap, never truncate — the app-wide convention for task titles. */

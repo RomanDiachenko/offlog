@@ -32,6 +32,9 @@
   transition: background var(--dur-hover) var(--ease-hover);
 }
 .phone-shell .p-row + .p-row, .psheet .p-row + .p-row { border-top: 1px solid var(--border); }
+/* Home's project lists and the Settings screens read as plain groups, no
+   dividers between rows. */
+.phone-shell .home .p-row + .p-row, .phone-shell .no-lines .p-row + .p-row { border-top: 0; }
 .phone-shell .p-row:active, .psheet .p-row:active { background: var(--col-bg); }
 .phone-shell .p-row:disabled, .psheet .p-row:disabled { opacity: .45; cursor: default; }
 .phone-shell .p-row .p-k, .psheet .p-row .p-k { flex: 1; min-width: 0; display: flex; flex-direction: column; }
