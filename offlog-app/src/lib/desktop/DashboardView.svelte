@@ -128,9 +128,9 @@
     <!-- Every full-page view needs a visible Command Palette entry point,
          not just the Ctrl+K shortcut — unreachable on mobile with no
          physical keyboard. -->
-    <button class="palette-btn" on:click={() => dispatch('search')} title="Command Palette (Ctrl+K)" aria-label="Command Palette (Ctrl+K)">
+    <button class="palette-btn" on:click={() => dispatch('search')} title="Commands and search (Ctrl+K)" aria-label="Commands and search (Ctrl+K)">
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
+        <rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>
       </svg>
     </button>
   </div>
@@ -336,15 +336,16 @@
 
   .palette-btn {
     display: flex; align-items: center; justify-content: center;
-    width: 32px; height: 32px; margin-left: auto; flex-shrink: 0;
-    background: none; border: 1px solid var(--border-strong); border-radius: 8px;
+    width: 34px; height: 34px; flex-shrink: 0;
+    background: var(--rail-bg); border: 0; border-radius: 11px;
+    margin-left: auto;
     color: var(--muted); cursor: pointer; transition: color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
     /* header is align-items:flex-start, but this button sits centered
        against the row rather than pinned to the top like the (multi-line)
        title block. */
     align-self: center;
   }
-  .palette-btn:hover { color: var(--text); background: var(--hover); }
+  .palette-btn:hover { color: var(--text); background: color-mix(in srgb, var(--text) 12%, transparent); }
 
   .dash-body {
     flex: 1; min-height: 0; overflow-y: auto;

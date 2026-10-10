@@ -284,6 +284,10 @@ body {
   --glow:        color-mix(in srgb, var(--accent) 14%, transparent);
   --sel-fill:    color-mix(in srgb, var(--text) 8%, transparent);
   --sel-ring:    0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 8px var(--glow);
+  /* Header controls (desktop): a 34px rail on --rail-bg holding 26px
+     buttons, or a lone 34px square on it; hover is --rail-hover. */
+  --rail-bg:     color-mix(in srgb, var(--text) 6%, transparent);
+  --rail-hover:  color-mix(in srgb, var(--text) 7%, transparent);
 
   /* Elevation, three levels and nothing in between: resting content
      (cards, rows, tiles), floating chrome (headers, bars, toasts, a lifted

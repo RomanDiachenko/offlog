@@ -201,13 +201,14 @@
   .action-btn {
     position: relative;
     display: flex; align-items: center; justify-content: center; gap: 5px;
-    background: none; border: none; border-radius: 6px;
-    color: var(--muted); font-size: 11.5px; font-weight: 500;
-    padding: 7px 9px; cursor: pointer; white-space: nowrap;
+    height: 26px; box-sizing: border-box;
+    background: none; border: none; border-radius: 8px;
+    color: var(--muted); font-size: 12.5px; font-weight: 500;
+    padding: 0 10px; cursor: pointer; white-space: nowrap;
     transition: color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
-  .action-btn.compact { padding: 5px 8px; }
-  .action-btn:hover { color: var(--text); background: var(--hover, var(--surface)); }
+  .action-btn.compact { padding: 0 8px; }
+  .action-btn:hover { color: var(--text); background: var(--rail-hover); }
   .action-btn.active { color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 10%, transparent); }
   .filter-count {
     position: absolute; top: -3px; right: -3px;

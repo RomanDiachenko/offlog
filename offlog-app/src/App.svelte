@@ -656,18 +656,18 @@
             <!-- One button and one modal either way: GlobalSearch folds
                  search and commands together. List view has its own local
                  "Search tasks…" box in its toolbar, so there this button is
-                 labelled "Command Palette" with a distinct icon to avoid
+                 labelled "Commands and search" with a distinct icon to avoid
                  reading as a second search; Kanban (no local search box)
                  keeps the plain search framing. -->
             <button
               class="search-btn"
               on:click={openSearch}
-              title={currentView === 'list' ? 'Command Palette (Ctrl+K)' : 'Search (Ctrl+K)'}
-              aria-label={currentView === 'list' ? 'Command Palette (Ctrl+K)' : 'Search (Ctrl+K)'}
+              title={currentView === 'list' ? 'Commands and search (Ctrl+K)' : 'Search (Ctrl+K)'}
+              aria-label={currentView === 'list' ? 'Commands and search (Ctrl+K)' : 'Search (Ctrl+K)'}
             >
               {#if currentView === 'list'}
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
+                  <rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>
                 </svg>
               {:else}
                 <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
@@ -896,10 +896,6 @@
   /* Fluid: a floating glass panel over a faint light of the space color. */
   /* Stage, panel, surface and blur come from app.css (.fluid-stage, .fluid-panel, .glass). */
   .board-header.fluid { border-bottom: none; }
-  .board-header.fluid .search-filter-group, .board-header.fluid .view-seg { background: transparent; border-color: transparent; }
-  /* The selected view is app.css's .is-selected (pill + glow); this only
-     lifts the old solid button look that .view-btn.active draws elsewhere. */
-  .board-header.fluid .view-btn.active { background: var(--sel-fill); box-shadow: none; }
 
   /* Hamburger — hidden on desktop, shown on mobile */
   .hamburger {
@@ -925,42 +921,32 @@
 
   .spacer { flex: 1; }
 
-  /* Search + Filters paired into one compact pill — same grouped-pill
-     language as .view-seg below, so the two clusters read as a pair. */
-  .search-filter-group {
-    display: inline-flex; align-items: center; background: var(--col-bg);
-    border: 1px solid var(--border-strong); border-radius: 8px;
-    padding: 3px; gap: 1px; flex-shrink: 0;
-  }
+  /* Search + Filters on one rail (app.css --rail-bg), like .view-seg. */
+  .search-filter-group { display: inline-flex; align-items: center; height: 34px; box-sizing: border-box; padding: 3px; gap: 2px; border-radius: 11px; background: var(--rail-bg); flex-shrink: 0; }
   .search-filter-divider { width: 1px; height: 14px; background: var(--border-strong); flex-shrink: 0; }
   .search-btn {
-    /* Explicit height (not just padding) matching .view-btn's own box, so
-       this button and the Kanban/List toggle next to it are the same
-       height. Agenda's palette-btn/mode-btn pair does the same. */
     display: flex; align-items: center; justify-content: center;
-    height: 30px; box-sizing: border-box;
+    height: 26px; box-sizing: border-box;
     background: none; border: none;
-    border-radius: 6px; padding: 0 8px; cursor: pointer;
+    border-radius: 8px; padding: 0 8px; cursor: pointer;
     color: var(--muted);
     transition: color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
     flex-shrink: 0;
   }
-  .search-btn:hover { color: var(--text); background: var(--hover, var(--surface)); }
+  .search-btn:hover { color: var(--text); background: var(--rail-hover); }
 
-  .view-seg {
-    display: inline-flex; background: var(--col-bg); border: 1px solid var(--border-strong);
-    border-radius: 10px; padding: 3px; gap: 2px; flex-shrink: 0;
-  }
+  .view-seg { display: inline-flex; align-items: center; height: 34px; box-sizing: border-box; padding: 3px; gap: 2px; border-radius: 11px; background: var(--rail-bg); flex-shrink: 0; }
   .view-btn {
     display: flex; align-items: center; justify-content: center; gap: 7px;
-    height: 30px; box-sizing: border-box;
-    border: none; cursor: pointer; font-family: inherit; font-size: 13px;
-    font-weight: 600; padding: 0 13px; border-radius: 7px;
+    height: 26px; box-sizing: border-box;
+    border: none; cursor: pointer; font-family: inherit; font-size: 12.5px;
+    font-weight: 600; padding: 0 10px; border-radius: 8px;
     background: transparent; color: var(--muted);
-    transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
+    transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
-  .view-btn.active { background: var(--surface); color: var(--text); box-shadow: var(--elev-1); }
-  .view-btn:not(.active):hover { color: var(--text); }
+  /* A white pill on the rail; .is-selected adds the glow. */
+  .view-btn.active { background: var(--surface); color: var(--text); }
+  .view-btn:not(.active):hover { color: var(--text); background: var(--rail-hover); }
 
   .empty-state {
     display: flex; flex-direction: column; align-items: flex-start;
@@ -1101,7 +1087,7 @@
     .board-title { font-size: 17px; }
     .breadcrumb { display: none; }
     .view-label { display: none; }
-    .view-btn { padding: 6px 9px; }
+    .view-btn { padding: 0 9px; }
   }
   .lock-cover { position: fixed; inset: 0; z-index: 10001; background: var(--bg); }
 </style>

@@ -77,7 +77,7 @@ describe('GlobalSearch matching', () => {
   it('lists every command when the query is empty', () => {
     const { container } = render(GlobalSearch, { props: { commands: COMMANDS } });
     expect(rows(container).map(r => r.textContent?.replace(/\s+/g, ' ').trim()))
-      .toEqual(['⌘ Go to Dashboard', '⌘ Quick Add Task']);
+      .toEqual(['Go to Dashboard', 'Quick Add Task']);
   });
 
   it('matches a command by its keywords, not only its label', async () => {
@@ -99,7 +99,7 @@ describe('GlobalSearch matching', () => {
     expect(rows(container).some(r => r.textContent!.includes('Groceries'))).toBe(false);
 
     await typeQuery(container, 'groc');
-    await waitFor(() => expect(rows(container).map(r => r.textContent!.replace(/\s+/g, ' ').trim())).toContain('⌘ Go to project · Groceries (Home)'));
+    await waitFor(() => expect(rows(container).map(r => r.textContent!.replace(/\s+/g, ' ').trim())).toContain('Go to project · Groceries (Home)'));
     expect(rows(container).some(r => r.textContent!.includes('Grocery archive'))).toBe(false);
 
     await fireEvent.click(rows(container).find(r => r.textContent!.includes('Groceries'))!);

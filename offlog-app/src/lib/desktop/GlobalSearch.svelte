@@ -199,7 +199,7 @@
           on:click={() => runCommand(c)}
           on:mouseenter={() => selectedIdx = i}
         >
-          <span class="cmd-icon">⌘</span>
+          <span class="cmd-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8,7 13,12 8,17"/></svg></span>
           <div class="result-body">
             <span class="result-title">{@html highlight(c.label, query)}</span>
           </div>
@@ -292,8 +292,7 @@
   }
 
   .cmd-icon {
-    width: 16px; flex-shrink: 0; text-align: center; color: var(--accent);
-    font-size: 13px;
+    width: 16px; flex-shrink: 0; display: flex; justify-content: center; color: var(--accent);
   }
 
   .result-row {

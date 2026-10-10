@@ -798,17 +798,18 @@
 
   /* ── Icon-only action group (Filters/Archived/Columns) — fixed-size at
      every resolution, tooltips + aria-labels carry the names ── */
-  .toolbar-actions { background: var(--bg); border: 1px solid var(--border-strong); border-radius: 8px; padding: 3px; }
+  .toolbar-actions { display: inline-flex; align-items: center; height: 34px; box-sizing: border-box; padding: 3px; gap: 2px; border-radius: 11px; background: var(--rail-bg); flex-shrink: 0; }
   .col-menu-wrap { position: relative; }
   .action-btn {
     position: relative;
     display: flex; align-items: center; justify-content: center; gap: 5px;
-    background: none; border: none; border-radius: 6px;
-    color: var(--muted); font-size: 11.5px; font-weight: 500;
-    padding: 7px 9px; cursor: pointer; white-space: nowrap;
+    height: 26px; box-sizing: border-box;
+    background: none; border: none; border-radius: 8px;
+    color: var(--muted); font-size: 12.5px; font-weight: 500;
+    padding: 0 10px; cursor: pointer; white-space: nowrap;
     transition: color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
-  .action-btn:hover { color: var(--text); background: var(--hover, var(--surface)); }
+  .action-btn:hover { color: var(--text); background: var(--rail-hover); }
   .action-btn.active { color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 10%, transparent); }
 
   .menu-divider { height: 1px; background: var(--border); margin: 8px -6px 0; }

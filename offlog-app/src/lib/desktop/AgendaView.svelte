@@ -168,9 +168,9 @@
     <div class="agenda-header-actions">
       <!-- Same Command Palette button/icon as List view's top bar; Agenda
            has its own header rather than the shared board-header. -->
-      <button class="palette-btn" on:click={() => dispatch('search')} title="Command Palette (Ctrl+K)" aria-label="Command Palette (Ctrl+K)">
+      <button class="palette-btn" on:click={() => dispatch('search')} title="Commands and search (Ctrl+K)" aria-label="Commands and search (Ctrl+K)">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
+          <rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>
         </svg>
       </button>
       <div class="mode-toggle">
@@ -412,26 +412,22 @@
   }
   .palette-btn {
     display: flex; align-items: center; justify-content: center;
-    width: 32px; height: 32px;
-    background: none; border: 1px solid var(--border-strong); border-radius: 8px;
+    width: 34px; height: 34px; flex-shrink: 0;
+    background: var(--rail-bg); border: 0; border-radius: 11px;
     color: var(--muted); cursor: pointer; transition: color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
-  .palette-btn:hover { color: var(--text); background: var(--hover); }
-  /* Same quiet segment as the board header's Board/List: no frame, and no
-     overflow clip, which would cut off the selected button's glow. */
-  .mode-toggle { display: flex; gap: 2px; padding: 3px; flex-shrink: 0; }
+  .palette-btn:hover { color: var(--text); background: color-mix(in srgb, var(--text) 12%, transparent); }
+  /* Same rail as the board header's Board/List; no overflow clip, which
+     would cut off the selected button's glow. */
+  .mode-toggle { display: inline-flex; align-items: center; height: 34px; box-sizing: border-box; padding: 3px; gap: 2px; border-radius: 11px; background: var(--rail-bg); flex-shrink: 0; }
   .mode-btn {
-    /* Explicit height (not just padding) so this cluster matches the
-       adjacent .palette-btn's 32px box — padding alone leaves the two
-       reading as different control heights. App.svelte's equivalent
-       button does the same. */
     display: flex; align-items: center; justify-content: center;
-    height: 30px; box-sizing: border-box; padding: 0 14px;
-    border: none; border-radius: 7px; background: transparent; color: var(--muted);
-    font-size: .8rem; font-weight: 600; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
+    height: 26px; box-sizing: border-box; padding: 0 12px;
+    border: none; border-radius: 8px; background: transparent; color: var(--muted);
+    font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
-  .mode-btn:hover { background: var(--hover); color: var(--text); }
-  .mode-btn.active, .mode-btn.active:hover { background: var(--sel-fill); color: var(--text); }
+  .mode-btn:hover { background: var(--rail-hover); color: var(--text); }
+  .mode-btn.active, .mode-btn.active:hover { background: var(--surface); color: var(--text); }
 
   /* Shared by any calendar-style nav bar (currently just Month's) --
      prev/next arrows plus a centered period label. */
