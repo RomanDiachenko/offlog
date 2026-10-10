@@ -1130,6 +1130,7 @@
 {#if __introReady}
 <div class="settings-overlay" on:click|self={() => requestClose()} in:fade={scrimIn} out:fade={scrimOut}>
   <div class="settings-panel" role="dialog" aria-modal="true" aria-label="Settings" bind:this={panelEl} use:trapFocus in:scale={centredIn} out:scale={centredOut}>
+    <button class="close-x" on:click={() => requestClose()} aria-label="Close settings">✕</button>
     <div class="settings-body" class:detail-open={activeCategory !== null}>
       <nav class="settings-nav" aria-label="Settings sections">
         <h3 class="nav-title">Settings</h3>
@@ -1225,15 +1226,12 @@
         <button on:click={() => requestClose()}>Cancel</button>
         <button class="save-btn" on:click={saveSettings}>Save &amp; restart sync</button>
       {:else}
-        <!-- Every other tab's controls already apply and persist on
-             click, so this button has nothing left to actually save --
-             but real users read "no Save button" as "did my change even
-             take?", not as "there's nothing to save here." saveSettings()
-             is still the handler (not a bare requestClose()): it's a
-             no-op when nothing's buffered, so this stays correct if that
-             ever changes, and it's the one visible action that says
-             "you're done" regardless of which tab you're looking at. -->
-        <button class="save-btn" on:click={saveSettings}>Save</button>
+        <!-- Every other tab applies and persists on click, so this says
+             "Done", not "Save": a Save here reads as "changes don't count
+             until pressed". saveSettings() stays the handler (not a bare
+             requestClose()): it's a no-op when nothing's buffered, so this
+             stays correct if that ever changes. -->
+        <button class="save-btn" on:click={saveSettings}>Done</button>
       {/if}
     </div>
   </div>
@@ -1535,7 +1533,17 @@
     display: flex; align-items: center; justify-content: center; z-index: 200;
     padding: env(safe-area-inset-top, 0px) 1rem env(safe-area-inset-bottom, 0px);
   }
+  /* Top-right, like History's and the Recycle bin's. */
+  .close-x {
+    position: absolute; top: 10px; right: 10px; z-index: 2;
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    background: none; border: none; cursor: pointer; font-size: 14px;
+    color: var(--faint); border-radius: 8px;
+    transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
+  }
+  .close-x:hover { background: var(--hover); color: var(--text); }
   .settings-panel {
+    position: relative;
     /* This panel is a sibling of <aside class="sidebar">, not a descendant —
        it already inherits the real global :root/body.dark variables
        directly. No local overrides needed. */
@@ -1602,8 +1610,9 @@
     background: none; border: none; cursor: pointer; color: var(--accent);
     font-size: .85rem; font-weight: 600; padding: .2rem;
   }
+  /* The top padding clears the close × in the panel's corner. */
   .detail-content {
-    flex: 1; overflow-y: auto; padding: 1.25rem 1.4rem;
+    flex: 1; overflow-y: auto; padding: 2.5rem 1.4rem 1.25rem;
     display: flex; flex-direction: column;
   }
   /* Wraps each tab's content so switching tabs fades it in — without it
@@ -1622,6 +1631,7 @@
     .settings-body.detail-open .settings-nav { display: none; }
     .settings-body.detail-open .settings-detail { display: flex; width: 100%; }
     .detail-head { display: flex; }
+    .detail-content { padding-top: 1rem; }
     .back-btn { display: inline-flex; }
     .chevron { display: block; }
   }

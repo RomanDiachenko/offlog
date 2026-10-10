@@ -209,6 +209,20 @@ describe('SettingsPanel sync save', () => {
 // modals, the import preview) -- the PIN entry form was missing from that
 // list, so Escape fell through to the final `else requestClose()` and
 // closed all of Settings mid-PIN-entry instead of just dismissing the form.
+describe('SettingsPanel close and Done', () => {
+  it('has a close button; tabs that apply live say Done, not Save', async () => {
+    await new Promise(r => setTimeout(r, 450));
+    const back = vi.spyOn(window.history, 'back').mockImplementation(() => {});
+    const { getByLabelText, getByText, queryByText } = render(SettingsPanel, { initialCategory: 'appearance' });
+    expect(getByText('Done')).toBeTruthy();
+    expect(queryByText('Save')).toBeNull();
+    await fireEvent.click(getByLabelText('Close settings'));
+    expect(back).toHaveBeenCalledTimes(1);
+    await new Promise(r => setTimeout(r, 450));
+    back.mockRestore();
+  });
+});
+
 describe('SettingsPanel Escape key', () => {
   // A manager or confirm dialog opened over Settings is its own layer; one
   // Escape must close that layer only, not Settings underneath it too.
