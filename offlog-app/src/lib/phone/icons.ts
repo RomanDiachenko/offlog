@@ -25,6 +25,7 @@ export const I = {
   check: svg('<path d="M5 12.5l4.5 4.5L19 7"/>'),
   block: svg('<circle cx="12" cy="12" r="8"/><path d="M6.5 17.5l11-11"/>'),
   link: svg('<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>'),
+  steps: svg('<path d="M4 6h2M4 12h2M4 18h2M9 6h11M9 12h11M9 18h11"/>'),
   clip: svg('<path d="M20 11.5l-8 8a5 5 0 01-7-7l8.5-8.5a3.3 3.3 0 014.7 4.7L9.7 17.2a1.7 1.7 0 01-2.4-2.4L15 7"/>'),
   status: svg('<rect x="4" y="4" width="6" height="16" rx="1.5"/><rect x="14" y="4" width="6" height="10" rx="1.5"/>'),
   field: svg('<rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M7.5 10v4M11 12h5"/>'),

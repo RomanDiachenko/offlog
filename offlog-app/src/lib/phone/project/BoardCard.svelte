@@ -66,19 +66,28 @@
 <div class="card" class:done>
   {#if canFinish(project)}<button class="chk" class:prio={task.priority >= 2 && !!PRIORITY_COLOR[task.priority]} style:--prio={task.priority >= 2 ? PRIORITY_COLOR[task.priority] ?? null : null} class:on={shown} on:click={finish} aria-label="{done ? 'Mark not done' : 'Finish'}: {task.title}" disabled={busy}><svg class="p-loop" viewBox="0 0 26 26" aria-hidden="true"><path pathLength="1" d="M13 1 A12 12 0 1 1 12.9 1 A12 12 0 0 1 19 2.6" /></svg></button>{/if}
   <button class="g" on:click={click} on:pointerdown={down} on:pointermove={move} on:pointerup={cancel} on:pointercancel={cancel} on:pointerleave={cancel} on:contextmenu={context}>
-    <span class="t">{#if task.pinned}<span class="pin" aria-hidden="true">{@html I.pin}</span>{/if}{task.title}{#if task.priority >= 2 && PRIORITY_LABEL[task.priority]}<span class="p-sr">, {PRIORITY_LABEL[task.priority].toLowerCase()} priority</span>{/if}</span>
-    {#if pill || steps.length || task.tags.length || blocked || related || files || task.recurrence}
-      <span class="meta">
-        {#if pill}<span class="p-pill {pill.tone}">{pill.text}</span>{/if}
-        {#if task.recurrence}<span class="mk" title="Repeats {task.recurrence}">{@html I.repeat}</span>{/if}
-        {#if steps.length}<span class="prog"><i><b style="width:{stepsDone / steps.length * 100}%"></b></i>{stepsDone}/{steps.length}</span>{/if}
+    <span class="t">{task.title}{#if task.priority >= 2 && PRIORITY_LABEL[task.priority]}<span class="p-sr">, {PRIORITY_LABEL[task.priority].toLowerCase()} priority</span>{/if}</span>
+    {#if task.tags.length}
+      <span class="tags">
         {#each task.tags as tag}
           {@const c = soften(resolveTagColor(tag, tagColors))}
-          <span class="p-tag" style="--tag:{c}">#{tag}</span>
+          <span class="tag"><i style:background={c}></i>{tag}</span>
         {/each}
-        {#if blocked}<span class="mk blk">{@html I.block}Blocked</span>{/if}
-        {#if related}<span class="mk" title="Has related tasks">{@html I.link}</span>{/if}
-        {#if files}<span class="mk" title="{files} attached">{@html I.clip}{files}</span>{/if}
+      </span>
+    {/if}
+    <!-- Fixed order, every card: pin · date on the left; steps, repeat,
+         links, files, blocked on the right. -->
+    {#if task.pinned || pill || steps.length || blocked || related || files || task.recurrence}
+      <span class="foot">
+        {#if task.pinned}<span class="pin" aria-label="Pinned">{@html I.pin}</span>{/if}
+        {#if pill}<span class="due {pill.tone}">{@html I.today}{pill.text}</span>{/if}
+        <span class="marks">
+          {#if steps.length}<span class="mk">{@html I.steps}{stepsDone}/{steps.length}</span>{/if}
+          {#if task.recurrence}<span class="mk" title="Repeats {task.recurrence}">{@html I.repeat}</span>{/if}
+          {#if related}<span class="mk" title="Has related tasks">{@html I.link}</span>{/if}
+          {#if files}<span class="mk" title="{files} attached">{@html I.clip}{files}</span>{/if}
+          {#if blocked}<span class="mk blk">{@html I.block}Blocked</span>{/if}
+        </span>
       </span>
     {/if}
   </button>
@@ -96,12 +105,22 @@
   button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
   .g { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .t { font-size: var(--p-fs-l); font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
-  .pin { color: var(--accent); display: inline-flex; vertical-align: -2px; margin-right: 4px; }
-  .pin :global(svg.i) { width: 13px; height: 13px; }
-  .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 7px; }
-  .prog { display: inline-flex; align-items: center; gap: 6px; font-size: var(--p-fs-xs); color: var(--faint); }
-  .prog i { width: 34px; height: 4px; border-radius: 2px; background: var(--col-bg); display: block; overflow: hidden; }
-  .prog b { display: block; height: 100%; background: var(--success); }
+  .tags { display: flex; flex-wrap: wrap; gap: 3px 12px; margin-top: 5px; }
+  .tag { display: inline-flex; align-items: center; gap: 5px; font-size: var(--p-fs-s); color: var(--muted); }
+  .tag i { width: 6px; height: 6px; border-radius: 50%; display: block; }
+  /* The footer runs under the title column, from the ring's right to the card's edge. */
+  .foot {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin: 10px -12px -12px 0; padding: 8px 12px 9px 0;
+    border-top: 1px solid color-mix(in srgb, var(--text) 7%, transparent);
+    font-size: var(--p-fs-xs); color: var(--faint);
+  }
+  .foot :global(svg.i) { width: 13px; height: 13px; }
+  .pin { color: var(--accent); display: inline-flex; }
+  .due { display: inline-flex; align-items: center; gap: 5px; font-weight: 600; color: var(--muted); }
+  .due.late { color: var(--overdue-ink); }
+  .due.today { color: var(--accent-ink); }
+  .marks { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; }
   .mk { display: inline-flex; align-items: center; gap: 3px; font-size: var(--p-fs-xs); font-weight: 600; color: var(--faint); }
   .mk :global(svg.i) { width: 13px; height: 13px; }
   .mk.blk { color: var(--overdue-ink); }
