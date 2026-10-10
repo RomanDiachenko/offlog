@@ -133,7 +133,7 @@
     {#if activeFilters > 0}<span class="filter-count">{activeFilters}</span>{/if}
   </button>
   {#if showFilterMenu}
-    <div class="col-menu filter-menu glass" style="top:{menuPos.top}px; left:{menuPos.left}px;" in:fly={popIn} out:fly={popOut}>
+    <div class="col-menu filter-menu glass pop" style="top:{menuPos.top}px; left:{menuPos.left}px;" in:fly={popIn} out:fly={popOut}>
       <div class="menu-label">Status</div>
       <CustomSelect options={statusOptions} bind:value={filterCol} />
 

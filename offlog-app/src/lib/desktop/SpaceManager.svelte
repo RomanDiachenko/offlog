@@ -267,7 +267,7 @@
   .panel {
     position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw);
     background: var(--surface); border-left: 1px solid var(--border);
-    box-shadow: -8px 0 32px rgba(0,0,0,.15); z-index: 402;
+    box-shadow: var(--elev-3-side); z-index: 402;
     display: flex; flex-direction: column;
     padding-top: env(safe-area-inset-top, 0px);
   }
@@ -309,7 +309,7 @@
     position: absolute; top: calc(100% + 6px); left: 0; z-index: 220;
     display: grid; grid-template-columns: repeat(5, 32px); gap: 4px;
     background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    box-shadow: 0 12px 32px rgba(0,0,0,.2); padding: 8px;
+    box-shadow: var(--elev-3); padding: 8px;
   }
   .icon-opt {
     width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;

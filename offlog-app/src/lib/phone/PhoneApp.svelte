@@ -215,7 +215,7 @@
     width: 56px; height: 56px; border-radius: 20px; border: 0; padding: 0; cursor: pointer;
     background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center;
     /* The one accent object on screen, with the Fluid glow under it. */
-    box-shadow: 0 4px 12px rgba(0,0,0,.18), 0 0 18px var(--glow);
+    box-shadow: var(--elev-3), 0 0 18px var(--glow);
     /* translate rides with the snackbar (its timings: rises decelerating,
        drops accelerating); scale is the press. Separate properties, so a
        press is never slowed to the lift's pace. */

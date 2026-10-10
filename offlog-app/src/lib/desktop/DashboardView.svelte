@@ -359,7 +359,7 @@
     display: flex; flex-direction: column; gap: 8px;
     transition: border-color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
-  .brief:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,.09); }
+  .brief:hover { border-color: var(--accent); box-shadow: var(--elev-2); }
   .brief-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .brief-label {
     font-family: var(--mono); font-size: 10.5px; text-transform: uppercase;
@@ -429,7 +429,7 @@
     transition: border-color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover), transform var(--dur-hover) var(--ease-hover);
     display: flex; flex-direction: column; gap: 8px;
   }
-  .proj-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,.09); transform: translateY(-1px); }
+  .proj-card:hover { border-color: var(--accent); box-shadow: var(--elev-2); transform: translateY(-1px); }
 
   .proj-card-top { display: flex; align-items: center; gap: 6px; }
   .space-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }

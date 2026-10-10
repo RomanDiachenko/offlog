@@ -105,7 +105,7 @@
     position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
     z-index: 701; width: min(400px, 90vw);
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    box-shadow: 0 20px 50px rgba(0,0,0,.3);
+    box-shadow: var(--elev-3);
     padding: 1.5rem 1.6rem 1.6rem;
   }
   .update-title { margin: 0 0 .9rem; font-size: .95rem; font-weight: 600; color: var(--text); }

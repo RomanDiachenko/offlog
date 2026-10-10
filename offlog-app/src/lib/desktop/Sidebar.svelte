@@ -862,7 +862,7 @@
     }
     .sidebar.mobile-open {
       transform: translateX(0);
-      box-shadow: 8px 0 40px rgba(0,0,0,.45);
+      box-shadow: var(--elev-3-side);
       visibility: visible;
       transition: transform var(--dur-large) var(--ease-decelerate),
                   visibility var(--dur-large),
@@ -963,7 +963,7 @@
     opacity: .8; transition: opacity var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
   .space-icon-only :global(svg) { width: 15px; height: 15px; }
-  .space-icon-only:hover, .space-icon-only.active { opacity: 1; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .space-icon-only:hover, .space-icon-only.active { opacity: 1; box-shadow: var(--elev-1); }
 
   /* Thin drag strip along the sidebar's own right edge -- absolutely
      positioned so it doesn't take up any layout space of its own (the
@@ -1011,7 +1011,7 @@
   .nav-btn svg { flex-shrink: 0; opacity: .85; }
   /* Subtle hover shadow, not just a flat background swap -- same
      treatment on .space-header and .project-row below. */
-  .nav-btn:hover { background: var(--hover); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+  .nav-btn:hover { background: var(--hover); color: var(--text); box-shadow: var(--elev-1); }
   /* .is-selected (app.css) draws the glow; the pill is restated because
      the scoped :hover rule above would otherwise outrank it. */
   .nav-btn.active, .nav-btn.active:hover { background: var(--sel-fill); color: var(--text); font-weight: 700; box-shadow: none; }
@@ -1039,7 +1039,7 @@
     color: var(--muted); text-align: left; width: 100%;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
-  .space-header:hover { background: var(--hover); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+  .space-header:hover { background: var(--hover); color: var(--text); box-shadow: var(--elev-1); }
   /* Active space is marked by color plus weight, with no fill, border or
      new color: the same color bump :hover gets, made permanent. Color
      alone is too subtle to spot at a glance, hence .space-name's 700
@@ -1080,7 +1080,7 @@
     padding-right: .3rem;
     transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
-  .project-row:hover, .project-row:focus-within { background: var(--hover); box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+  .project-row:hover, .project-row:focus-within { background: var(--hover); box-shadow: var(--elev-1); }
   .proj-actions {
     position: absolute; top: 0; bottom: 0; right: 0;
     display: flex; align-items: center; padding: 0 .3rem;

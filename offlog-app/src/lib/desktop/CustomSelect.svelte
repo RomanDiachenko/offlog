@@ -99,7 +99,7 @@
   </button>
 
   {#if open}
-    <div class="cs-panel glass" class:placement-up={placement === 'up'} bind:this={panelEl} role="listbox" tabindex="-1" on:keydown={onPanelKey} in:fly={popIn} out:fly={popOut}>
+    <div class="cs-panel glass pop" class:placement-up={placement === 'up'} bind:this={panelEl} role="listbox" tabindex="-1" on:keydown={onPanelKey} in:fly={popIn} out:fly={popOut}>
       {#each grouped as [group, opts] (group)}
         {#if group}<div class="cs-group-label">{group}</div>{/if}
         {#each opts as o (o.value)}

@@ -673,7 +673,7 @@
                   <svg viewBox="0 0 14 14" width="13" height="13" fill="currentColor"><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="11" cy="7" r="1.2"/></svg>
                 </button>
                 {#if openCardMenu === task._id}
-                  <div class="card-menu glass" bind:this={cardMenuPanelEl} on:click|stopPropagation on:keydown={(e) => { onCardMenuKey(e); e.stopPropagation(); }} in:fly={popIn} out:fly={popOut}>
+                  <div class="card-menu glass pop" bind:this={cardMenuPanelEl} on:click|stopPropagation on:keydown={(e) => { onCardMenuKey(e); e.stopPropagation(); }} in:fly={popIn} out:fly={popOut}>
                     <button type="button" class="card-menu-item" on:click={() => { openCardMenu = null; togglePin(task); }}>
                       <PinStar size={12} filled={task.pinned} stroked />
                       {task.pinned ? 'Unpin' : 'Pin'}
@@ -923,17 +923,17 @@
     padding: 16px 14px;
     cursor: pointer;
     border-left: 2px solid var(--prio-color, var(--border));
-    box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    box-shadow: var(--elev-1);
     transition: box-shadow var(--dur) var(--ease),
                 transform var(--dur) var(--ease),
                 opacity var(--dur) var(--ease);
   }
   .card:hover {
-    box-shadow: 0 4px 14px rgba(0,0,0,.10);
+    box-shadow: var(--elev-2);
     transform: translateY(-2px);
   }
   .card.dragging { opacity: .35; transition: none; transform: none; }
-  .card.insert-before { box-shadow: inset 0 2px 0 var(--accent), 0 1px 2px rgba(0,0,0,.04); }
+  .card.insert-before { box-shadow: inset 0 2px 0 var(--accent), var(--elev-1); }
   /* Pinned reads as a thin accent right edge — mirrors the priority left
      edge, on the opposite side so the two never compete for space. */
   .card.pinned { border-right: 1px solid var(--accent); }

@@ -725,7 +725,7 @@
           <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="3" cy="8" r=".9"/><circle cx="8" cy="8" r=".9"/><circle cx="13" cy="8" r=".9"/></svg>
         </button>
         {#if showActionsMenu}
-          <div class="actions-menu glass" bind:this={menuPanelEl} in:fly={popIn} out:fly={popOut}>
+          <div class="actions-menu glass pop" bind:this={menuPanelEl} in:fly={popIn} out:fly={popOut}>
             <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; pinned = !pinned; }}>
               <PinStar size={14} filled={pinned} stroked />
               {pinned ? 'Unpin' : 'Pin to top'}
@@ -924,7 +924,7 @@
     padding: 1.1rem 1.25rem;
     gap: .55rem;
     border: 1px solid var(--border); border-radius: var(--radius);
-    box-shadow: 0 20px 50px rgba(0,0,0,.18);
+    box-shadow: var(--elev-3);
     overflow-y: auto;
   }
   .panel-header { display: flex; gap: .15rem; align-items: flex-start; }

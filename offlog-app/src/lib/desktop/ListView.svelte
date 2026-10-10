@@ -530,7 +530,7 @@
                custom-field columns), even though it visually "should"
                float above everything. Fixed + JS-computed coordinates
                escapes that ancestor clipping entirely. -->
-          <div class="col-menu col-menu--fixed glass" style="top:{colMenuPos.top}px; left:{colMenuPos.left}px;">
+          <div class="col-menu col-menu--fixed glass pop" style="top:{colMenuPos.top}px; left:{colMenuPos.left}px;">
             <label class="col-menu-item select-rows-item">
               Select rows
               <button class="toggle-mini" class:on={selectionMode} on:click={toggleSelectionMode} role="switch" aria-checked={selectionMode} aria-label="Toggle row selection">
@@ -1031,7 +1031,7 @@
     background: var(--text); color: var(--bg);
     padding: 11px 14px; border-radius: 10px;
     font-size: 13.5px; font-weight: 500;
-    box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    box-shadow: var(--elev-2);
     white-space: nowrap;
   }
   .undo-btn {

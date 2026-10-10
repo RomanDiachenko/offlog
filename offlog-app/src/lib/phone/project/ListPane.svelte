@@ -276,7 +276,7 @@
   .bulkbar {
     position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 11;
     display: flex; align-items: center; gap: 2px; padding: 0 6px 0 2px; border-radius: 16px;
-    background: var(--inverse-surface); color: var(--on-inverse); box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    background: var(--inverse-surface); color: var(--on-inverse); box-shadow: var(--elev-3);
   }
   .bulkbar b { font-size: var(--p-fs-m); margin-right: auto; padding-left: 2px; white-space: nowrap; }
   .bulkbar button { font: inherit; font-size: var(--p-fs-s); font-weight: 600; color: inherit; background: none; border: 0; padding: 0 9px; min-height: 44px; border-radius: 10px; cursor: pointer; }

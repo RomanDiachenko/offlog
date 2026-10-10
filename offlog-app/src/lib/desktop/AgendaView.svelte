@@ -633,7 +633,7 @@
     margin-bottom: 5px; cursor: pointer;
     transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
-  .task-row:hover { background: var(--hover); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .task-row:hover { background: var(--hover); box-shadow: var(--elev-1); }
 
   /* Same minimal checkbox language as ListView.svelte's .circle:
      rounded square, no fill, border-only. */

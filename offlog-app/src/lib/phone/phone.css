@@ -12,11 +12,10 @@
   --p-fs-xl: 17px;  /* sheet titles */
   --p-fs-t: 22px;   /* screen titles */
   /* One elevation for every card, group, tile and field. */
-  --p-shadow: 0 1px 2px rgba(0,0,0,.05), 0 1px 3px rgba(0,0,0,.06);
+  --p-shadow: var(--elev-1);
 }
 /* Dark cards sit only ~1.2:1 off the page and a shadow can't show on dark,
    so they take a faint hairline instead. */
-body.dark .phone-shell, body.dark .psheet { --p-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 7%, transparent), 0 1px 2px rgba(0,0,0,.3); }
 
 .phone-shell svg.i, .psheet svg.i { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 

@@ -263,7 +263,7 @@
     position: fixed; top: 15vh; left: 50%; transform: translateX(-50%);
     width: min(580px, 95vw); z-index: 401;
     background: var(--surface); border: 1px solid var(--border-strong);
-    border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,.28);
+    border-radius: 14px; box-shadow: var(--elev-3);
     display: flex; flex-direction: column; overflow: hidden;
   }
 

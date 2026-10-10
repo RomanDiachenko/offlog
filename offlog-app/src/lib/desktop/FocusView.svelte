@@ -432,11 +432,11 @@
     border-radius: 7px;
     padding: 14px 16px;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    box-shadow: var(--elev-1);
     transform: rotate(var(--tilt)) translateY(var(--jitter, 0px));
     transition: transform var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
-  .note:hover { transform: rotate(0deg) translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.1); }
+  .note:hover { transform: rotate(0deg) translateY(-2px); box-shadow: var(--elev-2); }
   .note.selected {
     transform: rotate(0deg); border-color: var(--accent);
     box-shadow: var(--sel-ring);
@@ -473,7 +473,7 @@
     margin-bottom: 8px; cursor: pointer;
     transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
-  .task-row:hover { background: var(--hover); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .task-row:hover { background: var(--hover); box-shadow: var(--elev-1); }
   .remove-btn {
     background: none; border: none; padding: 6px; border-radius: 6px; cursor: pointer;
     color: var(--faint); display: flex; align-items: center; justify-content: center;

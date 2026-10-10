@@ -164,7 +164,7 @@
   </button>
 
   {#if open}
-    <div class="cal-popover glass" bind:this={popoverEl} style={popoverStyle} in:fly={popIn} out:fly={popOut}>
+    <div class="cal-popover glass pop" bind:this={popoverEl} style={popoverStyle} in:fly={popIn} out:fly={popOut}>
       {#if shortcuts}
       <div class="cal-chips" role="group" aria-label="Shortcuts">
         {#each SHORTCUTS as s (s.label)}

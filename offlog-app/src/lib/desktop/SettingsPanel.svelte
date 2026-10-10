@@ -1542,7 +1542,7 @@
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     width: min(640px, 92vw);
     display: flex; flex-direction: column;
-    box-shadow: 0 20px 50px rgba(0,0,0,.18);
+    box-shadow: var(--elev-3);
     /* Height fits content (not fixed) — a short tab like Organize or the
        mobile category list shouldn't leave a wall of empty space just to
        match a longer tab's height. Capped so a tab that outgrows this
@@ -1856,7 +1856,7 @@
     z-index: 301; width: min(420px, 90vw); max-height: min(80vh, 560px);
     display: flex; flex-direction: column;
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    box-shadow: 0 20px 50px rgba(0,0,0,.3);
+    box-shadow: var(--elev-3);
   }
   .mini-modal-head {
     display: flex; align-items: center; justify-content: space-between;

@@ -959,7 +959,7 @@
     background: transparent; color: var(--muted);
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
-  .view-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.10); }
+  .view-btn.active { background: var(--surface); color: var(--text); box-shadow: var(--elev-1); }
   .view-btn:not(.active):hover { color: var(--text); }
 
   .empty-state {
@@ -997,7 +997,7 @@
     position: fixed; bottom: 24px; left: 24px; z-index: 300;
     display: flex; align-items: center; gap: .9rem;
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    box-shadow: var(--elev-3);
     padding: .7rem 1rem; font-size: .85rem; color: var(--text);
   }
   .update-banner-actions { display: flex; gap: .5rem; flex-shrink: 0; }
@@ -1014,11 +1014,11 @@
     position: fixed; bottom: 24px; right: 24px; z-index: 300;
     width: 50px; height: 50px; border-radius: 50%;
     background: var(--accent); color: var(--on-accent); border: none; cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    box-shadow: var(--elev-3);
     display: flex; align-items: center; justify-content: center;
     transition: transform var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover), opacity var(--dur-hover) var(--ease-hover);
   }
-  .fab:hover { transform: scale(1.08); box-shadow: 0 6px 22px rgba(0,0,0,.3); }
+  .fab:hover { transform: scale(1.08); }
   .fab:active { transform: scale(.96); }
 
   /* ── Shortcuts panel ── */
@@ -1027,7 +1027,7 @@
     position: relative; z-index: 401;
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     padding: 1.25rem 1.4rem; width: min(360px, 90vw);
-    box-shadow: 0 20px 50px rgba(0,0,0,.18);
+    box-shadow: var(--elev-3);
   }
   .shortcuts-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem; }
   .shortcuts-head h3 { margin: 0; font-size: 1rem; letter-spacing: -.01em; }
@@ -1052,7 +1052,7 @@
     background: var(--danger); color: var(--on-accent);
     padding: 11px 18px; border-radius: 10px;
     font-size: 13.5px; font-weight: 500;
-    box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    box-shadow: var(--elev-2);
     z-index: 1000; white-space: nowrap;
   }
 

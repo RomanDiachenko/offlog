@@ -116,7 +116,7 @@
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 651; outline: none;
     max-height: 88dvh; overflow-y: auto; overscroll-behavior: contain;
     color: var(--text); border-radius: 22px 22px 0 0;
-    border-width: 1px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,.2);
+    border-width: 1px 0 0; box-shadow: var(--elev-3-up);
     /* Over the dimming scrim a thin glass reads as dirty grey: mostly opaque. */
     --glass-fill: color-mix(in srgb, var(--surface) 88%, transparent);
     padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px));

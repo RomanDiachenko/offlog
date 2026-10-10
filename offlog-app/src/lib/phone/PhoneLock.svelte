@@ -178,7 +178,7 @@
   .pad { display: grid; grid-template-columns: repeat(3, 76px); gap: 16px 28px; }
   .key {
     width: 76px; height: 76px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
-    background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.08);
+    background: var(--surface); color: var(--text); box-shadow: var(--elev-1);
     font: inherit; font-size: 30px; font-weight: 500; display: flex; align-items: center; justify-content: center;
     -webkit-tap-highlight-color: transparent; transition: background var(--dur-hover) var(--ease-hover);
   }
