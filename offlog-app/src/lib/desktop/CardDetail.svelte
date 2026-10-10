@@ -74,6 +74,28 @@
     finish();
   }
 
+  // The status pills scroll sideways when they don't fit: each edge fades
+  // while more pills sit past it, a mouse wheel scrolls the row, and the
+  // current status is brought into view when the editor opens.
+  let stFadeStart = false, stFadeEnd = false;
+  function statusScroll(bar: HTMLElement) {
+    const set = () => {
+      stFadeStart = bar.scrollLeft > 1;
+      stFadeEnd = bar.scrollLeft + bar.clientWidth < bar.scrollWidth - 1;
+    };
+    const wheel = (e: WheelEvent) => {
+      if (bar.scrollWidth <= bar.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      bar.scrollLeft += e.deltaY;
+    };
+    const on = bar.querySelector<HTMLElement>('.st.on');
+    if (on) bar.scrollLeft = on.offsetLeft - (bar.clientWidth - on.clientWidth) / 2;
+    set();
+    bar.addEventListener('scroll', set, { passive: true });
+    bar.addEventListener('wheel', wheel, { passive: false });
+    return { destroy() { bar.removeEventListener('scroll', set); bar.removeEventListener('wheel', wheel); } };
+  }
+
   const DUE_SHORTCUTS: { label: string; days: number; months?: number }[] = [
     { label: 'Today', days: 0 },
     { label: 'Tomorrow', days: 1 },
@@ -756,21 +778,17 @@
     </div>
     {#if duplicateTitleHint}<p class="dup-name-hint">{duplicateTitleHint}</p>{/if}
 
-    <div class="fields-row">
-      <label>
-        Status
-        <CustomSelect options={statusOptions} bind:value={column_id} />
-      </label>
-
-      <label>
-        Priority
-        <CustomSelect options={priorityOptions} bind:value={priorityStr} />
-      </label>
+    <!-- Every status as a pill, the current one lifted; the last one is done. -->
+    <div class="status-bar" class:fade-start={stFadeStart} class:fade-end={stFadeEnd} use:statusScroll role="group" aria-label="Status">
+      {#each statusOptions as o (o.value)}
+        <button type="button" class="st" class:on={column_id === o.value} aria-pressed={column_id === o.value} on:click={() => column_id = o.value}>{o.label}</button>
+      {/each}
     </div>
 
-    <div class="detail-block">
-      <label>
-        Due date
+    <!-- Rows show values, not labels; each still names itself for screen readers. -->
+    <div class="rows">
+      <div class="row">
+        <span class="sr">Due date</span>
         <!-- Picker and shortcut pills share one row; the picker keeps a
              fixed-ish width so the pills have real room next to it. -->
         <div class="due-date-row">
@@ -786,59 +804,60 @@
             {/each}
           </div>
         </div>
-      </label>
+      </div>
+      <div class="row">
+        <span class="row-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4.5M5 4.5h11l-2 4 2 4H5"/></svg></span>
+        <label class="row-field"><span class="sr">Priority</span><CustomSelect options={priorityOptions} bind:value={priorityStr} /></label>
+      </div>
+      <div class="row row-tags">
+        <span class="row-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1l8 8a1 1 0 0 1 0 1.4l-6.7 6.7a1 1 0 0 1-1.4 0z"/><circle cx="8" cy="8" r="1.3"/></svg></span>
+        <div class="tags-field">
+          <span class="sr">Tags</span>
+          <div class="tags-input-row">
+            {#each tags as tag}
+              <span class="tag-chip" style="background:color-mix(in srgb, {soften(resolveTagColor(tag, tagColorOverrides))} 45%, transparent)">
+                {tag}
+                <button class="tag-remove" on:click={() => removeTag(tag)} aria-label="Remove tag {tag}">×</button>
+              </span>
+            {/each}
+            <input
+              class="tag-input"
+              aria-label="Add a tag"
+              bind:value={tagInput}
+              placeholder={tags.length ? '' : 'Add tag…'}
+              enterkeyhint="done"
+              on:keydown={onTagKey}
+              on:blur={() => setTimeout(addTag, 150)}
+            />
+          </div>
+          {#if tagSuggestions.length || otherTagSuggestions.length}
+            <div class="tag-suggestions">
+              {#each tagSuggestions as s}
+                <!-- mousedown (not click) so it fires before the tag input's on:blur -->
+                <button class="tag-suggestion" on:mousedown|preventDefault={() => { tags = [...tags, s]; tagInput = ''; }}>{s}</button>
+              {/each}
+              {#if tagSuggestions.length && otherTagSuggestions.length}
+                <div class="tag-suggestions-divider">Other tags</div>
+              {/if}
+              {#each otherTagSuggestions as s}
+                <button class="tag-suggestion tag-suggestion-other" on:mousedown|preventDefault={() => { tags = [...tags, s]; tagInput = ''; }}>{s}</button>
+              {/each}
+            </div>
+          {/if}
+        </div>
+      </div>
     </div>
 
-    <div class="section-divider"></div>
-
     <div class="notes-field">
-      <span class="field-label">Notes</span>
+      <span class="sr">Notes</span>
       <MarkdownEditor bind:value={body} placeholderText="Add notes…  **bold**, - list, # heading" />
       {#if body.length > NOTES_SOFT_LIMIT}<div class="notes-counter">{body.length} characters</div>{/if}
       {#if similarNotesHint}<p class="dup-name-hint">{similarNotesHint}</p>{/if}
     </div>
 
-    <div class="tags-field">
-      <span class="field-label">Tags</span>
-      <div class="tags-input-row">
-        {#each tags as tag}
-          <span class="tag-chip" style="background:color-mix(in srgb, {soften(resolveTagColor(tag, tagColorOverrides))} 45%, transparent)">
-            {tag}
-            <button class="tag-remove" on:click={() => removeTag(tag)} aria-label="Remove tag {tag}">×</button>
-          </span>
-        {/each}
-        <input
-          class="tag-input"
-          aria-label="Add a tag"
-          bind:value={tagInput}
-          placeholder={tags.length ? '' : 'Add tag…'}
-          enterkeyhint="done"
-          on:keydown={onTagKey}
-          on:blur={() => setTimeout(addTag, 150)}
-        />
-      </div>
-      {#if tagSuggestions.length || otherTagSuggestions.length}
-        <div class="tag-suggestions">
-          {#each tagSuggestions as s}
-            <!-- mousedown (not click) so it fires before the tag input's on:blur -->
-            <button class="tag-suggestion" on:mousedown|preventDefault={() => { tags = [...tags, s]; tagInput = ''; }}>{s}</button>
-          {/each}
-          {#if tagSuggestions.length && otherTagSuggestions.length}
-            <div class="tag-suggestions-divider">Other tags</div>
-          {/if}
-          {#each otherTagSuggestions as s}
-            <button class="tag-suggestion tag-suggestion-other" on:mousedown|preventDefault={() => { tags = [...tags, s]; tagInput = ''; }}>{s}</button>
-          {/each}
-        </div>
-      {/if}
-    </div>
-
-
-    <div class="section-divider"></div>
-
     <div class="collapsible-section">
       <button type="button" class="section-toggle extras-toggle" on:click={() => showExtras = !showExtras} aria-expanded={showExtras}>
-        <span class="field-label">Extras</span>
+        <span class="extras-title">More details</span>
         {#if !showExtras}
           <span class="details-summary">
             <span class="details-summary-line">{extrasSummaryLines[0]}</span>
@@ -930,7 +949,7 @@
   .panel-header { display: flex; gap: .15rem; align-items: flex-start; }
   .panel-header .title-input { margin-right: .4rem; }
   .title-input {
-    flex: 1; font-size: var(--fs-xl); font-weight: 700; letter-spacing: -.01em;
+    flex: 1; font-size: var(--fs-t); font-weight: 700; letter-spacing: -.01em;
     border: none; border-bottom: 1.5px solid transparent;
     background: transparent; padding: .2rem 0;
     color: var(--text); line-height: 1.3;
@@ -946,7 +965,6 @@
     flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .close-btn:hover { background: var(--hover); color: var(--text); }
-  .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
   .extras-panel :global(.reminder-field) { display: flex; flex-direction: column; gap: .35rem; }
   /* flex-wrap:wrap, not nowrap + horizontal scroll: a scrollbar on a
      compact modal control row reads worse on mobile than
@@ -957,7 +975,6 @@
      .remind-on-due-row below). Giving the checkbox flex:1 stretches it
      past its own nowrap text and leaves visible dead space. */
   .extras-panel :global(.reminder-row .cal-field) { flex: 1; min-width: 150px; }
-  .section-divider { height: 1px; background: var(--border); margin: .05rem 0; }
   label {
     display: flex; flex-direction: column; gap: .22rem;
     font-family: var(--mono); font-size: var(--fs-2xs); letter-spacing: .05em;
@@ -1105,7 +1122,41 @@
     color: var(--accent); font-weight: 600; font-size: inherit;
     text-decoration: underline;
   }
-  .tags-field { display: flex; flex-direction: column; gap: .22rem; }
+  .tags-field { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .22rem; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  /* The phone task screen's status bar: a track, the current status lifted. */
+  /* position: relative makes it the pills' offsetParent, which the
+     centring in statusScroll() measures from. */
+  .status-bar {
+    position: relative; display: flex; gap: 3px; padding: 4px; border-radius: var(--r-l); background: var(--rail-bg);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .status-bar::-webkit-scrollbar { display: none; }
+  .status-bar.fade-end { -webkit-mask-image: linear-gradient(to right, black calc(100% - 48px), transparent); mask-image: linear-gradient(to right, black calc(100% - 48px), transparent); }
+  .status-bar.fade-start { -webkit-mask-image: linear-gradient(to left, black calc(100% - 48px), transparent); mask-image: linear-gradient(to left, black calc(100% - 48px), transparent); }
+  .status-bar.fade-start.fade-end { -webkit-mask-image: linear-gradient(to right, transparent, black 48px, black calc(100% - 48px), transparent); mask-image: linear-gradient(to right, transparent, black 48px, black calc(100% - 48px), transparent); }
+  .st {
+    flex: 1 0 auto; padding: 6px 12px; border: 0; border-radius: var(--r-m); background: none; cursor: pointer;
+    font: inherit; font-size: var(--fs-s); font-weight: 600; color: var(--muted); white-space: nowrap;
+    transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
+  }
+  .st:hover { color: var(--text); background: var(--rail-hover); }
+  .st.on, .st.on:hover { background: var(--surface); color: var(--text); box-shadow: var(--sel-ring); }
+  /* One soft group of rows; fields inside it drop their own fill. */
+  .rows { background: var(--field-bg); border-radius: var(--r-l); }
+  .row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; }
+  .row + .row { border-top: 1px solid color-mix(in srgb, var(--text) 6%, transparent); }
+  .row-tags { align-items: flex-start; }
+  .row-tags .row-ic { margin-top: 9px; }
+  .row-ic { display: flex; width: 16px; justify-content: center; color: var(--faint); flex-shrink: 0; }
+  .row-field { flex: 1; min-width: 0; text-transform: none; letter-spacing: normal; }
+  .rows :global(.cs-trigger), .rows :global(.cal-trigger), .rows .tags-input-row { background: transparent; }
+  /* The date picker's own icon sits in the icon column, like the rows below. */
+  .rows :global(.cal-trigger) { padding-left: 0; }
+  .rows .due-date-row { flex: 1; min-width: 0; }
+  .rows .due-date-row :global(.cal-field) { width: 128px; }
+  .rows .due-shortcuts { gap: 4px; }
+  .extras-title { font-size: var(--fs-m); font-weight: 600; color: var(--muted); }
   .extras-panel :global(.custom-fields) { display: flex; flex-direction: column; gap: .3rem; }
   .extras-panel :global(.custom-field-label) {
     display: flex; flex-direction: column; gap: .22rem;
@@ -1131,7 +1182,7 @@
     align-self: flex-start; background: none; border: none; cursor: pointer;
     color: var(--accent); font-size: var(--fs-s); font-weight: 500; padding: .15rem 0;
   }
-  .field-label, .extras-panel :global(.field-label) {
+  .extras-panel :global(.field-label) {
     font-family: var(--mono); font-size: var(--fs-2xs); letter-spacing: .05em;
     text-transform: uppercase; color: var(--faint);
   }
@@ -1215,7 +1266,7 @@
   /* EXTRAS stays put on the left at its own width; the summary claims the
      rest of the row and right-aligns, ending flush with the chevron
      instead of trailing right after the label on the left. */
-  .section-toggle .field-label { flex: 0 0 auto; }
+  .section-toggle .extras-title { flex: 0 0 auto; }
   /* Two pre-balanced lines (formatExtrasSummary splits by rendered length,
      not by the browser's own wrap point), not one long string left to
      wrap wherever it happens to fit -- that regularly left one line
@@ -1238,7 +1289,6 @@
 
   /* .detail-block (the mandatory, always-visible Due date field) stays
      plain -- no card treatment, matching Status/Priority/Tags above. */
-  .detail-block { display: flex; flex-direction: column; gap: .3rem; }
 
   /* Extras has no outer background/border of its own; each of the five
      blocks inside is its own small card, so the grouping is visible

@@ -137,6 +137,17 @@ describe('CardDetail save logic', () => {
     expect(getByLabelText('Add a tag').tagName).toBe('INPUT');
   });
 
+  it('the status pills move the task, the current one marked', async () => {
+    const { getByRole, getByLabelText } = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    const bar = getByRole('group', { name: 'Status' });
+    expect(bar.querySelector('[aria-pressed="true"]')?.textContent).toBe('Idea');
+    await fireEvent.click(getByRole('button', { name: 'Task' }));
+    expect(bar.querySelector('[aria-pressed="true"]')?.textContent).toBe('Task');
+    await fireEvent.click(getByLabelText('Close'));
+    await waitFor(() => expect(updateTask).toHaveBeenCalled());
+    expect(updateTask.mock.calls[0][1]).toMatchObject({ column_id: 'col:task' });
+  });
+
   it('saves an edited title', async () => {
     const task = mkTask();
     const { getByPlaceholderText, getByText, getByLabelText } = render(CardDetail, { props: { task, project: mkProject() } });
