@@ -45,3 +45,16 @@ describe('describeLog: note edits, excerpted and full-body', () => {
       .toBe('Moved "T" from "Idea" → "Task" · Notes updated');
   });
 });
+
+describe('describeLog: pin and archive read as verbs on the item', () => {
+  it('a lone pin/archive diff names the task directly, without "on"', () => {
+    expect(describeLog({ action: 'update', task_title: 'Plan', ref: 'task:a', diffs: { archived: { from: false, to: true } } })).toBe('Archived "Plan"');
+    expect(describeLog({ action: 'update', task_title: 'Plan', ref: 'task:a', diffs: { pinned: { from: false, to: true } } })).toBe('Pinned "Plan"');
+    expect(describeLog({ field: 'pinned', from: true, to: false, task_title: 'Plan', ref: 'task:a' })).toBe('Unpinned "Plan"');
+  });
+
+  it('other changes keep "on", alone or mixed with a pin', () => {
+    expect(describeLog({ action: 'update', task_title: 'Plan', ref: 'task:a', diffs: { related: { from: [], to: ['task:b'] } } })).toBe('Related tasks changed on "Plan"');
+    expect(describeLog({ action: 'update', task_title: 'Plan', ref: 'task:a', diffs: { pinned: { from: false, to: true }, priority: { from: 1, to: 3 } } })).toMatch(/ on "Plan"$/);
+  });
+});

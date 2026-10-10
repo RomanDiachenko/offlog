@@ -59,6 +59,8 @@ function fmtVal(field: string, val: unknown): string {
   return s.length > 40 ? s.slice(0, 40) + '…' : s;
 }
 
+const VERB_FIELDS = new Set(['pinned', 'archived']);
+
 export function describeField(field: string, from: unknown, to: unknown): string {
   if (field === 'pinned') return to ? 'Pinned' : 'Unpinned';
   if (field === 'archived') return to ? 'Archived' : 'Taken out of archive';
@@ -73,7 +75,7 @@ export function describeField(field: string, from: unknown, to: unknown): string
   if (field === 'checklist') return 'Checklist updated';
   if (field === 'custom_values') return 'Fields updated';
   if (field === 'columns') return 'Statuses updated';
-  if (field === 'related') return 'Related tasks updated';
+  if (field === 'related') return 'Related tasks changed';
   if (field === 'blocked_by') return 'Blocked by tasks updated';
   return `${FIELD_LABEL[field] ?? field} changed`;
 }
@@ -146,7 +148,13 @@ export function describeLog(log: LogEntry): string {
     return text;
   }
 
-  if (log.diffs) return fmtDiffs(log.diffs) + (who ? ` on ${who}` : '');
+  if (log.diffs) {
+    // A lone pin/archive change is a verb on the item (Archived "X"), not a
+    // change "on" it, which reads like a date or a place.
+    const real = Object.entries(log.diffs).filter(([, d]) => isRealDiff(d));
+    if (real.length === 1 && VERB_FIELDS.has(real[0][0]) && who) return `${describeField(real[0][0], real[0][1].from, real[0][1].to)} ${who}`;
+    return fmtDiffs(log.diffs) + (who ? ` on ${who}` : '');
+  }
 
   // undoDelete() logs a single-field 'deleted' true->false update rather
   // than reusing the 'delete' action (reserved for the forward delete, whose
@@ -159,6 +167,7 @@ export function describeLog(log: LogEntry): string {
     const from  = fmtVal(log.field, log.from);
     const to    = fmtVal(log.field, log.to);
     const on    = who ? ` on ${who}` : '';
+    if (VERB_FIELDS.has(log.field) && who) return `${describeField(log.field, log.from, log.to)} ${who}`;
     return from === '—' ? `${label} set to ${to}${on}` : `${label}: ${from} → ${to}${on}`;
   }
 
