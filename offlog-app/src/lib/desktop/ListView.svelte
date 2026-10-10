@@ -936,25 +936,25 @@
 
   .bulk-bar {
     display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-    padding: 10px 14px; margin-bottom: 8px;
-    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
-    border: 1px solid var(--accent); border-radius: var(--radius-sm, 8px);
+    /* The header controls' rail (app.css --rail-bg), white controls on it. */
+    padding: 5px 6px 5px 12px; margin-bottom: 8px;
+    background: var(--rail-bg); border-radius: 11px;
   }
-  .bulk-count { font-size: 12.5px; font-weight: 600; color: var(--accent); margin-right: 4px; }
+  .bulk-count { font-size: 12.5px; font-weight: 600; color: var(--text); margin-right: 4px; }
   .bulk-sel-wrap { width: 150px; }
   .bulk-input {
-    border: 1px solid var(--border-strong); border-radius: 6px;
+    border: 1px solid transparent; border-radius: 8px;
     background: var(--surface); color: var(--text);
     font-size: 12.5px; padding: 5px 8px;
     width: 130px;
   }
   .bulk-btn {
-    border: 1px solid var(--border-strong); border-radius: 6px;
+    border: 1px solid transparent; border-radius: 8px;
     background: var(--surface); color: var(--text);
     font-size: 12.5px; font-weight: 500; padding: 5px 10px; cursor: pointer;
     transition: background var(--dur-hover) var(--ease-hover);
   }
-  .bulk-btn:hover { background: var(--hover); }
+  .bulk-btn:hover { background: color-mix(in srgb, var(--text) 6%, var(--surface)); }
   .bulk-btn:disabled { opacity: .5; cursor: not-allowed; }
   .bulk-clear { margin-left: auto; }
 
