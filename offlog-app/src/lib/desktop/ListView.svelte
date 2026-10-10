@@ -580,7 +580,7 @@
   {/if}
 
   <!-- Data grid -->
-  <div class="grid-scroll">
+  <div class="grid-scroll grid-scroll--main">
     <div class="grid-card grid-card--flush">
       <div class="grid-head" style="grid-template-columns:{gridTemplate}">
         {#if selectionMode}
@@ -757,7 +757,11 @@
   .list-panel {
     background: var(--surface); border: 1px solid transparent; box-shadow: var(--elev-1);
     border-radius: var(--r-l); overflow: hidden; margin-bottom: 20px;
+    /* Never taller than the view: the grid scrolls inside it, so the column
+       header can stay pinned (sticky needs its own scroller to stick to). */
+    display: flex; flex-direction: column; max-height: 100%;
   }
+  .grid-scroll--main { flex: 1; min-height: 0; overflow-y: auto; }
   /* One row, guaranteed, at every viewport width — no wrapping, no
      horizontal scrolling, no breakpoints. This only works because the
      row's content is minimal by construction: a shrinkable search box + three
@@ -877,6 +881,8 @@
      the border/radius/background, so the grid itself stays flush. */
   .grid-card--flush {
     background: none; border: none; border-radius: 0;
+    /* No clip: overflow:hidden here would become the sticky header's scroller. */
+    overflow: visible;
   }
 
   .grid-head, .grid-row {
@@ -885,6 +891,7 @@
   }
 
   .grid-head {
+    position: sticky; top: 0; z-index: 2;
     padding: 0 16px;
     background: var(--col-bg); border-bottom: 1px solid var(--border);
     border-left: 3px solid transparent;
