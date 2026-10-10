@@ -496,7 +496,7 @@
     <button class="p-row" aria-label="Tags: {task.tags.length ? task.tags.map(t => '#' + t).join(' ') : 'none'}" on:click={() => openSheet('tags')}>
       <span class="p-ico">{@html I.tag}</span>
       {#if task.tags.length}
-        <span class="p-k tags">{#each task.tags.slice(0, 3) as t (t)}<span class="p-tag" style="--tag:{tagColor(t)}">#{t}</span>{/each}{#if task.tags.length > 3}<span class="more-tags">+{task.tags.length - 3}</span>{/if}</span>
+        <span class="p-k tags">{#each task.tags.slice(0, 3) as t (t)}<span class="p-tag plain" style="--tag:{tagColor(t)}">{t}</span>{/each}{#if task.tags.length > 3}<span class="more-tags">+{task.tags.length - 3}</span>{/if}</span>
       {:else}<span class="p-k empty"><span>Add tags</span></span>{/if}
     </button>
     {#if blocking.length}

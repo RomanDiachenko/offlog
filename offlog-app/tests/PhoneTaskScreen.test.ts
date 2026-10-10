@@ -146,7 +146,7 @@ describe('phone TaskScreen', () => {
     expect(getByText('Doing')).toBeTruthy();
     expect(getByText('High priority')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Doing', pressed: true })).toBeTruthy();
-    expect(getByText('#tiles')).toBeTruthy();
+    expect(getByText('tiles')).toBeTruthy();
   });
 
   it('says so when the task no longer exists', async () => {
@@ -397,13 +397,14 @@ describe('phone TaskScreen', () => {
     await fireEvent.keyDown(input, { key: 'Enter' });
     await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not save the tags. Please try again.'));
     await waitFor(() => expect(queryByText('#paint')).toBeNull());
+    expect(queryByText('paint')).toBeNull();
   });
 
   it('shows three tags on the row, then a count', async () => {
     const { getByText, queryByText } = await open(task({ tags: ['a', 'b', 'c', 'd', 'e'] }));
-    expect(getByText('#a')).toBeTruthy();
-    expect(getByText('#c')).toBeTruthy();
-    expect(queryByText('#d')).toBeNull();
+    expect(getByText('a')).toBeTruthy();
+    expect(getByText('c')).toBeTruthy();
+    expect(queryByText('d')).toBeNull();
     expect(getByText('+2')).toBeTruthy();
   });
 

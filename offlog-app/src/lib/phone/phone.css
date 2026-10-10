@@ -130,6 +130,9 @@
   background: color-mix(in srgb, var(--tag, var(--faint)) 18%, transparent);
 }
 .phone-shell .p-tag::before, .psheet .p-tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--tag, var(--faint)); }
+/* A tag shown, not edited (cards, the task screen): dot and name, no fill,
+   as on desktop. Editable chips in sheets keep the tinted chip. */
+.phone-shell .p-tag.plain, .psheet .p-tag.plain { background: none; padding: 0; font-weight: 500; color: var(--muted); font-size: var(--p-fs-s); }
 
 /* Visually hidden, still read by screen readers. */
 .phone-shell .p-sr, .psheet .p-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

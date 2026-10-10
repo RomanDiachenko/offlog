@@ -138,7 +138,8 @@
   .chk.on::after { transform: rotate(45deg) scale(1); opacity: 1; transition: transform var(--dur-small) var(--ease-decelerate), opacity var(--dur-small) var(--ease-decelerate); }
   /* The fill and tick wait for the loop (phone.css .p-loop) to close. */
   .chk.on, .chk.on::after { transition-delay: var(--dur-large); }
-  .pill { font-size: var(--p-fs-xs); font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--col-bg); color: var(--muted); white-space: nowrap; }
-  .pill.today { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent-ink); }
-  .pill.late { background: var(--overdue-bg); color: var(--overdue-ink); }
+  /* The date as text, like a card footer: Today accent, overdue red. */
+  .pill { font-size: var(--p-fs-s); font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .pill.today { color: var(--accent-ink); }
+  .pill.late { color: var(--overdue-ink); }
 </style>
