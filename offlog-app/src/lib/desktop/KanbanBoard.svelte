@@ -366,7 +366,7 @@
     }
   }
 
-  import { PRIORITY_COLOR } from '../constants';
+  import { PRIORITY_COLOR, PRIORITY_LABEL } from '../constants';
 
   // ── Touch drag ─────────────────────────────────────────────────────────────
   let touchTask: TaskDoc | null = null;
@@ -656,10 +656,9 @@
             in:scale={{ duration: 150, start: 0.92, easing: easeDecelerate }}
             out:fade={{ duration: 110, easing: easeAccelerate }}
             animate:flip={{ duration: 200, easing: cubicOut }}
-            style="--prio-color:{PRIORITY_COLOR[task.priority]}"
           >
             <div class="card-top">
-              <span class="card-title">{#if task.pinned}<span class="card-pin" title="Pinned" aria-label="Pinned"><PinStar size={12} filled={false} stroked /></span>{/if}{task.title}</span>
+              <span class="card-title">{task.title}</span>
               <div class="card-menu-wrap">
                 <button
                   type="button"
@@ -703,38 +702,46 @@
                 {/if}
               </div>
             </div>
-            <div class="card-meta">
-              {#if task.due_date}
-                <span class="meta-badge due-badge {dueDateClass(task, $today)}">
-                  <svg viewBox="0 0 14 14" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="11" height="10" rx="1.5"/><line x1="1.5" y1="5.5" x2="12.5" y2="5.5"/><line x1="4" y1="1" x2="4" y2="3.5"/><line x1="10" y1="1" x2="10" y2="3.5"/></svg>
-                  {dueLabel(task.due_date, '', task.column_id === project.columns.at(-1)?.id, $today)}
-                </span>
-              {/if}
-              {#if task.recurrence}
-                <span class="meta-badge recur-badge" title="Repeats {task.recurrence}">
-                  <svg viewBox="0 0 14 14" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7a5 5 0 0 1 8.5-3.5M12 2v3h-3"/><path d="M12 7a5 5 0 0 1-8.5 3.5M2 12V9h3"/></svg>
-                </span>
-              {/if}
-              {#if relatedIds.has(task._id!)}
-                <span class="meta-badge related-badge" title="Has related tasks">
-                  <svg viewBox="0 0 14 14" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="3.5" cy="3.5" r="1.8"/><circle cx="10.5" cy="10.5" r="1.8"/><path d="M4.8 4.8l4.4 4.4"/></svg>
-                </span>
-              {/if}
-              {#if blockedIds.has(task._id!)}
-                <span class="meta-badge blocked-badge" title="Blocked by another task">
-                  <svg viewBox="0 0 14 14" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="10" height="6" rx="1.5"/><path d="M4.5 6V4a2.5 2.5 0 0 1 5 0v2"/></svg>
-                </span>
-              {/if}
-              {#if task.checklist?.length}
-                <span class="meta-badge checklist-badge" class:complete={task.checklist.every(i => i.done)}>
-                  <span class="checklist-bar"><span class="checklist-bar-fill" style="width:{Math.round(task.checklist.filter(i => i.done).length / task.checklist.length * 100)}%"></span></span>
-                  {task.checklist.filter(i => i.done).length}/{task.checklist.length}
-                </span>
-              {/if}
-            </div>
             {#if task.tags.length}
               <div class="card-tags">
-                {#each task.tags as tag}<span class="card-tag" style="background:color-mix(in srgb, {tagColor(tag)} 14%, transparent)"><span class="card-tag-dot" style="background:{tagColor(tag)}"></span>{tag}</span>{/each}
+                {#each task.tags as tag}<span class="card-tag"><span class="card-tag-dot" style="background:{tagColor(tag)}"></span>{tag}</span>{/each}
+              </div>
+            {/if}
+            <!-- Fixed order, every card: pin · date · priority on the left,
+                 steps · links · repeat · blocked on the right. -->
+            {#if task.pinned || task.due_date || (task.priority >= 2 && PRIORITY_LABEL[task.priority]) || task.checklist?.length || relatedIds.has(task._id!) || task.recurrence || blockedIds.has(task._id!)}
+              <div class="card-foot">
+                {#if task.pinned}<span class="foot-pin" title="Pinned" aria-label="Pinned"><PinStar size={12} filled={false} stroked /></span>{/if}
+                {#if task.due_date}
+                  <span class="foot-due {dueDateClass(task, $today)}">
+                    <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="11" height="10" rx="1.5"/><line x1="1.5" y1="5.5" x2="12.5" y2="5.5"/><line x1="4" y1="1" x2="4" y2="3.5"/><line x1="10" y1="1" x2="10" y2="3.5"/></svg>
+                    {dueLabel(task.due_date, '', task.column_id === project.columns.at(-1)?.id, $today)}
+                  </span>
+                {/if}
+                {#if task.priority >= 2 && PRIORITY_LABEL[task.priority]}<span class="foot-prio" style:color={PRIORITY_COLOR[task.priority]}>{PRIORITY_LABEL[task.priority]}</span>{/if}
+                <span class="foot-marks">
+                  {#if task.checklist?.length}
+                    <span class="meta-badge checklist-badge" class:complete={task.checklist.every(i => i.done)} title="Steps">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h2M4 12h2M4 18h2M9 6h11M9 12h11M9 18h11"/></svg>
+                      {task.checklist.filter(i => i.done).length}/{task.checklist.length}
+                    </span>
+                  {/if}
+                  {#if relatedIds.has(task._id!)}
+                    <span class="meta-badge related-badge" title="Has related tasks">
+                      <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="3.5" cy="3.5" r="1.8"/><circle cx="10.5" cy="10.5" r="1.8"/><path d="M4.8 4.8l4.4 4.4"/></svg>
+                    </span>
+                  {/if}
+                  {#if task.recurrence}
+                    <span class="meta-badge recur-badge" title="Repeats {task.recurrence}">
+                      <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7a5 5 0 0 1 8.5-3.5M12 2v3h-3"/><path d="M12 7a5 5 0 0 1-8.5 3.5M2 12V9h3"/></svg>
+                    </span>
+                  {/if}
+                  {#if blockedIds.has(task._id!)}
+                    <span class="meta-badge blocked-badge" title="Blocked by another task">
+                      <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="10" height="6" rx="1.5"/><path d="M4.5 6V4a2.5 2.5 0 0 1 5 0v2"/></svg>
+                    </span>
+                  {/if}
+                </span>
               </div>
             {/if}
           </div>
@@ -919,9 +926,8 @@
   .card {
     background: var(--surface);
     border-radius: var(--radius);
-    padding: 16px 14px;
+    padding: 14px 14px 13px;
     cursor: pointer;
-    border-left: 2px solid var(--prio-color, var(--border));
     box-shadow: var(--elev-1);
     transition: box-shadow var(--dur) var(--ease),
                 transform var(--dur) var(--ease),
@@ -933,12 +939,9 @@
   }
   .card.dragging { opacity: .35; transition: none; transform: none; }
   .card.insert-before { box-shadow: inset 0 2px 0 var(--accent), var(--elev-1); }
-  /* Pinned reads as a thin accent right edge — mirrors the priority left
-     edge, on the opposite side so the two never compete for space. */
-  .card-pin { display: inline-flex; color: var(--accent); vertical-align: -1px; margin-right: 5px; }
 
   .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; }
-  .card-title { font-size: var(--fs-l); font-weight: 600; line-height: 1.4; color: var(--text); flex: 1; }
+  .card-title { font-size: var(--fs-l); font-weight: 600; line-height: 1.4; color: var(--text); flex: 1; min-width: 0; overflow-wrap: anywhere; }
   .card-menu-wrap { position: relative; flex-shrink: 0; margin: -5px -5px 0 0; }
   .card-menu-trigger {
     display: flex; align-items: center; justify-content: center;
@@ -971,36 +974,31 @@
   .card-menu-item-danger { color: var(--danger); }
   .card-menu-item-danger svg { color: var(--danger); }
   .card-menu-item-danger:hover { background: var(--overdue-bg); }
-  .card-meta { display: flex; align-items: center; gap: .4rem; margin-top: .65rem; flex-wrap: wrap; }
+  /* The footer: a hairline across the card, then the facts in fixed places. */
+  .card-foot {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin: 12px -14px -13px; padding: 8px 14px 9px;
+    border-top: 1px solid color-mix(in srgb, var(--text) 7%, transparent);
+    font-size: var(--fs-xs); color: var(--faint);
+  }
+  .foot-pin { display: inline-flex; color: var(--accent); }
+  .foot-due { display: inline-flex; align-items: center; gap: 5px; font-weight: 600; color: var(--muted); }
+  .foot-due.overdue { color: var(--overdue-ink); }
+  .foot-prio { font-weight: 700; }
+  .foot-marks { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; }
   .meta-badge {
     display: inline-flex; align-items: center; gap: 4px;
-    font-family: var(--mono); font-size: var(--fs-xs); font-weight: 500;
-    color: var(--muted); background: var(--hover);
-    padding: .18rem .5rem; border-radius: var(--r-xl);
+    font-size: var(--fs-xs); font-weight: 500; color: var(--faint);
   }
-  /* Colored fills are reserved for urgent time alerts, so only overdue
-     gets one; every other date (soon or comfortably future) keeps the
-     plain neutral .meta-badge pill. dueDateClass() still distinguishes
-     'soon' for non-visual use, it just isn't styled differently here. */
-  .due-badge.overdue { color: var(--overdue-ink); background: var(--overdue-bg); }
-  .checklist-badge.complete { color: var(--success-ink); background: color-mix(in srgb, var(--success) 14%, transparent); }
-  .checklist-bar {
-    display: inline-block; width: 24px; height: 4px; border-radius: 2px;
-    background: var(--border-strong); overflow: hidden; flex-shrink: 0;
-  }
-  .checklist-bar-fill { display: block; height: 100%; background: var(--success); border-radius: 2px; }
-  .related-badge, .recur-badge { padding: .18rem .4rem; }
-  .blocked-badge { padding: .18rem .4rem; color: var(--danger); }
+  .checklist-badge.complete { color: var(--success-ink); }
+  .blocked-badge { color: var(--danger); }
 
-  /* Each tag gets a consistent soft tint from tagColor()'s hash. Text
-     stays var(--text), never the raw hash color: a saturated hue as both
-     text and its own tinted background fails contrast (e.g. pink on
-     dark-maroon). The color identity lives in the small dot instead. */
-  .card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: .55rem; }
+  /* A tag is its colour dot and its name, no fill: the dot carries the
+     colour, so the text stays legible on any card. */
+  .card-tags { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: .4rem; }
   .card-tag {
     display: inline-flex; align-items: center; gap: 5px;
-    font-size: var(--fs-xs); font-weight: 500; color: var(--text);
-    padding: 2px 8px; border-radius: var(--r-xl); white-space: nowrap;
+    font-size: var(--fs-xs); font-weight: 500; color: var(--muted); white-space: nowrap;
   }
   .card-tag-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 

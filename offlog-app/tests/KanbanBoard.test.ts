@@ -111,9 +111,9 @@ afterEach(cleanup);
 // The card menu is the only keyboard/touch route to a column change —
 // drag-and-drop cannot be driven without a pointer.
 describe('KanbanBoard pinned card', () => {
-  it('shows a pushpin before the title only when pinned', () => {
+  it('shows a pushpin in the footer only when pinned; the title stays plain', () => {
     const { getByLabelText } = render(KanbanBoard, { project: mkProject(), tasks: [{ ...mkTask(), pinned: true }] });
-    expect(getByLabelText('Pinned').closest('.card-title')?.textContent).toBe('Movable task');
+    expect(getByLabelText('Pinned').closest('.card-foot')).not.toBeNull();
     cleanup();
     const plain = render(KanbanBoard, { project: mkProject(), tasks: [mkTask()] });
     expect(plain.queryByLabelText('Pinned')).toBeNull();
@@ -232,7 +232,7 @@ describe('KanbanBoard due badge', () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  const badge = (container: HTMLElement) => container.querySelector('.due-badge') as HTMLElement;
+  const badge = (container: HTMLElement) => container.querySelector('.foot-due') as HTMLElement;
   const withDue = (column_id: string, due_date: string): TaskDoc => ({ ...mkTask(), column_id, due_date });
 
   it('flags an open task past its date as overdue', () => {
