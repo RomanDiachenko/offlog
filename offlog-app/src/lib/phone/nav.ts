@@ -108,8 +108,27 @@ export function backAtRoot(): boolean {
 export interface Toast { id: number; text: string; undo?: () => void | Promise<void>; action?: { label: string; run: () => void } }
 export const toast = writable<Toast | null>(null);
 let toastSeq = 0, toastTimer: ReturnType<typeof setTimeout> | undefined;
+// Undo toasts that arrive while one is still up merge into it, so a quick
+// second change never takes the first one's Undo away: "Done: A" then
+// "Done: B" reads "2 tasks done", mixed kinds "2 changes", and Undo
+// reverts all of them, newest first. Kind is the text before ": ", else all of it.
+let group: { kind: string | null; n: number; undos: NonNullable<Toast['undo']>[] } | null = null;
+const kindOf = (text: string) => { const i = text.indexOf(': '); return i > 0 ? text.slice(0, i) : text; };
+const PLURAL: Record<string, string> = { 'Done': 'done', 'Not done': 'marked not done', 'Deleted': 'deleted', 'Archived': 'archived' };
 export function showToast(text: string, undo?: Toast['undo'], action?: Toast['action']) {
   clearTimeout(toastTimer);
+  const live = get(toast);
+  if (undo && !action && live?.undo && group) {
+    const kind = kindOf(text);
+    const same = kind !== null && kind === group.kind;
+    group = { kind: same ? kind : null, n: group.n + 1, undos: [...group.undos, undo] };
+    const word = same && PLURAL[kind!];
+    text = same ? (word ? `${group.n} tasks ${word}` : `${kind}: ${group.n} tasks`) : `${group.n} changes`;
+    const undos = group.undos;
+    undo = async () => { for (const u of [...undos].reverse()) await u(); };
+  } else {
+    group = undo && !action ? { kind: kindOf(text), n: 1, undos: [undo] } : null;
+  }
   const t = { id: ++toastSeq, text, undo, action };
   toast.set(t);
   // Longer when it carries a button, so there is time to reach it.

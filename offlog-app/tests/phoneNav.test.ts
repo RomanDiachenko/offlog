@@ -214,3 +214,33 @@ describe('phone shell: reselect and the + on scroll', () => {
     vi.useRealTimers();
   });
 });
+
+describe('phone snackbar merging', () => {
+  it('a second Undo while one is up merges, and Undo reverts both, newest first', async () => {
+    toast.set(null);
+    const order: string[] = [];
+    showToast('Done: A', async () => { order.push('A'); });
+    showToast('Done: B', async () => { order.push('B'); });
+    expect(get(toast)?.text).toBe('2 tasks done');
+    await get(toast)!.undo!();
+    expect(order).toEqual(['B', 'A']);
+  });
+
+  it('mixed kinds read as changes; a toast without Undo starts over', () => {
+    toast.set(null);
+    showToast('Done: A', () => {});
+    showToast('Deleted: B', () => {});
+    expect(get(toast)?.text).toBe('2 changes');
+    showToast('Synced');
+    showToast('Done: C', () => {});
+    expect(get(toast)?.text).toBe('Done: C');
+  });
+
+  it('once the bar is gone, the next Undo stands alone', () => {
+    toast.set(null);
+    showToast('Done: A', () => {});
+    toast.set(null);
+    showToast('Done: B', () => {});
+    expect(get(toast)?.text).toBe('Done: B');
+  });
+});

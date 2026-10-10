@@ -409,14 +409,16 @@ describe('phone Project screen — card menu', () => {
     await fireEvent.click(r.getByText('Pin'));
     await waitFor(() => expect(updateTask).toHaveBeenCalledWith('task:a', { pinned: true }));
     await waitFor(() => expect(get(toast)?.text).toBe('Pinned'));
-    await get(toast)!.undo!();
+    // As the snackbar does: tapping Undo takes the bar down first.
+    { const u = get(toast)!.undo!; toast.set(null); await u(); }
     expect(updateTask).toHaveBeenLastCalledWith('task:a', { pinned: false });
     await waitFor(() => expect(r.queryByRole('dialog')).toBeNull());
     await openMenu(r, 'a');
     await fireEvent.click(r.getByText('Archive'));
     await waitFor(() => expect(archiveTask).toHaveBeenCalledWith('task:a'));
     await waitFor(() => expect(get(toast)?.text).toBe('Archived'));
-    await get(toast)!.undo!();
+    // As the snackbar does: tapping Undo takes the bar down first.
+    { const u = get(toast)!.undo!; toast.set(null); await u(); }
     expect(unarchiveTask).toHaveBeenCalledWith('task:a');
     await waitFor(() => expect(r.queryByRole('dialog')).toBeNull());
     deleteTask.mockRejectedValue(new Error('boom'));

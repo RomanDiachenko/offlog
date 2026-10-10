@@ -114,7 +114,7 @@ flowchart LR
   instead of the desktop manager overlays). Quick add is a bottom sheet that adds where the user is (the
   project and status on show via `nav.addContext`, or Agenda's chosen day).
   `nav.actions` routes task opening, quick add and Settings into the shell;
-  `nav.showToast` is the Undo snackbar for reversible actions. Bottom sheets
+  `nav.showToast` is the Undo snackbar for reversible actions. An Undo arriving while another is still up merges into it ("2 tasks done", mixed kinds "2 changes"), and Undo reverts all of them, newest first, so a quick second change never costs the first its Undo. Bottom sheets
   are `phone/Sheet.svelte` (a `closeOnBack` consumer: mount behind `{#key}`),
   at z-index 650. Confirms on the phone are `phone/ConfirmSheet.svelte` (a
   `raised` sheet at 700, mounted in PhoneApp); `ConfirmDialog` is desktop-only. Shared phone

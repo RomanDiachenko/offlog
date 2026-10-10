@@ -131,9 +131,10 @@ describe('phone Focus', () => {
     await fireEvent.click(getByLabelText('Remove from focus: Socks'));
     await waitFor(() => expect(localStorage.getItem(KEY)).toBeNull());
     await findByText('Pick up to three for today');
-    expect(get(toast)?.text).toBe('Removed from focus');
+    // Two removals inside one snackbar merge; Undo puts both back.
+    expect(get(toast)?.text).toBe('Removed from focus: 2 tasks');
     await get(toast)!.undo!();
-    expect(JSON.parse(localStorage.getItem(KEY)!)).toEqual({ date: TODAY, taskIds: ['task:Socks'] });
+    expect(JSON.parse(localStorage.getItem(KEY)!)).toEqual({ date: TODAY, taskIds: ['task:Report', 'task:Socks'] });
     expect(await findByLabelText('Remove from focus: Socks')).toBeTruthy();
   });
 
