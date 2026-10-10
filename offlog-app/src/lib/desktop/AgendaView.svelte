@@ -238,7 +238,6 @@
             {#each tasksByDate[selectedDay] as t (t._id)}
               <div
                 class="task-row"
-                style="--prio-color:{PRIO_COLOR[t.priority]}"
                 title={PRIO_LABEL[t.priority]}
                 role="button"
                 tabindex="0"
@@ -250,6 +249,7 @@
                   <span class="task-title">{t.title}</span>
                   <span class="proj-badge">{t.project_name ?? '—'}</span>
                 </div>
+                {#if t.priority >= 2 && PRIO_LABEL[t.priority]}<span class="row-prio" style:color={PRIO_COLOR[t.priority]}>{PRIO_LABEL[t.priority]}</span>{/if}
               </div>
             {/each}
           {/if}
@@ -274,7 +274,6 @@
           {#each overdue as t (t._id)}
             <div
               class="task-row"
-              style="--prio-color:{PRIO_COLOR[t.priority]}"
               title={PRIO_LABEL[t.priority]}
               role="button"
               tabindex="0"
@@ -286,6 +285,7 @@
                 <span class="task-title">{t.title}</span>
                 <span class="proj-badge">{t.project_name ?? '—'}</span>
               </div>
+              {#if t.priority >= 2 && PRIO_LABEL[t.priority]}<span class="row-prio" style:color={PRIO_COLOR[t.priority]}>{PRIO_LABEL[t.priority]}</span>{/if}
               <span class="due-chip overdue">{dueLabelLong(t.due_date!, today)}</span>
             </div>
           {/each}
@@ -298,7 +298,6 @@
           {#each dueToday as t (t._id)}
             <div
               class="task-row"
-              style="--prio-color:{PRIO_COLOR[t.priority]}"
               title={PRIO_LABEL[t.priority]}
               role="button"
               tabindex="0"
@@ -310,6 +309,7 @@
                 <span class="task-title">{t.title}</span>
                 <span class="proj-badge">{t.project_name ?? '—'}</span>
               </div>
+              {#if t.priority >= 2 && PRIO_LABEL[t.priority]}<span class="row-prio" style:color={PRIO_COLOR[t.priority]}>{PRIO_LABEL[t.priority]}</span>{/if}
             </div>
           {/each}
         </section>
@@ -321,7 +321,6 @@
           {#each thisWeek as t (t._id)}
             <div
               class="task-row"
-              style="--prio-color:{PRIO_COLOR[t.priority]}"
               title={PRIO_LABEL[t.priority]}
               role="button"
               tabindex="0"
@@ -333,6 +332,7 @@
                 <span class="task-title">{t.title}</span>
                 <span class="proj-badge">{t.project_name ?? '—'}</span>
               </div>
+              {#if t.priority >= 2 && PRIO_LABEL[t.priority]}<span class="row-prio" style:color={PRIO_COLOR[t.priority]}>{PRIO_LABEL[t.priority]}</span>{/if}
               <span class="due-chip week">{dueRelative(t.due_date!, today)} · {dueDateShort(t.due_date!)}</span>
             </div>
           {/each}
@@ -345,7 +345,6 @@
           {#each later as t (t._id)}
             <div
               class="task-row"
-              style="--prio-color:{PRIO_COLOR[t.priority]}"
               title={PRIO_LABEL[t.priority]}
               role="button"
               tabindex="0"
@@ -357,6 +356,7 @@
                 <span class="task-title">{t.title}</span>
                 <span class="proj-badge">{t.project_name ?? '—'}</span>
               </div>
+              {#if t.priority >= 2 && PRIO_LABEL[t.priority]}<span class="row-prio" style:color={PRIO_COLOR[t.priority]}>{PRIO_LABEL[t.priority]}</span>{/if}
               <span class="due-chip later">{dueLabelLong(t.due_date!, today)}</span>
             </div>
           {/each}
@@ -620,21 +620,20 @@
   .later-label   .badge-count { background: var(--faint); }
 
   .task-row {
-    display: grid;
-    grid-template-columns: 20px 1fr auto;
-    align-items: center; gap: 10px;
-    padding: 10px 14px; border-radius: var(--r-m);
-    border: 1px solid var(--border); border-left: 2px solid var(--prio-color, var(--border));
-    background: var(--surface);
-    margin-bottom: 5px; cursor: pointer;
+    /* Flex, not a grid: rows without a date keep priority at the right edge. */
+    display: flex;
+    align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: var(--r-l);
+    background: var(--surface); box-shadow: var(--elev-1);
+    margin-bottom: 6px; cursor: pointer;
     transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
-  .task-row:hover { background: var(--hover); box-shadow: var(--elev-1); }
+  .task-row:hover { box-shadow: var(--elev-2); }
+  .row-prio { font-size: var(--fs-s); font-weight: 700; white-space: nowrap; }
 
-  /* Same minimal checkbox language as ListView.svelte's .circle:
-     rounded square, no fill, border-only. */
+  /* Same round done circle as ListView.svelte's. */
   .circle {
-    width: 18px; height: 18px; border-radius: 5px;
+    width: 18px; height: 18px; border-radius: 50%;
     background: none; padding: 0;
     border: 1.5px solid var(--border-strong); flex-shrink: 0; cursor: pointer;
     transition: border-color var(--dur-hover) var(--ease-hover); display: block;
@@ -644,7 +643,7 @@
   /* Title + project stacked (same primary/secondary pattern as
      DashboardView's .task-body) so project context survives at every
      width, with no breakpoint needed. */
-  .task-body { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .task-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .task-title {
     font-size: var(--fs-m); font-weight: 500; color: var(--text);
     min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -655,13 +654,9 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  .due-chip {
-    font-family: var(--mono); font-size: var(--fs-xs); font-weight: 500;
-    padding: 3px 9px; border-radius: var(--r-s); white-space: nowrap;
-  }
-  .due-chip.overdue { background: var(--overdue-bg); color: var(--overdue-ink); }
-  .due-chip.week    { background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success-ink); }
-  .due-chip.later   { background: var(--col-bg); color: var(--faint); }
+  /* Dates as text, like a card's footer: only overdue takes a colour. */
+  .due-chip { font-size: var(--fs-s); font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .due-chip.overdue { color: var(--overdue-ink); }
 
   @media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
     .hamburger { display: flex; }
