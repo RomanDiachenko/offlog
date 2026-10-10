@@ -131,7 +131,7 @@ flowchart LR
   (`phone/TaskCard.svelte`: Today, Overdue, Pinned, Agenda, Search) finish
   through the project list's `toggleDone`, so haptic, snackbar and Undo
   match; holding one opens the board's `CardMenuSheet` through
-  `phone/TaskMenu.svelte`. A row drops its date pill when its section
+  `phone/TaskMenu.svelte`. Nothing on a card shows the hold, so the first plain tap on a card with a menu shows a one-time tip (`phone/holdTip.ts`, a localStorage flag also set by any hold). A row drops its date pill when its section
   already names that day. The phone shell never runs in the Tauri window.
   Widget deep links (`com.offlog.app://focus|quickadd|dashboard|agenda|project`)
   arrive through `@capacitor/app` (`getLaunchUrl()` cold, `appUrlOpen` warm)
@@ -271,6 +271,7 @@ src/
       AgendaScreen / FocusScreen / SearchScreen / QuickAddSheet / NewProjectSheet .svelte
                                   One file per screen or top-level sheet
       TaskCard / TaskMenu / TopBar / Empty .svelte   Shared rows, menus, bars, empty states
+      holdTip.ts                  One-time tip that a task card holds a menu
       livingHero.ts               Season/evening shift of --hero (--hero-dh, --hero-dl)
       fabScroll.ts                Hides the + on a long downward scroll
       rowMotion.ts                markLeaving/markReturning, leaves/returns: which rows play

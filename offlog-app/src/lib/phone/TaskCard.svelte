@@ -6,6 +6,7 @@
   import { createEventDispatcher, onDestroy } from 'svelte';
   import type { TaskDoc } from '../types';
   import { projects, spaces } from '../store';
+  import { holdTipOnTap, holdUsed } from './holdTip';
   import { hapticDragStart } from '../haptics';
   import { duePill } from './format';
   import { today } from '../today';
@@ -64,16 +65,17 @@
     if (!menu) return;
     held = false; sx = e.clientX; sy = e.clientY;
     clearTimeout(timer);
-    timer = setTimeout(() => { held = true; hapticDragStart(); dispatch('menu', task); }, HOLD_MS);
+    timer = setTimeout(() => { held = true; hapticDragStart(); holdUsed(); dispatch('menu', task); }, HOLD_MS);
   }
   function move(e: PointerEvent) { if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 8) clearTimeout(timer); }
   function cancel() { clearTimeout(timer); }
-  function click() { if (held) { held = false; return; } dispatch('open', task); }
+  function click() { if (held) { held = false; return; } if (menu) holdTipOnTap(); dispatch('open', task); }
   function context(e: MouseEvent) {
     if (!menu) return;
     e.preventDefault();
     if (held) return; // the hold already opened it
     clearTimeout(timer);
+    holdUsed();
     dispatch('menu', task);
   }
   onDestroy(() => clearTimeout(timer));
