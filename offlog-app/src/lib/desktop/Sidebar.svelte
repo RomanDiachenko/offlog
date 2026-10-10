@@ -530,11 +530,8 @@
       aria-label="Dashboard"
       on:click={() => { showDashboard = true; showAgenda = false; showFocus = false; activeProjectId.set(''); dispatch('navigate'); }}
     >
-      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
-        <rect x="2" y="2" width="6" height="6" rx="1"/>
-        <rect x="10" y="2" width="6" height="6" rx="1"/>
-        <rect x="2" y="10" width="6" height="6" rx="1"/>
-        <rect x="10" y="10" width="6" height="6" rx="1"/>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
+        <rect x="3.5" y="3.5" width="7" height="9" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="5" rx="1.5"/><rect x="13.5" y="11.5" width="7" height="9" rx="1.5"/><rect x="3.5" y="15.5" width="7" height="5" rx="1.5"/>
       </svg>
       {#if !effectiveCollapsed}Dashboard{/if}
     </button>
@@ -922,7 +919,7 @@
      collapsed, so icon color is the only signal left in a 32px icon-only
      box -- hence the accent tint here specifically. Expanded mode still
      relies on background + bold text. */
-  .sidebar.collapsed .nav-btn.active { color: var(--accent); }
+  .sidebar.collapsed .nav-btn.active { color: var(--text); }
 
   /* flex:1 + justify-content:center puts the spaces column in the
      vertical middle of the rail, with the footer landing at the true
@@ -1015,7 +1012,7 @@
   /* .is-selected (app.css) draws the glow; the pill is restated because
      the scoped :hover rule above would otherwise outrank it. */
   .nav-btn.active, .nav-btn.active:hover { background: var(--sel-fill); color: var(--text); font-weight: 700; box-shadow: none; }
-  .nav-btn.active svg { opacity: 1; color: var(--accent); }
+  .nav-btn.active svg { opacity: 1; }
 
   .spaces-divider { height: 1px; background: var(--border); margin: .5rem 0; }
   /* A full-width line reads heavier in the narrow 60px rail than in the
