@@ -14,6 +14,7 @@ vi.mock('../src/lib/db', () => ({
   getArchivedTasksForProject: vi.fn().mockResolvedValue([]),
   getCustomFieldDefs: (...args: unknown[]) => getCustomFieldDefs(...args),
   getTaskById: vi.fn().mockResolvedValue(null),
+  getTagColorOverrides: vi.fn().mockResolvedValue({}),
   // reached only when a row is opened into CardDetail
   getAllTags: vi.fn().mockResolvedValue([]),
   findTasksByTitleInProject: vi.fn().mockResolvedValue([]),

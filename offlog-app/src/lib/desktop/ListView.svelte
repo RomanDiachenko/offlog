@@ -5,7 +5,8 @@
   import { flip } from 'svelte/animate';
   import { cubicOut } from 'svelte/easing';
   import type { ProjectDoc, TaskDoc, CustomFieldDef } from '../types';
-  import { updateTask, unarchiveTask, getArchivedTasksForProject, getCustomFieldDefs, getTaskById } from '../db';
+  import { updateTask, unarchiveTask, getArchivedTasksForProject, getCustomFieldDefs, getTaskById, getTagColorOverrides } from '../db';
+  import { resolveTagColor, soften } from '../tagColors';
   import { reloadTasks, showError, projects } from '../store';
   import { PRIORITY_COLOR as PRIO_COLOR, PRIORITY_LABEL as PRIO_LABEL } from '../constants';
   import { dueLabel, dueInk, filterTasks, fmtDay, dayOf, type CustomFieldFilter } from '../utils';
@@ -189,7 +190,8 @@
 
   // Priority column off by default: the row's left-edge color already
   // carries priority. It can be turned on via the column menu.
-  let cols: Record<ColKey, boolean> = { status: true, priority: false, due: true, tags: true, created: false, updated: false, source: false };
+  // Priority shows by default: the column is the only place a row says it.
+  let cols: Record<ColKey, boolean> = { status: true, priority: true, due: true, tags: true, created: false, updated: false, source: false };
   let colOrder: ColKey[] = [...DEFAULT_ORDER];
   let showColMenu = false;
   let colMenuPos = { top: 0, left: 0 };
@@ -209,6 +211,11 @@
   let dragOverCol: ColKey | null = null;
   let dragOverSide: 'left' | 'right' | null = null;
 
+
+  // Tag dots use the same colours as the Board's.
+  let tagColorOverrides: Record<string, string> = {};
+  const tagColor = (tag: string) => soften(resolveTagColor(tag, tagColorOverrides));
+  onMount(() => { getTagColorOverrides().then(o => tagColorOverrides = o).catch(() => {}); });
 
   onMount(async () => {
     // Fields are global (not per-project) — fetched once here so
@@ -617,7 +624,7 @@
         <div
           class="grid-row"
           class:row-selected={selected.has(task._id!)}
-          style="--prio-color:{PRIO_COLOR[task.priority]}; grid-template-columns:{gridTemplate}"
+          style="grid-template-columns:{gridTemplate}"
           role="button"
           tabindex="0"
           on:click={() => selectionMode ? toggleRowSelect(task._id!) : openDetail(task)}
@@ -661,15 +668,12 @@
             {#if key === 'status'}
               <span class="cell-status">{colName(task.column_id)}</span>
             {:else if key === 'priority'}
-              <span class="cell-prio">
-                <span class="prio-dot" style="background:{PRIO_COLOR[task.priority]}"></span>
-                {PRIO_LABEL[task.priority]}
-              </span>
+              <span class="cell-prio" class:quiet={task.priority < 2} style:color={task.priority >= 2 ? PRIO_COLOR[task.priority] : null}>{PRIO_LABEL[task.priority]}</span>
             {:else if key === 'due'}
               <span class="cell-due" style="color:{dueInk(task.due_date, task.column_id === lastColId(), $today)}">{dueLabel(task.due_date, '—', task.column_id === lastColId(), $today)}</span>
             {:else if key === 'tags'}
               <span class="cell-tags">
-                {#each task.tags as tag}<span class="tag">{tag}</span>{/each}
+                {#each task.tags as tag}<span class="tag"><i style:background={tagColor(tag)}></i>{tag}</span>{/each}
               </span>
             {:else if key === 'created'}
               <span class="cell-date">{fmtDate(task.created_at)}</span>
@@ -702,7 +706,7 @@
         <div class="grid-scroll">
           <div class="grid-card">
             {#each archivedTasks as task (task._id)}
-              <div class="archived-row" style="--prio-color:{PRIO_COLOR[task.priority]}">
+              <div class="archived-row">
                 <span class="archived-title">{task.title}</span>
                 <span class="cell-status">{colName(task.column_id)}</span>
                 <button class="unarchive-btn" on:click={async () => {
@@ -905,22 +909,12 @@
   .grid-row {
     position: relative;
     padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid color-mix(in srgb, var(--text) 6%, transparent);
     cursor: pointer; transition: background var(--dur-hover) var(--ease-hover);
   }
   .grid-row:last-child { border-bottom: none; }
   .grid-row:hover { background: var(--hover); }
   .grid-row.row-selected { background: var(--sel-fill); }
-  /* An inset ::before bar, not a full-height border-left: a full-height
-     border reads as one continuous stripe across adjacent rows sharing a
-     priority color, since the border-bottom hairline isn't enough to break
-     it. Same approach as Dashboard/Recycle bin's row lists. */
-  .grid-row::before {
-    content: '';
-    position: absolute; left: 0; top: 3px; bottom: 3px;
-    width: 3px; border-radius: 2px;
-    background: var(--prio-color, var(--border));
-  }
   /* Pinned: the same pushpin as a Board card and the phone, before the title. */
   .pin-mark { display: inline-flex; color: var(--accent); vertical-align: -1px; margin-right: 4px; }
 
@@ -961,7 +955,7 @@
   /* Fully transparent at every state: only the border and checkmark pick
      up accent color when done, never a fill. */
   .circle {
-    width: 18px; height: 18px; border-radius: 5px;
+    width: 18px; height: 18px; border-radius: 50%;
     background: none; padding: 0;
     border: 1.5px solid var(--border-strong); flex-shrink: 0; cursor: pointer;
     transition: border-color var(--dur-hover) var(--ease-hover);
@@ -983,16 +977,15 @@
   .recur-mark { display: inline-flex; align-items: center; color: var(--muted); opacity: .75; vertical-align: middle; margin-left: 4px; }
 
   .cell-status { color: var(--muted); font-size: var(--fs-s); white-space: nowrap; }
-  .cell-prio { display: flex; align-items: center; gap: 7px; color: var(--text); font-size: var(--fs-s); white-space: nowrap; }
-  .prio-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .cell-prio { font-size: var(--fs-s); font-weight: 700; white-space: nowrap; }
+  .cell-prio.quiet { color: var(--faint); font-weight: 500; }
   .cell-due { font-family: var(--mono); font-size: var(--fs-xs); white-space: nowrap; }
   .cell-date { font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint); white-space: nowrap; text-transform: capitalize; }
 
   .cell-tags { display: flex; flex-wrap: wrap; gap: 5px; }
-  .tag {
-    font-size: var(--fs-xs); color: var(--muted); background: var(--col-bg);
-    padding: 2px 8px; border-radius: var(--r-s); white-space: nowrap;
-  }
+  .tag { display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; }
+  .tag i { width: 6px; height: 6px; border-radius: 50%; display: block; }
+  .cell-tags { column-gap: 12px; }
 
   .empty { padding: 3rem; text-align: center; color: var(--faint); font-size: var(--fs-m); }
 
@@ -1005,8 +998,7 @@
   }
   .archived-row {
     display: flex; align-items: center; gap: 13px;
-    padding: 12px 16px; border-bottom: 1px solid var(--border);
-    border-left: 3px solid var(--prio-color, var(--border));
+    padding: 12px 16px; border-bottom: 1px solid color-mix(in srgb, var(--text) 6%, transparent);
     opacity: .6;
   }
   .archived-row:last-child { border-bottom: none; }
