@@ -279,7 +279,6 @@
         {@const done = isDone(t)}
         <div
           class="task-row"
-          style="--prio-color:{PRIO_COLOR[t.priority]}"
           title={PRIO_LABEL[t.priority]}
           role="button"
           tabindex="0"
@@ -293,6 +292,7 @@
             <span class="task-title" class:done>{t.title}</span>
             <span class="proj-badge">{$projects.find(p => p._id === t.project_id)?.name ?? '—'}</span>
           </div>
+          {#if t.priority >= 2 && PRIO_LABEL[t.priority]}<span class="row-prio" style:color={PRIO_COLOR[t.priority]}>{PRIO_LABEL[t.priority]}</span>{/if}
           <button class="remove-btn" on:click|stopPropagation={() => removeFromFocus(t)} title="Remove from focus" aria-label="Remove {t.title} from focus">
             <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5"/></svg>
           </button>
@@ -313,7 +313,7 @@
               class="note {noteSize(t)}"
               class:selected={selected.includes(t._id!)}
               class:suggested={suggestedReasons.has(t._id!)}
-              style="--tilt: {noteTilt(t)}deg; --jitter: {noteJitter(t)}px; --prio-color: {PRIO_COLOR[t.priority]}"
+              style="--tilt: {noteTilt(t)}deg; --jitter: {noteJitter(t)}px"
               title={PRIO_LABEL[t.priority]}
               role="button"
               tabindex="0"
@@ -428,7 +428,6 @@
     display: flex; flex-direction: column; gap: 10px;
     background: var(--surface);
     border: 1px solid transparent;
-    border-top: 2px solid var(--prio-color, var(--border));
     border-radius: var(--r-s);
     padding: 14px 16px;
     cursor: pointer;
@@ -441,8 +440,7 @@
     transform: rotate(0deg); border-color: var(--accent);
     box-shadow: var(--sel-ring);
   }
-  .note.suggested { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
-  .note.suggested.selected { border-color: var(--accent); }
+  .note.selected { border-color: transparent; }
 
   /* flex-grow (not a fixed width) so trailing space at the end of a row
      gets absorbed by the notes already in it instead of sitting empty --
@@ -464,16 +462,16 @@
   .note-foot { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: auto; }
 
   .task-row {
-    display: grid;
-    grid-template-columns: 20px 1fr auto;
+    display: flex;
     align-items: center; gap: 12px;
-    padding: 14px 16px; border-radius: var(--r-s);
-    border: 1px solid var(--border); border-left: 2px solid var(--prio-color, var(--border));
-    background: var(--surface);
+    padding: 14px 16px; border-radius: var(--r-l);
+    background: var(--surface); box-shadow: var(--elev-1);
     margin-bottom: 8px; cursor: pointer;
     transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
-  .task-row:hover { background: var(--hover); box-shadow: var(--elev-1); }
+  .task-row:hover { box-shadow: var(--elev-2); }
+  .task-row .task-body { flex: 1; }
+  .row-prio { font-size: var(--fs-s); font-weight: 700; white-space: nowrap; }
   .remove-btn {
     background: none; border: none; padding: 6px; border-radius: var(--r-s); cursor: pointer;
     color: var(--faint); display: flex; align-items: center; justify-content: center;
@@ -488,19 +486,15 @@
   }
   .add-more-btn:hover { border-color: var(--accent); color: var(--text); }
 
-  .suggest-chip {
-    font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 600;
-    padding: 3px 8px; border-radius: var(--r-s); white-space: nowrap;
-  }
-  .suggest-chip.pinned    { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent-ink); }
-  .suggest-chip.overdue   { background: var(--overdue-bg); color: var(--overdue-ink); }
-  .suggest-chip.due_soon  { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success-ink); }
-  .suggest-chip.priority  { background: var(--col-bg); color: var(--faint); }
+  /* The reason a note is suggested, as a word: only Overdue takes a colour. */
+  .suggest-chip { font-size: var(--fs-xs); font-weight: 700; white-space: nowrap; color: var(--muted); }
+  .suggest-chip.pinned   { color: var(--accent-ink); }
+  .suggest-chip.overdue  { color: var(--overdue-ink); }
 
   /* Same minimal checkbox language as ListView/AgendaView's .circle:
      rounded square, no fill, border-only. */
   .circle {
-    width: 18px; height: 18px; border-radius: 5px;
+    width: 18px; height: 18px; border-radius: 50%;
     background: none; padding: 0;
     display: flex; align-items: center; justify-content: center;
     border: 1.5px solid var(--border-strong); flex-shrink: 0; cursor: pointer;
