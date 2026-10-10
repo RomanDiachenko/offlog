@@ -178,7 +178,7 @@
 
   .row {
     display: flex; align-items: center; gap: 10px;
-    padding: 8px 0; border-bottom: 1px solid var(--border);
+    padding: 9px 0;
   }
   .name { flex: 1; font-size: var(--fs-m); color: var(--text); }
 

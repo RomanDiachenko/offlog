@@ -261,7 +261,7 @@
     font-family: var(--mono); font-size: var(--fs-xs); background: var(--col-bg);
     padding: 1px 5px; border-radius: 4px; color: var(--accent);
   }
-  .help-example { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); color: var(--faint); font-style: italic; font-size: var(--fs-xs); }
+  .help-example { margin-top: 10px; color: var(--faint); font-style: italic; font-size: var(--fs-xs); }
 
   .title-input {
     width: 100%; border: 1px solid transparent; border-radius: var(--radius-sm);

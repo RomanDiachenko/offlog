@@ -195,7 +195,7 @@
 
   .row {
     display: flex; align-items: center; gap: 10px;
-    padding: 8px 0; border-bottom: 1px solid var(--border);
+    padding: 9px 0;
   }
 
   .name-btn {
@@ -234,7 +234,7 @@
      edge with no breathing room. */
   .swatch-row {
     display: flex; flex-wrap: wrap; align-items: center; gap: 8px 7px;
-    padding: 4px 24px 10px 24px; border-bottom: 1px solid var(--border);
+    padding: 4px 24px 14px 24px;
   }
   .swatch {
     width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;

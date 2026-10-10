@@ -48,7 +48,7 @@
 
 <style>
   .step { display: flex; align-items: center; padding: 0 6px 0 0; }
-  .step + .step { border-top: 1px solid var(--border); }
+  .step + .step { background-image: linear-gradient(var(--line), var(--line)); background-size: calc(100% - 50px) 1px; background-position: 50px 0; background-repeat: no-repeat; }
   .tog { transition: background var(--dur-hover) var(--ease-hover); flex: 1; min-width: 0; display: flex; gap: 12px; align-items: center; padding: 12px 0 12px 16px; min-height: 48px; font: inherit; font-size: var(--p-fs-l); color: var(--text); background: none; border: 0; text-align: left; cursor: pointer; }
   .tog:active { background: var(--col-bg); }
   .lbl { min-width: 0; overflow-wrap: anywhere; }
@@ -63,8 +63,8 @@
   .x :global(svg.i) { width: 16px; height: 16px; }
   .x:active { background: var(--col-bg); }
   /* The + sits where a step's check circle does, so typed text lines up with the step labels. */
-  .addrow { position: relative; border-top: 1px solid var(--border); }
-  .addrow.first { border-top: 0; }
+  .addrow { position: relative; background-image: linear-gradient(var(--line), var(--line)); background-size: calc(100% - 50px) 1px; background-position: 50px 0; background-repeat: no-repeat; }
+  .addrow.first { background-image: none; }
   .plus { position: absolute; left: 16px; top: 50%; width: 20px; height: 20px; margin-top: -10px; display: flex; align-items: center; justify-content: center; color: var(--faint); pointer-events: none; }
   .plus :global(svg.i) { width: 18px; height: 18px; }
   .add { width: 100%; box-sizing: border-box; border: 0; background: none; color: var(--text); outline: none; font: inherit; font-size: var(--p-fs-l); padding: 13px 14px 13px 48px; }

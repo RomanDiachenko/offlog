@@ -198,7 +198,7 @@
 
   .row {
     display: flex; align-items: center; gap: 10px;
-    padding: 8px 0; border-bottom: 1px solid var(--border);
+    padding: 9px 0;
   }
   .row-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
   .name { font-size: var(--fs-m); color: var(--text); font-weight: 500; }

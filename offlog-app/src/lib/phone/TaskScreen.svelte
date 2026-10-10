@@ -635,6 +635,8 @@
   .stbar button { flex: 1 0 auto; min-width: 72px; padding: 8px 12px; border: 0; border-radius: 9px; background: none; cursor: pointer; white-space: nowrap;
     font: inherit; font-size: var(--p-fs-s); font-weight: 600; color: var(--muted); transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover); }
   .stbar button.on { background: var(--surface); color: var(--text); box-shadow: var(--sel-ring); }
+  /* Related rows: the line starts at the text, after the icon. */
+  .p-group.vals :global(.p-row + .p-row) { border-top: 0; background-image: linear-gradient(var(--line), var(--line)); background-size: calc(100% - 52px) 1px; background-position: 52px 0; background-repeat: no-repeat; }
   .vals .p-k > span { display: flex; align-items: center; gap: 6px; }
   .vals .p-k.late, .vals .p-k.today { font-weight: 600; }
   .vals .p-k.late { color: var(--overdue-ink); }

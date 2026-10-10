@@ -232,18 +232,17 @@
   .lk { display: flex; align-items: center; gap: 2px; }
   .lk .c { flex: 1; min-width: 0; }
   .lk .p-ib { margin-bottom: 8px; }
-  .rows { background: var(--surface); border-radius: 14px; box-shadow: var(--p-shadow); overflow: hidden; }
+  .rows { display: flex; flex-direction: column; gap: 8px; }
   .lrow {
     width: 100%; display: flex; align-items: center; gap: 12px; padding: 11px 14px; min-height: 52px;
-    font: inherit; font-size: var(--p-fs-m); color: var(--text); background: none; border: 0; text-align: left; cursor: pointer;
+    border-radius: 14px; box-shadow: var(--p-shadow);
+    font: inherit; font-size: var(--p-fs-m); color: var(--text); background: var(--surface); border: 0; text-align: left; cursor: pointer;
     transition: background var(--dur-hover) var(--ease-hover);
   }
-  .lrow + .lrow { border-top: 1px solid var(--border); }
   .lrow:active { background: var(--col-bg); }
   .lrow .t { flex: 1; min-width: 0; display: flex; flex-direction: column; font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
   .pj { font-size: var(--p-fs-s); color: var(--faint); font-weight: 400; margin-top: 1px; }
-  .lrow.picked { background: var(--sel-fill); }
-  .lrow.picked:active { background: color-mix(in srgb, var(--text) 12%, transparent); }
+  .lrow.picked, .lrow.picked:active { background: var(--surface); box-shadow: var(--p-shadow), var(--sel-ring); }
   .why { font-weight: 600; color: var(--faint); }
   .why.pinned { color: var(--accent-ink); }
   .why.overdue { color: var(--overdue-ink); }

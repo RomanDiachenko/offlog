@@ -277,7 +277,7 @@
     padding: .4rem .6rem; font-size: var(--fs-s); font-weight: 600; cursor: pointer;
   }
   .filter-save-btn:disabled { opacity: .5; cursor: default; }
-  .filter-list { display: flex; flex-direction: column; gap: 1px; margin-top: 4px; border-top: 1px solid var(--border); padding-top: 4px; }
+  .filter-list { display: flex; flex-direction: column; gap: 1px; margin-top: 6px; }
   .filter-row { display: flex; align-items: center; gap: 4px; }
   .filter-apply-btn {
     flex: 1; text-align: left; background: none; border: none; cursor: pointer;

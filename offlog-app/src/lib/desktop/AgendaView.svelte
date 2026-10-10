@@ -546,7 +546,7 @@
   .month-more { font-size: var(--fs-2xs); color: var(--faint); }
 
   .month-day-panel {
-    border-top: 1px solid var(--border); padding: 14px 0 4px;
+    padding: 22px 0 4px;
   }
   .month-day-panel-head {
     display: flex; align-items: center; justify-content: space-between;
@@ -594,12 +594,11 @@
     font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
     letter-spacing: .08em; font-weight: 700;
     display: flex; align-items: center; gap: 8px;
-    margin-bottom: 8px; padding-bottom: 6px;
-    border-bottom: 1.5px solid var(--border);
+    margin-bottom: 10px;
   }
-  .overdue-label { color: var(--overdue-ink); border-color: color-mix(in srgb, var(--overdue-ink) 20%, transparent); }
-  .today-label   { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 20%, transparent); }
-  .week-label    { color: var(--success-ink); border-color: color-mix(in srgb, var(--success) 20%, transparent); }
+  .overdue-label { color: var(--overdue-ink); }
+  .today-label   { color: var(--accent); }
+  .week-label    { color: var(--success-ink); }
   .later-label   { color: var(--faint); }
 
   .badge-count {

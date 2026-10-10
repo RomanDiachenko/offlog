@@ -31,7 +31,9 @@
   font: inherit; font-size: var(--p-fs-l); color: var(--text); background: none; border: 0; text-align: left; cursor: pointer;
   transition: background var(--dur-hover) var(--ease-hover);
 }
-.phone-shell .p-row + .p-row, .psheet .p-row + .p-row { border-top: 1px solid var(--border); }
+.phone-shell .p-row + .p-row { border-top: 1px solid var(--line); }
+/* Sheets (menus and pickers, rendered inside the shell) keep groups apart by space only. */
+.phone-shell .psheet .p-row + .p-row, .psheet .p-row + .p-row { border-top: 0; }
 /* Home's project lists and the Settings screens read as plain groups, no
    dividers between rows. */
 .phone-shell .home .p-row + .p-row, .phone-shell .no-lines .p-row + .p-row { border-top: 0; }

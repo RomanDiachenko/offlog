@@ -1014,7 +1014,7 @@
   .nav-btn.active, .nav-btn.active:hover { background: var(--sel-fill); color: var(--text); font-weight: 700; box-shadow: none; }
   .nav-btn.active svg { opacity: 1; }
 
-  .spaces-divider { height: 1px; background: var(--border); margin: .5rem 0; }
+  .spaces-divider { height: 0; margin: .6rem 0; }
   /* A full-width line reads heavier in the narrow 60px rail than in the
      full sidebar, so the collapsed divider is a short centered tick. */
   .sidebar.collapsed .spaces-divider { width: 20px; margin: .5rem auto; }

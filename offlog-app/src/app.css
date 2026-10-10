@@ -306,6 +306,11 @@ body {
   /* Desktop fields and secondary buttons: a soft fill, no outline (a
      transparent 1px border keeps the box size; focus colours it). */
   --field-bg:    color-mix(in srgb, var(--text) 5%, transparent);
+  /* The one divider tone, both shells. Lines go only where space can't do
+     the job: dense tables, menu groups, a pinned bar over scrolling content
+     (only while content is under it); related rows get an inset line that
+     starts at the text; never a line under a heading. */
+  --line:        color-mix(in srgb, var(--text) 7%, transparent);
 
   /* Elevation, three levels and nothing in between: resting content
      (cards, rows, tiles), floating chrome (headers, bars, toasts, a lifted

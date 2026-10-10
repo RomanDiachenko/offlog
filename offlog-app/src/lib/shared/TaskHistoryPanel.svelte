@@ -65,9 +65,8 @@
   .history-empty { display: flex; align-items: center; gap: 8px; padding: 10px 12px; color: var(--faint); }
   .history-row {
     display: flex; align-items: flex-start; gap: 8px;
-    padding: 7px 10px; border-bottom: 1px solid var(--border);
+    padding: 7px 10px;
   }
-  .history-row:last-child { border-bottom: none; }
   .h-pill {
     font-family: var(--mono); font-size: .6rem; font-weight: 600;
     text-transform: uppercase; letter-spacing: .04em;

@@ -289,7 +289,7 @@
 
   .row {
     display: flex; align-items: center; gap: 10px;
-    padding: 8px 0; border-bottom: 1px solid var(--border);
+    padding: 9px 0;
   }
 
   .swatch-wrap { position: relative; width: 20px; height: 20px; flex-shrink: 0; cursor: pointer; }

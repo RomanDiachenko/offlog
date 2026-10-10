@@ -129,7 +129,7 @@
      child it stands in for the sheet's own bottom padding. */
   .foot {
     position: sticky; z-index: 1; bottom: calc(-16px - env(safe-area-inset-bottom, 0px));
-    display: flex; align-items: center; gap: 8px; background: var(--bg);
+    display: flex; align-items: center; gap: 8px; background: inherit; box-shadow: 0 -1px 0 var(--line);
     margin: 14px 0 calc(-16px - env(safe-area-inset-bottom, 0px)); padding: 10px 0 calc(16px + env(safe-area-inset-bottom, 0px));
   }
   .foot .p-go { flex: 1; }

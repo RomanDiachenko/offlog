@@ -86,6 +86,8 @@
   });
   // Focus goes back to whatever opened the sheet, if it is still there.
   onDestroy(() => { modalOpen.set(prevModal); if (opener?.isConnected) opener.focus(); });
+  // The sticky title takes a hairline edge only while rows scroll under it.
+  let scrolled = false;
 </script>
 
 <svelte:window on:keydown={onKey} />
@@ -95,6 +97,7 @@
   <div class="psheet-scrim" class:raised on:click={requestClose} in:fade={scrimIn} out:fade={scrimOut}></div>
   <div
     class="psheet glass" class:raised class:dragging class:kbjump={kbJump} role="dialog" aria-modal="true" aria-label={label || title || 'Sheet'} tabindex="-1" bind:this={panel}
+    on:scroll={() => (scrolled = panel.scrollTop > 4)}
     style:transform={dragY || kbOff ? `translateY(${dragY + kbOff}px)` : null}
     use:trapFocus
     in:sheetIn
@@ -104,7 +107,7 @@
     <div class="grab-zone" on:pointerdown={down} on:pointermove={move} on:pointerup={up} on:pointercancel={up} role="presentation">
       <div class="grab"></div>
     </div>
-    {#if title}<h2>{title}</h2>{/if}
+    {#if title}<h2 class:edge={scrolled}>{title}</h2>{/if}
     <slot {close} />
   </div>
 {/if}
@@ -130,6 +133,7 @@
   .grab-zone { position: sticky; top: 0; z-index: 1; background: inherit; padding: 10px 0 12px; touch-action: none; cursor: grab; }
   .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--border-strong); margin: 0 auto; }
   h2 { position: sticky; top: 27px; z-index: 1; background: inherit; margin: 0 -4px 8px; padding: 0 8px 4px; font-size: var(--p-fs-xl); font-weight: 700; }
+  h2.edge { box-shadow: 0 1px 0 var(--line); }
   /* Sideways, a sheet keeps a phone's width, centred. */
   @media (orientation: landscape) and (max-height: 500px) {
     .psheet { left: max(0px, calc((100% - 600px) / 2)); right: max(0px, calc((100% - 600px) / 2)); max-height: 94dvh; }

@@ -298,9 +298,8 @@
   .result-row {
     display: flex; align-items: center; gap: 12px;
     padding: 10px 16px; cursor: pointer;
-    border-bottom: 1px solid var(--border); transition: background var(--dur-hover) var(--ease-hover);
+    border-radius: var(--r-m); transition: background var(--dur-hover) var(--ease-hover);
   }
-  .result-row:last-child { border-bottom: none; }
   .result-row.selected { background: var(--hover); }
 
   .prio-bar { width: 3px; height: 32px; border-radius: 2px; flex-shrink: 0; }

@@ -1145,7 +1145,7 @@
   /* One soft group of rows; fields inside it drop their own fill. */
   .rows { background: var(--field-bg); border-radius: var(--r-l); }
   .row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; }
-  .row + .row { border-top: 1px solid color-mix(in srgb, var(--text) 6%, transparent); }
+  .row + .row { background-image: linear-gradient(var(--line), var(--line)); background-size: calc(100% - 36px) 1px; background-position: 36px 0; background-repeat: no-repeat; }
   .row-tags { align-items: flex-start; }
   .row-tags .row-ic { margin-top: 9px; }
   .row-ic { display: flex; width: 16px; justify-content: center; color: var(--faint); flex-shrink: 0; }

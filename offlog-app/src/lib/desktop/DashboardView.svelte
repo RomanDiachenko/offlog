@@ -460,11 +460,11 @@
   .pinned-stat { margin-left: auto; color: var(--accent-ink); background: none; padding: 0; font-family: inherit; line-height: 1; }
   .overdue-stat { color: var(--overdue-ink); font-weight: 600; }
 
-  .task-list { display: flex; flex-direction: column; gap: 1px; background: color-mix(in srgb, var(--text) 6%, transparent); border-radius: var(--r-l); overflow: hidden; box-shadow: var(--elev-1); }
+  .task-list { display: flex; flex-direction: column; gap: 6px; }
   .task-row {
     display: flex; align-items: stretch; gap: 9px;
-    padding: 9px 12px; background: var(--surface);
-    cursor: pointer; transition: background var(--dur-hover) var(--ease-hover);
+    padding: 10px 12px; background: var(--surface); border-radius: var(--r-l); box-shadow: var(--elev-1);
+    cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
   .task-row:hover { background: var(--hover); }
   /* align-self:stretch, not a fixed height — titles wrap rather than
