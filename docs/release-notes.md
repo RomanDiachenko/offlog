@@ -31,6 +31,19 @@ for (const m of s.matchAll(/## (v[\d.]+)\n+### In short\n([\s\S]*?)\n\n/g))
 
 ---
 
+## v6.12.1
+
+### In short
+
+A smoother start: the purple launch screen now covers the whole screen, including the status bar, and fades gently into the app. The strip under the clock matches the soft header color instead of showing a white band.
+
+### New
+- The app opens with a smooth fade from the launch screen instead of a sudden cut.
+
+### Fixed
+- The status bar strip matches the header below it instead of showing a white band.
+- The purple launch screen now covers the status bar too, with no light flash before the app appears.
+
 ## v6.12.0
 
 ### In short
