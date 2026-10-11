@@ -101,7 +101,7 @@ function markSynced() {
 let _scanTimer: ReturnType<typeof setTimeout> | undefined;
 function scheduleConflictScan() {
   clearTimeout(_scanTimer);
-  _scanTimer = setTimeout(() => { scanConflicts().catch(() => {}); }, 1000);
+  _scanTimer = setTimeout(() => { cleanPhantomsOnce().finally(() => scanConflicts().catch(() => {})); }, 1000);
 }
 
 function markError(err?: SyncError) {
@@ -189,12 +189,49 @@ async function autoResolvePristineDefaultConflicts(): Promise<void> {
 // already: maintenance listed the entity prefixes and silently stopped
 // reporting a conflict on meta:custom_fields that the sync badge still
 // counted.
-export async function conflictBearingRows() {
+export async function conflictBearingRows(from: PouchDB.Database = db) {
   const [before, after] = await Promise.all([
-    db.allDocs({ include_docs: true, conflicts: true, startkey: '', endkey: 'log:', inclusive_end: false }),
-    db.allDocs({ include_docs: true, conflicts: true, startkey: 'log:￰', endkey: '￿' }),
+    from.allDocs({ include_docs: true, conflicts: true, startkey: '', endkey: 'log:', inclusive_end: false }),
+    from.allDocs({ include_docs: true, conflicts: true, startkey: 'log:￰', endkey: '￿' }),
   ]);
   return [...before.rows, ...after.rows];
+}
+
+// NyxDB before v0.1.7 never sent a doc's revision history, so a pulling
+// device stored each incoming edit as a new root beside its copy: a
+// "conflict" per edit whose losing leaves are only older steps of the same
+// doc. The server kept the true tree, so a losing leaf is removed only when
+// the server lists it in the history of the version this device shows. Any
+// other loser is a genuine conflict and stays for the user. Resolves true
+// only when every conflicting doc was checked: an unreachable server, one
+// without history (pre-0.1.7), or a winner not pushed yet leaves it false
+// and touches nothing for that doc.
+export async function removePhantomConflicts(local: PouchDB.Database, server: PouchDB.Database): Promise<boolean> {
+  let complete = true, removed = false;
+  for (const row of await conflictBearingRows(local)) {
+    const doc = row.doc as { _rev: string; _conflicts?: string[] } | undefined;
+    if (!doc?._conflicts?.length) continue;
+    let history: { start: number; ids: string[] } | undefined;
+    try { history = (await server.get(row.id, { rev: doc._rev, revs: true }) as { _revisions?: { start: number; ids: string[] } })._revisions; }
+    catch { complete = false; continue; }
+    if (!history) { complete = false; continue; }
+    const ancestors = new Set(history.ids.map((hash, i) => `${history.start - i}-${hash}`));
+    for (const rev of doc._conflicts) {
+      if (!ancestors.has(rev)) continue;
+      try { await local.remove(row.id, rev); removed = true; } catch { complete = false; }
+    }
+  }
+  if (removed) invalidateTaskCache();
+  return complete;
+}
+
+// Once per device, after a sync settles against the fixed server.
+const PHANTOM_CLEANUP_KEY = 'offlog_phantom_cleanup_v1';
+async function cleanPhantomsOnce(): Promise<void> {
+  if (localStorage.getItem(PHANTOM_CLEANUP_KEY) || !getSyncUrl()) return;
+  try {
+    if (await removePhantomConflicts(db, await remote())) localStorage.setItem(PHANTOM_CLEANUP_KEY, now());
+  } catch { /* credentials unreadable: tried again on the next settle */ }
 }
 
 export async function scanConflicts(): Promise<number> {

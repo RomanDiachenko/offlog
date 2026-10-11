@@ -443,8 +443,9 @@ were hard-pruned, active tasks inside an archived project, and
 the no-statuses case, and **conflicts**. Conflicts are never auto-resolved --
 keeping whichever revision PouchDB calls the winner is arbitrary, not "most
 recent", so auto-repair would silently discard one device's edit.
-`scanConflicts()` already auto-settles the only safe case (a pristine default
-against a real edit), so anything still standing is a genuine disagreement;
+`scanConflicts()` already auto-settles the two safe cases (a pristine default
+against a real edit, and a phantom left by NyxDB before v0.1.7, below), so
+anything still standing is a genuine disagreement;
 Settings -> Sync -> Resolve conflicts is where it gets decided. It accepts the issue list a caller already computed —
 `runMaintenanceSteps()` passes its own, so a run scans once rather than
 two or three times. Repair rewrites documents and drops conflicting
@@ -706,6 +707,17 @@ revision explicitly, including one whose content you adopted. Conflicts are
 counted after each sync and shown as a badge; resolution is available in
 Settings. The screen passes the revisions it displayed to `resolveConflict()`,
 which refuses (`ConflictChangedError`) if sync changed them in the meantime.
+
+**Phantom conflicts.** NyxDB before v0.1.7 never sent a doc's revision
+history, so each pulled edit was stored as a new root beside the copy a
+device had: a "conflict" per edit whose losers are only older steps of the
+same doc. Once per device, before the first conflict count after a sync
+settles, `removePhantomConflicts()` asks the server for the history of the
+version the device shows and removes a losing leaf only if that history
+lists it. Anything else is a genuine conflict and stays. It is marked done
+(`offlog_phantom_cleanup_v1`) only after every conflicting doc was checked;
+an unreachable server, a pre-0.1.7 server or a winner not pushed yet leaves
+it to retry on the next settle.
 
 **Sync state** (`syncState`) tracks more than idle/error:
 
