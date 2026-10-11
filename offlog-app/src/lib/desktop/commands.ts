@@ -4,11 +4,13 @@
 // substring on label+keywords, the same matching style as searchAllTasks()
 // in db.ts — no fuzzy-matching library.
 import type { ProjectDoc, SpaceDoc } from '../types';
+import { ICON } from '../shared/iconPaths';
 export interface Command {
   id: string;
   label: string;
   keywords: string; // lowercase, space-separated extra match terms
   run: () => void;
+  icon: keyof typeof ICON;
   // True for commands whose run() opens another closeOnBack()-tracked
   // overlay (QuickAdd/Settings/History/Recycle bin) rather than just navigating
   // or toggling a setting. GlobalSearch.svelte must close itself via
@@ -44,6 +46,7 @@ export function projectCommands(projects: ProjectDoc[], spaces: SpaceDoc[], open
       label: `Go to project · ${p.name}${space ? ` (${space})` : ''}`,
       keywords: 'project board open',
       run: () => open(p._id!),
+      icon: 'project',
       onlyWhenSearched: true,
     };
   });
@@ -51,15 +54,15 @@ export function projectCommands(projects: ProjectDoc[], spaces: SpaceDoc[], open
 
 export function getCommands(ctx: CommandContext): Command[] {
   return [
-    { id: 'dashboard', label: 'Go to Dashboard', keywords: 'home view', run: ctx.goToDashboard },
-    { id: 'focus', label: 'Go to Focus', keywords: 'view commitment', run: ctx.goToFocus },
-    { id: 'agenda', label: 'Go to Agenda', keywords: 'deadlines calendar view week', run: ctx.goToAgenda },
-    { id: 'quickadd', label: 'Add task', keywords: 'new task create', run: ctx.openQuickAdd, opensOverlay: true },
-    { id: 'theme', label: 'Switch dark / light mode', keywords: 'appearance dark light theme', run: ctx.toggleTheme },
-    { id: 'contrast', label: 'Turn high contrast on or off', keywords: 'appearance accessibility', run: ctx.toggleHighContrast },
-    { id: 'settings', label: 'Open settings', keywords: 'preferences config organize sync notifications', run: ctx.openSettings, opensOverlay: true },
-    { id: 'timetravel', label: 'Open History', keywords: 'history activity log journal retrospective', run: ctx.openTimeTravel, opensOverlay: true },
-    { id: 'trash', label: 'Open Recycle bin', keywords: 'recycle bin deleted restore trash', run: ctx.openTrash, opensOverlay: true },
-    { id: 'sync', label: 'Sync now', keywords: 'refresh couchdb nyxdb replicate', run: ctx.syncNow },
+    { id: 'dashboard', label: 'Go to Dashboard', keywords: 'home view', run: ctx.goToDashboard, icon: 'dashboard' },
+    { id: 'focus', label: 'Go to Focus', keywords: 'view commitment', run: ctx.goToFocus, icon: 'focus' },
+    { id: 'agenda', label: 'Go to Agenda', keywords: 'deadlines calendar view week', run: ctx.goToAgenda, icon: 'agenda' },
+    { id: 'quickadd', label: 'Add task', keywords: 'new task create', run: ctx.openQuickAdd, opensOverlay: true, icon: 'plus' },
+    { id: 'theme', label: 'Switch dark / light mode', keywords: 'appearance dark light theme', run: ctx.toggleTheme, icon: 'theme' },
+    { id: 'contrast', label: 'Turn high contrast on or off', keywords: 'appearance accessibility', run: ctx.toggleHighContrast, icon: 'contrast' },
+    { id: 'settings', label: 'Open settings', keywords: 'preferences config organize sync notifications', run: ctx.openSettings, opensOverlay: true, icon: 'gear' },
+    { id: 'timetravel', label: 'Open History', keywords: 'history activity log journal retrospective', run: ctx.openTimeTravel, opensOverlay: true, icon: 'history' },
+    { id: 'trash', label: 'Open Recycle bin', keywords: 'recycle bin deleted restore trash', run: ctx.openTrash, opensOverlay: true, icon: 'trash' },
+    { id: 'sync', label: 'Sync now', keywords: 'refresh couchdb nyxdb replicate', run: ctx.syncNow, icon: 'sync' },
   ];
 }

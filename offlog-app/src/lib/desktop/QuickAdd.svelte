@@ -156,7 +156,7 @@
 
 <div class="panel" role="dialog" aria-modal="true" aria-label="Quick add task" use:trapFocus in:quickAddIn out:quickAddOut>
   <div class="panel-head">
-    <div class="panel-title">Quick add task</div>
+    <div class="panel-title">Add task</div>
     <button
       bind:this={helpTriggerEl}
       class="help-btn"
@@ -239,7 +239,7 @@
   }
 
   .panel-head { display: flex; align-items: center; justify-content: space-between; }
-  .panel-title { font-size: var(--fs-xs); font-family: var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 700; }
+  .panel-title { font-size: var(--fs-l); color: var(--text); font-weight: 700; }
 
   .help-btn {
     width: 18px; height: 18px; border-radius: 50%; border: 1px solid transparent;
@@ -247,19 +247,16 @@
     line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
-  .help-btn:hover, .help-btn.active { color: var(--accent-ink); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .help-btn:hover, .help-btn.active { color: var(--text); background: var(--rail-hover); }
 
-  .help-panel {
-    border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-    background: var(--bg); padding: 10px 12px; font-size: var(--fs-s);
-  }
+  .help-panel { border-radius: var(--radius-sm); background: var(--field-bg); padding: 10px 12px; font-size: var(--fs-s); }
   .help-title { color: var(--muted); margin-bottom: 8px; line-height: 1.4; }
   .help-list { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 0; }
   .help-list dt { color: var(--faint); font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase; letter-spacing: .03em; align-self: baseline; }
   .help-list dd { margin: 0; color: var(--text); }
   .help-list code {
     font-family: var(--mono); font-size: var(--fs-xs); background: var(--col-bg);
-    padding: 1px 5px; border-radius: 4px; color: var(--accent);
+    padding: 1px 5px; border-radius: 4px; color: var(--text);
   }
   .help-example { margin-top: 10px; color: var(--faint); font-style: italic; font-size: var(--fs-xs); }
 
@@ -267,10 +264,10 @@
     width: 100%; border: 1px solid transparent; border-radius: var(--radius-sm);
     padding: .55rem .7rem; font-size: var(--fs-l); font-family: inherit;
     background: var(--field-bg); color: var(--text); outline: none;
-    transition: border-color var(--dur-hover) var(--ease-hover);
+    transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
     box-sizing: border-box;
   }
-  .title-input:focus { border-color: var(--accent); background: var(--surface); }
+  .title-input:focus { background: var(--surface); box-shadow: var(--sel-ring); }
   .title-input::placeholder { color: var(--faint); }
 
   /* Live preview of what nlpParse.ts picked out of the title -- only
@@ -279,15 +276,10 @@
   .parsed-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -4px; }
   .dup-name-hint { font-size: var(--fs-xs); color: var(--due-soon-ink); margin: -4px 0 0; line-height: 1.3; }
   .chip {
-    font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 600;
-    letter-spacing: .02em; padding: 3px 8px; border-radius: var(--r-xl);
-    background: var(--col-bg); color: var(--muted);
+    font-size: var(--fs-xs); font-weight: 600; padding: 3px 9px; border-radius: 999px;
+    background: var(--rail-bg); color: var(--muted);
   }
-  .chip-date { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent-ink); }
-  .chip-priority { background: color-mix(in srgb, var(--danger) 12%, transparent); color: color-mix(in srgb, var(--danger) 82%, var(--text)); }
-  .chip-tag { background: var(--col-bg); color: var(--muted); }
-  .chip-project { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success-ink); }
-  .chip-raw { background: var(--col-bg); color: var(--faint); font-style: italic; }
+  .chip-raw { color: var(--faint); font-style: italic; }
 
   .row { display: flex; align-items: center; gap: 10px; }
 
@@ -305,7 +297,7 @@
   .add-btn {
     padding: .42rem .85rem; border-radius: var(--radius-sm);
     border: none; cursor: pointer;
-    background: var(--accent); color: var(--on-accent); font-size: var(--fs-m); font-weight: 600;
+    background: var(--text); color: var(--bg); font-size: var(--fs-m); font-weight: 600;
     transition: opacity var(--dur-hover) var(--ease-hover);
   }
   .add-btn:disabled { opacity: .45; cursor: default; }

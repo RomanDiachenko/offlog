@@ -95,7 +95,7 @@ describe('QuickAdd create pipeline', () => {
   it('creates a task in the first column of the default project', async () => {
     const q = renderQuickAdd();
     await fireEvent.input(titleInput(q), { target: { value: 'Buy milk' } });
-    await fireEvent.click(q.getByText('Add task'));
+    await fireEvent.click(q.getByRole('button', { name: 'Add task' }));
 
     expect(createTask).toHaveBeenCalledTimes(1);
     const [projectId, spaceId, columnId, title] = createTask.mock.calls[0];
@@ -112,7 +112,7 @@ describe('QuickAdd create pipeline', () => {
     activeProjectId.set('project:2');
     const q = renderQuickAdd();
     await fireEvent.input(titleInput(q), { target: { value: 'Run' } });
-    await fireEvent.click(q.getByText('Add task'));
+    await fireEvent.click(q.getByRole('button', { name: 'Add task' }));
     expect(createTask.mock.calls[0][0]).toBe('project:2');
   });
 
@@ -131,7 +131,7 @@ describe('QuickAdd create pipeline', () => {
   it('parses priority/tags out of the typed title (real nlpParse)', async () => {
     const q = renderQuickAdd();
     await fireEvent.input(titleInput(q), { target: { value: 'Call plumber !high #home' } });
-    await fireEvent.click(q.getByText('Add task'));
+    await fireEvent.click(q.getByRole('button', { name: 'Add task' }));
 
     const [, , , title, extras] = createTask.mock.calls[0];
     expect(title).toBe('Call plumber');
@@ -143,7 +143,7 @@ describe('QuickAdd create pipeline', () => {
   it('routes @project mentions to the matched project', async () => {
     const q = renderQuickAdd();
     await fireEvent.input(titleInput(q), { target: { value: 'Log workout @fitness' } });
-    await fireEvent.click(q.getByText('Add task'));
+    await fireEvent.click(q.getByRole('button', { name: 'Add task' }));
 
     const [projectId, , columnId, title] = createTask.mock.calls[0];
     expect(projectId).toBe('project:2');
@@ -154,7 +154,7 @@ describe('QuickAdd create pipeline', () => {
   it('a fully quoted title turns parsing off', async () => {
     const q = renderQuickAdd();
     await fireEvent.input(titleInput(q), { target: { value: '"Call mom tomorrow !high"' } });
-    await fireEvent.click(q.getByText('Add task'));
+    await fireEvent.click(q.getByRole('button', { name: 'Add task' }));
 
     const [, , , title, extras] = createTask.mock.calls[0];
     expect(title).toBe('Call mom tomorrow !high');
@@ -164,7 +164,7 @@ describe('QuickAdd create pipeline', () => {
 
   it('an empty title cannot create: button disabled, Enter is a no-op', async () => {
     const q = renderQuickAdd();
-    expect((q.getByText('Add task') as HTMLButtonElement).disabled).toBe(true);
+    expect((q.getByRole('button', { name: 'Add task' }) as HTMLButtonElement).disabled).toBe(true);
     await fireEvent.keyDown(titleInput(q), { key: 'Enter' });
     expect(createTask).not.toHaveBeenCalled();
   });
@@ -173,7 +173,7 @@ describe('QuickAdd create pipeline', () => {
     createTask.mockRejectedValueOnce(new Error('storage full'));
     const q = renderQuickAdd();
     await fireEvent.input(titleInput(q), { target: { value: 'Doomed task' } });
-    await fireEvent.click(q.getByText('Add task'));
+    await fireEvent.click(q.getByRole('button', { name: 'Add task' }));
 
     expect(showError).toHaveBeenCalledTimes(1);
     expect(q.close).not.toHaveBeenCalled();
@@ -186,11 +186,11 @@ describe('QuickAdd create pipeline', () => {
     projects.set([{ ...mkProject('1', 'Errands'), columns: [] }]);
     const q = renderQuickAdd();
     await fireEvent.input(titleInput(q), { target: { value: 'Buy milk' } });
-    await fireEvent.click(q.getByText('Add task'));
+    await fireEvent.click(q.getByRole('button', { name: 'Add task' }));
 
     expect(createTask).not.toHaveBeenCalled();
     expect(showError).toHaveBeenCalledWith(expect.stringMatching(/no statuses/));
-    expect((q.getByText('Add task') as HTMLButtonElement).disabled).toBe(false);
+    expect((q.getByRole('button', { name: 'Add task' }) as HTMLButtonElement).disabled).toBe(false);
   });
 });
 

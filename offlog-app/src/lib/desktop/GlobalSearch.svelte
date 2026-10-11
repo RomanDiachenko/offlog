@@ -6,7 +6,8 @@
   import { projects } from '../store';
   import type { TaskDoc, ProjectDoc } from '../types';
   import type { Command } from './commands';
-  import { PRIORITY_COLOR } from '../constants';
+  import { PRIORITY_LABEL } from '../constants';
+  import { ICON } from '../shared/iconPaths';
   import { closeOnBack, discardTop, isTopLayer } from '../modalStack';
   import { trapFocus } from '../focusTrap';
   import { localDateStr, escapeHtml, fmtDay, dayOf } from '../utils';
@@ -199,7 +200,7 @@
           on:click={() => runCommand(c)}
           on:mouseenter={() => selectedIdx = i}
         >
-          <span class="cmd-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8,7 13,12 8,17"/></svg></span>
+          <span class="cmd-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON[c.icon]}</svg></span>
           <div class="result-body">
             <span class="result-title">{@html highlight(c.label, query)}</span>
           </div>
@@ -221,7 +222,7 @@
           on:click={() => openResult(r)}
           on:mouseenter={() => selectedIdx = i}
         >
-          <span class="prio-bar" style="background:{PRIORITY_COLOR[r.priority]}"></span>
+          <span class="task-dot" aria-hidden="true"></span>
           <div class="result-body">
             <span class="result-title">{@html highlight(r.title, query)}</span>
             {#if r.tags?.length}
@@ -232,7 +233,7 @@
             {/if}
           </div>
           <div class="result-meta">
-            <span class="result-proj">{r.project_name}</span>
+            <span class="result-proj">{r.project_name}{#if r.priority >= 2}<span class="result-prio" class:high={r.priority === 3}>{' · '}{PRIORITY_LABEL[r.priority]}</span>{/if}</span>
             {#if r.due_date}
               <span class="result-due" class:overdue={r.due_date < today}>{fmtDay(dayOf(r.due_date))}</span>
             {/if}
@@ -249,9 +250,9 @@
   </div>
 
   <div class="footer">
-    <span>↑↓ navigate</span>
-    <span>↵ open</span>
-    <span>Esc close</span>
+    <span><kbd>↑</kbd><kbd>↓</kbd> move</span>
+    <span><kbd>↵</kbd> open</span>
+    <span><kbd>Esc</kbd> close</span>
   </div>
 </div>
 {/if}
@@ -269,7 +270,7 @@
 
   .search-bar {
     display: flex; align-items: center; gap: 10px;
-    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    padding: 16px 18px 12px;
   }
   .search-icon { color: var(--faint); flex-shrink: 0; }
   .search-input {
@@ -284,25 +285,24 @@
   }
   .clear-btn:hover { color: var(--text); }
 
-  .results { max-height: 55vh; overflow-y: auto; }
+  .results { max-height: 55vh; overflow-y: auto; padding: 0 6px 6px; }
 
-  .section-label {
-    padding: 8px 16px 4px; font-family: var(--mono); font-size: var(--fs-2xs);
-    text-transform: uppercase; letter-spacing: .08em; color: var(--faint);
-  }
+  .section-label { padding: 10px 12px 4px; font-size: var(--fs-xs); font-weight: 600; color: var(--faint); }
 
   .cmd-icon {
-    width: 16px; flex-shrink: 0; display: flex; justify-content: center; color: var(--accent);
+    width: 16px; flex-shrink: 0; display: flex; justify-content: center; color: var(--faint);
   }
 
   .result-row {
     display: flex; align-items: center; gap: 12px;
-    padding: 10px 16px; cursor: pointer;
-    border-radius: var(--r-m); transition: background var(--dur-hover) var(--ease-hover);
+    padding: 9px 12px; cursor: pointer;
+    border-radius: var(--r-m); transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
   }
-  .result-row.selected { background: var(--hover); }
+  .result-row.selected { background: var(--sel-fill); box-shadow: var(--sel-ring); }
+  .result-row.selected .cmd-icon { color: var(--text); }
 
-  .prio-bar { width: 3px; height: 32px; border-radius: 2px; flex-shrink: 0; }
+  /* A task reads as the open done-circle it has everywhere else. */
+  .task-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--border-strong); flex-shrink: 0; margin: 0 1px; }
 
   .result-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .result-title { font-size: var(--fs-m); font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -312,6 +312,8 @@
 
   .result-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
   .result-proj { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); white-space: nowrap; }
+  .result-prio { color: var(--muted); }
+  .result-prio.high { color: var(--danger); }
   .result-due { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--muted); }
   .result-due.overdue { color: var(--danger); }
 
@@ -321,8 +323,12 @@
   .hint-empty { font-size: var(--fs-l); color: var(--muted); padding: 32px 16px; }
 
   .footer {
-    display: flex; gap: 16px; padding: 8px 16px;
-    border-top: 1px solid var(--border);
-    font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
+    display: flex; gap: 16px; padding: 9px 18px; background: var(--field-bg);
+    font-size: var(--fs-xs); color: var(--faint);
+  }
+  .footer kbd {
+    font: inherit; font-size: var(--fs-2xs); font-weight: 600; color: var(--muted);
+    background: var(--surface); box-shadow: var(--elev-1); border-radius: 5px;
+    padding: 1px 5px; margin-right: 3px; min-width: 1.2em; display: inline-block; text-align: center;
   }
 </style>

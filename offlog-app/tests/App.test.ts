@@ -38,7 +38,7 @@ describe('App Lock keeps overlays shut', () => {
     await fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
     await waitFor(() => expect(container.ownerDocument.querySelector('.search-panel')).toBeTruthy());
     await fireEvent.keyDown(window, { key: 'n', ctrlKey: true });
-    await waitFor(() => expect(container.ownerDocument.body.textContent).toContain('Quick add task'));
+    await waitFor(() => expect(container.ownerDocument.querySelector('[role="dialog"][aria-label="Quick add task"]')).toBeTruthy());
   });
 
   it('ignores Ctrl+K, Ctrl+N and ? while locked', async () => {
@@ -49,7 +49,7 @@ describe('App Lock keeps overlays shut', () => {
     await fireEvent.keyDown(document.body, { key: '?' });
     await new Promise(r => setTimeout(r, 50));
     expect(doc.querySelector('.search-panel')).toBeNull();
-    expect(doc.body.textContent).not.toContain('Quick add task');
+    expect(doc.querySelector('[role="dialog"][aria-label="Quick add task"]')).toBeNull();
     expect(doc.querySelector('.shortcuts-panel')).toBeNull();
   });
 
