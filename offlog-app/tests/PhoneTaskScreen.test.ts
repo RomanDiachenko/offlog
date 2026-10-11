@@ -248,6 +248,21 @@ describe('phone TaskScreen', () => {
     await waitFor(() => expect(get(toast)?.text).toBe('Step removed'));
   });
 
+  it('a step tick between Done and a step removal keeps Undo from reaching past it', async () => {
+    const steps = [{ text: 'Measure', done: false }, { text: 'Pick colour', done: false }];
+    const { getByLabelText } = await open(task({ checklist: steps }));
+    await fireEvent.click(getByLabelText('Finish'));
+    await waitFor(() => expect(get(toast)?.text).toBe('Done: Order tiles'));
+    await fireEvent.click(getByLabelText('Mark done: Measure'));
+    await waitFor(() => getByLabelText('Mark not done: Measure'));
+    await fireEvent.click(getByLabelText('Remove step: Pick colour'));
+    await waitFor(() => expect(get(toast)?.text).toBe('Step removed'));
+    vi.mocked(db.updateTask).mockClear();
+    await get(toast)!.undo!();
+    expect(db.updateTask).toHaveBeenCalledTimes(1);
+    expect(db.updateTask).toHaveBeenCalledWith('task:t', { checklist: [{ text: 'Measure', done: true }, { text: 'Pick colour', done: false }] });
+  });
+
   it('pins from the top bar', async () => {
     const { getByLabelText } = await open();
     await fireEvent.click(getByLabelText('Pin'));

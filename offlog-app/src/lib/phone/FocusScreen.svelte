@@ -7,7 +7,7 @@
   import { PRIORITY_LABEL } from '../constants';
   import { today, loadFocusLock, saveFocusLock, type FocusLock } from '../focusLock';
   import { onNewDay } from '../today';
-  import { actions, showToast, memo } from './nav';
+  import { actions, showToast, memo, sealUndo } from './nav';
   import { rankPicker, type Reason } from '../shared/focusRank';
   import { I } from './icons';
   import TopBar from './TopBar.svelte';
@@ -102,6 +102,7 @@
     if (!selected.length) return;
     const ids = [...(active ? locked.map(t => t._id!) : []), ...selected].slice(0, MAX);
     if (!save(ids)) return;
+    sealUndo();
     selected = [];
     showAll = false;
     await refresh();

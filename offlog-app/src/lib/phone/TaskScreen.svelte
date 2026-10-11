@@ -14,7 +14,7 @@
   import { resolveTagColor, soften } from '../tagColors';
   import { PRIORITY_COLOR, PRIORITY_LABEL } from '../constants';
   import { fmtTime, localDateStr } from '../utils';
-  import { back, push, showToast } from './nav';
+  import { back, push, showToast, sealUndo } from './nav';
   import { duePill, shortDate } from './format';
   import { today } from '../today';
   import { I } from './icons';
@@ -99,7 +99,9 @@
   // another tag) builds on the first instead of on the stale doc. A failed
   // write rolls back only the keys nothing has changed since.
   let pending = 0;
-  async function save(changes: Partial<TaskDoc>, err = 'Could not save this change. Please try again.'): Promise<boolean> {
+  // `undoable`: the caller offers Undo for this write; any other write seals
+  // the Undo group (nav.ts sealUndo).
+  async function save(changes: Partial<TaskDoc>, err = 'Could not save this change. Please try again.', undoable = false): Promise<boolean> {
     if (!task) return false;
     const tid = task._id;
     const prev: Partial<TaskDoc> = {};
@@ -122,6 +124,7 @@
       return false;
     }
     pending--;
+    if (!undoable) sealUndo();
     try { await reloadTasks(); } catch { /* the write landed; lists catch up on the next change */ }
     load();
     return true;
@@ -137,7 +140,7 @@
     const before: Partial<TaskDoc> = {};
     for (const k of keys) (before as Record<string, unknown>)[k] = task[k];
     const tid = task._id;
-    if (await save(changes, err)) showToast(text, () => restore(tid, before));
+    if (await save(changes, err, true)) showToast(text, () => restore(tid, before));
   }
 
   async function restore(tid: string, before: Partial<TaskDoc>) {
@@ -221,7 +224,7 @@
     if (!task) return;
     const prev = task.checklist ?? [];
     const tid = task._id;
-    save({ checklist: next }, 'Could not save the steps. Please try again.').then(ok => {
+    save({ checklist: next }, 'Could not save the steps. Please try again.', next.length < prev.length).then(ok => {
       if (ok && next.length < prev.length) showToast('Step removed', () => restore(tid, { checklist: prev }));
     });
   }

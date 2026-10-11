@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { waitFor } from '@testing-library/svelte';
-import { tab, stack, arrival, push, back, switchTab, backAtRoot, memo, navigate, showToast, toast, actions, takeQueuedAdd, popScreen } from '../src/lib/phone/nav';
+import { tab, stack, arrival, push, back, switchTab, backAtRoot, memo, navigate, showToast, sealUndo, toast, actions, takeQueuedAdd, popScreen } from '../src/lib/phone/nav';
 import { closeOnBack } from '../src/lib/modalStack';
 import { duePill, greeting, shortDate } from '../src/lib/phone/format';
 
@@ -234,6 +234,17 @@ describe('phone snackbar merging', () => {
     showToast('Synced');
     showToast('Done: C', () => {});
     expect(get(toast)?.text).toBe('Done: C');
+  });
+
+  it('a write without Undo seals the group: the next Undo reverts only itself', async () => {
+    toast.set(null);
+    const order: string[] = [];
+    showToast('Done: A', async () => { order.push('A'); });
+    sealUndo();
+    showToast('Done: B', async () => { order.push('B'); });
+    expect(get(toast)?.text).toBe('Done: B');
+    await get(toast)!.undo!();
+    expect(order).toEqual(['B']);
   });
 
   it('a repeated kind that is not a task kind reads as changes', () => {

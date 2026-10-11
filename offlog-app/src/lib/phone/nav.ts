@@ -116,6 +116,10 @@ let toastSeq = 0, toastTimer: ReturnType<typeof setTimeout> | undefined;
 let group: { kind: string | null; n: number; undos: NonNullable<Toast['undo']>[] } | null = null;
 const kindOf = (text: string) => { const i = text.indexOf(': '); return i > 0 ? text.slice(0, i) : text; };
 const PLURAL: Record<string, string> = { 'Done': 'done', 'Not done': 'marked not done', 'Deleted': 'deleted', 'Archived': 'archived', 'Removed from focus': 'removed from focus' };
+// A write that offers no Undo of its own ends the merge: a merged Undo restores
+// snapshots, so reaching past such a write would silently revert it too. The
+// toast stays up; the next Undo toast starts a group of its own.
+export function sealUndo() { group = null; }
 export function showToast(text: string, undo?: Toast['undo'], action?: Toast['action']) {
   clearTimeout(toastTimer);
   const live = get(toast);
