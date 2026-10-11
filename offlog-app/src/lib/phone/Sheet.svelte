@@ -120,8 +120,9 @@
     max-height: 88dvh; overflow-y: auto; overscroll-behavior: contain;
     color: var(--text); border-radius: 22px 22px 0 0;
     border-width: 1px 0 0; box-shadow: var(--elev-3-up);
-    /* Over the dimming scrim a thin glass reads as dirty grey: mostly opaque. */
-    --glass-fill: color-mix(in srgb, var(--surface) 88%, transparent);
+    /* Solid over the dimming scrim: any see-through fill reads as dirty grey
+       there, and the sticky handle and title would show as a lighter band. */
+    --glass-fill: var(--surface);
     padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px));
     transition: transform var(--dur-medium) var(--ease-standard);
   }

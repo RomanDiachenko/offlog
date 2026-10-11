@@ -68,5 +68,5 @@
   .sc { margin: -7px 0 6px; }
   .tm { margin: 10px 0 12px; }
   .wh { margin: -4px 0 12px; }
-  .clear { display: block; width: 100%; height: 46px; margin-top: 4px; border: 0; background: none; cursor: pointer; font: inherit; font-size: var(--p-fs-m); font-weight: 600; color: var(--danger); }
+  .clear { display: block; width: 100%; height: 46px; margin-top: 4px; border: 0; background: none; cursor: pointer; font: inherit; font-size: var(--p-fs-m); font-weight: 600; color: var(--muted); }
 </style>

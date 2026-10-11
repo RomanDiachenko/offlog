@@ -70,5 +70,5 @@
 {/if}
 
 <style>
-  .clear { display: block; width: 100%; height: 46px; border: 0; background: none; cursor: pointer; font: inherit; font-size: var(--p-fs-m); font-weight: 600; color: var(--danger); }
+  .clear { display: block; width: 100%; height: 46px; border: 0; background: none; cursor: pointer; font: inherit; font-size: var(--p-fs-m); font-weight: 600; color: var(--muted); }
 </style>

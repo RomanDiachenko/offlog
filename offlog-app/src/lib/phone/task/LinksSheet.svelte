@@ -104,7 +104,8 @@
   .item + .item { background-image: linear-gradient(var(--line), var(--line)); background-size: calc(100% - 16px) 1px; background-position: 16px 0; background-repeat: no-repeat; }
   .open { flex: 1; min-width: 0; display: flex; font: inherit; font-size: var(--p-fs-l); color: var(--text); background: none; border: 0; padding: 8px 0; text-align: left; cursor: pointer; border-radius: 8px; }
   .open:active { background: var(--col-bg); }
-  .gone { flex: 1; color: var(--faint); }
+  .open .p-k, .gone { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .gone { color: var(--faint); }
   .struck { text-decoration: line-through; color: var(--faint); }
   .state { font-size: var(--p-fs-xs); font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--overdue-bg); color: var(--overdue-ink); white-space: nowrap; }
   .state.done { background: var(--col-bg); color: var(--muted); }

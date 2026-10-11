@@ -24,5 +24,5 @@
 </div>
 
 <style>
-  .tick { color: var(--accent); display: flex; }
+  .tick { color: var(--text); display: flex; }
 </style>

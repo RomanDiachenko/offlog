@@ -99,7 +99,7 @@
 .phone-shell .p-tbtn.danger, .psheet .p-tbtn.danger { color: var(--danger); }
 
 /* Primary full-width button and text field (mostly in sheets). */
-.phone-shell .p-go, .psheet .p-go { width: 100%; background: var(--accent); color: var(--on-accent); border: 0; border-radius: 12px; padding: 13px; font: inherit; font-size: var(--p-fs-l); font-weight: 700; cursor: pointer; transition: filter var(--dur-hover) var(--ease-hover), opacity var(--dur-hover) var(--ease-hover); }
+.phone-shell .p-go, .psheet .p-go { width: 100%; background: var(--text); color: var(--bg); border: 0; border-radius: 12px; padding: 13px; font: inherit; font-size: var(--p-fs-l); font-weight: 700; cursor: pointer; transition: filter var(--dur-hover) var(--ease-hover), opacity var(--dur-hover) var(--ease-hover); }
 .phone-shell .p-go:disabled, .psheet .p-go:disabled { opacity: .4; cursor: default; }
 .phone-shell .p-go.danger, .psheet .p-go.danger { background: var(--danger); }
 .phone-shell .p-fld, .psheet .p-fld { width: 100%; box-sizing: border-box; border: 0; outline: none; background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--border); border-radius: 12px; padding: 12px 14px; font: inherit; font-size: var(--p-fs-l); margin: 0 0 14px; }
