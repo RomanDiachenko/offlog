@@ -206,7 +206,7 @@
     transition: background var(--dur-hover) var(--ease-hover), opacity var(--dur-hover) var(--ease-hover);
   }
   .skip-btn:hover { background: var(--hover); }
-  .save-btn { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .save-btn { background: var(--text); border-color: var(--text); color: var(--bg); }
   .save-btn:hover { opacity: .88; }
 
   .pref-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: .85rem; gap: .6rem; }

@@ -121,13 +121,13 @@
     <div class="pad">
       {#each KEYS as k}<button class="key" on:click={() => press(k)} disabled={cooldown} aria-label={k}>{k}</button>{/each}
       {#if biometricEnabled}
-        <button class="key ghost fp" on:click={tryBiometric} disabled={biometricBusy} aria-label="Unlock with fingerprint or face">
+        <button class="key fp" on:click={tryBiometric} disabled={biometricBusy} aria-label="Unlock with fingerprint or face">
           <svg class="big" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/></svg>
         </button>
       {:else}<span></span>{/if}
       <button class="key" on:click={() => press('0')} disabled={cooldown} aria-label="0">0</button>
-      <button class="key ghost" on:click={back} disabled={!pin} aria-label="Delete a digit">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11v12H9l-6-6z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg>
+      <button class="key del" on:click={back} disabled={!pin} aria-label="Delete a digit">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6H9.5L4 12l5.5 6H20a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg>
       </button>
     </div>
 
@@ -166,8 +166,8 @@
   .sub { margin: 0; min-height: 22px; font-size: 15px; color: var(--faint); }
   .err { color: var(--danger); }
   .dots { display: flex; gap: 18px; margin: 30px 0 38px; }
-  .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--accent); transition: background var(--dur-small) var(--ease-standard); }
-  .dot.on { background: var(--accent); }
+  .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--text); transition: background var(--dur-small) var(--ease-standard); }
+  .dot.on { background: var(--text); }
   .dots.shake { animation: shake var(--dur-large) var(--ease-standard); }
   @keyframes shake {
     10%, 90% { transform: translateX(-2px); }
@@ -182,10 +182,10 @@
     font: inherit; font-size: 30px; font-weight: 500; display: flex; align-items: center; justify-content: center;
     -webkit-tap-highlight-color: transparent; transition: background var(--dur-hover) var(--ease-hover);
   }
-  .key:active:not(:disabled) { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+  .key:active:not(:disabled) { background: color-mix(in srgb, var(--text) 12%, var(--surface)); }
   .key:disabled { opacity: .45; cursor: default; }
-  .key.ghost { background: none; box-shadow: none; color: var(--faint); }
-  .key.fp { color: var(--accent); }
+  /* Fingerprint and delete are keys like the digits, so the row reads as one pad. */
+  .key.del:disabled { opacity: 1; color: var(--faint); }
   .key svg.big { width: 34px; height: 34px; stroke-width: 1.7; }
   .key svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
   .foot { margin-top: auto; padding-top: 24px; display: flex; gap: 28px; }
@@ -201,7 +201,7 @@
   .rec .err { margin: -4px 0 0; text-align: center; font-size: 14px; }
   .go {
     border: 0; border-radius: 14px; padding: 14px; cursor: pointer; font: inherit; font-size: 16px; font-weight: 700;
-    background: var(--accent); color: var(--on-accent);
+    background: var(--text); color: var(--bg);
   }
   .go:disabled { opacity: .45; cursor: default; }
   .rec .link { align-self: center; }

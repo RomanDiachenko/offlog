@@ -19,7 +19,7 @@
 <style>
   .empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 40px 24px 28px; }
   svg { width: 52px; height: 52px; margin-bottom: 8px; }
-  rect { fill: none; stroke: color-mix(in srgb, var(--accent) 55%, transparent); stroke-width: 3.5; }
+  rect { fill: none; stroke: color-mix(in srgb, var(--text) 22%, transparent); stroke-width: 3.5; }
   .t { margin: 0; font-size: var(--p-fs-l); font-weight: 700; color: var(--text); }
   .s { margin: 0; font-size: var(--p-fs-m); color: var(--muted); max-width: 30ch; }
 </style>

@@ -67,11 +67,11 @@
   .lead { margin: 0; font-size: 16px; color: var(--faint); line-height: 1.5; }
   .points { list-style: none; margin: 34px 0 0; padding: 0; display: flex; flex-direction: column; gap: 22px; }
   .points li { display: flex; gap: 14px; align-items: flex-start; }
-  .points svg { width: 22px; height: 22px; flex-shrink: 0; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; margin-top: 1px; }
+  .points svg { width: 22px; height: 22px; flex-shrink: 0; fill: none; stroke: var(--muted); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; margin-top: 1px; }
   .points span { font-size: 14px; color: var(--faint); line-height: 1.45; }
   .points b { display: block; font-size: 16px; color: var(--text); font-weight: 600; }
   .actions { margin-top: auto; padding-top: 28px; display: flex; flex-direction: column; gap: 4px; }
-  .go { border: 0; border-radius: 14px; padding: 16px; cursor: pointer; font: inherit; font-size: 17px; font-weight: 700; background: var(--accent); color: var(--on-accent); }
+  .go { border: 0; border-radius: 14px; padding: 16px; cursor: pointer; font: inherit; font-size: 17px; font-weight: 700; background: var(--text); color: var(--bg); }
   .go:active { filter: brightness(.94); }
   .link { border: 0; background: none; padding: 14px; cursor: pointer; font: inherit; font-size: 16px; font-weight: 600; color: var(--accent); }
 

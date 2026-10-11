@@ -216,7 +216,7 @@
     30%, 50%, 70% { transform: translateX(-8px); }
     40%, 60% { transform: translateX(8px); }
   }
-  .lock-icon { color: var(--accent); margin-bottom: 6px; }
+  .lock-icon { color: var(--muted); margin-bottom: 6px; }
   .lock-title { font-size: var(--fs-t); font-weight: 700; color: var(--text); }
   .lock-sub { font-size: var(--fs-m); color: var(--muted); margin-bottom: 18px; }
   .lock-input {
@@ -238,7 +238,7 @@
   .lock-hint-error { color: var(--danger); }
   .lock-submit {
     width: 100%; margin-top: 14px; padding: .6rem; border: none; border-radius: var(--radius-sm);
-    background: var(--accent); color: var(--on-accent); font-size: var(--fs-l); font-weight: 600;
+    background: var(--text); color: var(--bg); font-size: var(--fs-l); font-weight: 600;
     cursor: pointer; transition: opacity var(--dur-hover) var(--ease-hover);
   }
   .lock-submit:disabled { opacity: .45; cursor: default; }
