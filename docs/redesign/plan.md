@@ -245,7 +245,7 @@ Phone only. After a research-backed UX pass (seven area reviews against Material
 | + button as a plain rounded square, 20px corners (a slanted version was tried and replaced) | **Built** (owner, 2 Oct 2026) |
 | Settings: an Offlog header card and coloured icon tiles on the rows | **Built** (owner, 2 Oct 2026; reverses P2's "no coloured squares" for Settings) |
 | Settings rows: plain grey line icons, no coloured tiles | **Built** (owner, 2 Oct 2026; replaces the tiles above) |
-| Settings top: one card with the version and three tiles (Sync with its last sync time, Reminders, App lock), each opening its page; a warning line under them for errors, conflicts or a lost paired computer | **Built** (owner picked option C, 2 Oct 2026) |
+| Settings top: one card with the version and three tiles (Sync with its last sync time, Notifications, App lock), each opening its page; a warning line under them for errors, conflicts or a lost paired computer | **Built** (owner picked option C, 2 Oct 2026) |
 | Lock screen: Offlog's own number pad, opens on a match, fingerprint key when enabled | **Built** (owner picked option A, 2 Oct 2026) |
 | App lock page: PIN forms in sheets, lock time as a picker row, plain wording | **Built** |
 | First launch: one welcome page (Start, or Connect to Offlog on my computer); no questions; Android asks about notifications at the first reminder | **Built** (owner picked option A, 3 Oct 2026) |
@@ -260,7 +260,7 @@ Phone only. After a research-backed UX pass (seven area reviews against Material
 | A project can be renamed and moved to another space: phone ⋯ menu (Rename, Move to another space, each with Undo); desktop sidebar pencil on the project row (name + space in place) | **Built** (owner, 3 Oct 2026, from the readiness audit) |
 | Date and time pickers on the phone: shortcut chips, a full-width month (today ringed, picked day filled), times on the wheels; a reminder is confirmed with one "Remind me …" button; date fields open the month under their row. The desktop pop-up is no longer used on the phone | **Built** (owner picked A, 3 Oct 2026) |
 | Desktop date pop-up to match: shortcut chips, round days (today ringed), week start from the setting, common times (09:00 / default / 13:00 / 18:00) plus ✎ for any other, Clear and Done; starts at the default reminder time | **Built** (owner, 3 Oct 2026) |
-| One word, "Reminders", for the feature on the phone: the Settings row and page, the tile, the reminder sheet. The page shows default time and quiet hours first, a fix-it row only when Android is in the way, and "Remind me about tasks" last | **Built** (owner, 3 Oct 2026) |
+| The Settings row, page and tile say "Notifications", as the desktop tab does (owner, 11 Oct 2026); the reminder sheet keeps "Reminder". The page shows default time and quiet hours first, a fix-it row only when Android is in the way, and "Remind me about tasks" last | **Built** (owner, 3 Oct 2026) |
 | Agenda month drawn like the date picker: month name and arrows inside the card, two-letter days, round days (today ringed, chosen day filled), task dots under the day | **Built** (owner picked A, 3 Oct 2026) |
 | Dotted row lines | Rejected (owner, 2 Oct 2026): rows keep solid lines |
 | Facts under the title on the task screen | Rejected (owner, 2 Oct 2026): the task screen keeps form rows |

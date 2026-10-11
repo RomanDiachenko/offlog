@@ -247,6 +247,16 @@ describe('phone snackbar merging', () => {
     expect(order).toEqual(['B']);
   });
 
+  it('sealing retires a live Undo, so it cannot revert the write that sealed it', () => {
+    toast.set(null);
+    showToast('Done: A', () => {});
+    sealUndo();
+    expect(get(toast)).toBeNull();
+    showToast('Synced');
+    sealUndo();
+    expect(get(toast)?.text).toBe('Synced');
+  });
+
   it('a repeated kind that is not a task kind reads as changes', () => {
     toast.set(null);
     showToast('Step removed', () => {});

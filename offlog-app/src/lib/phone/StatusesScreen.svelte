@@ -6,7 +6,7 @@
   import { activeProjectId, activeSpaceId, projects, projectTasks, reloadTasks, showError } from '../store';
   import { renameColumn, reorderColumns, removeColumn, addColumn, archiveColumnTasks, getProjects } from '../db';
   import type { Column, ProjectDoc } from '../types';
-  import { showToast } from './nav';
+  import { sealUndo, showToast } from './nav';
   import { I } from './icons';
   import { adopt, restore } from './project/actions';
   import TopBar from './TopBar.svelte';
@@ -75,7 +75,7 @@
           if (now) adopt(await reorderColumns(pid, restoreOrder(now.columns, prevOrder)));
         } catch { showError('Could not undo. Please try again.'); }
       });
-    }
+    } else sealUndo();
   }
 
   async function archiveAll(c: Column) {

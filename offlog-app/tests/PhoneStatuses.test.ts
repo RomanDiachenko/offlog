@@ -135,6 +135,15 @@ describe('phone Statuses screen', () => {
     expect(reorderColumns).toHaveBeenLastCalledWith('project:p', cols);
   });
 
+  it('a reorder with no Undo of its own retires a live Undo', async () => {
+    const r = setup();
+    toast.set({ id: 99, text: 'Done: A', undo: () => {} });
+    await menu(r, cols[0].name);
+    await fireEvent.click(r.getByText('Move down'));
+    await waitFor(() => expect(reorderColumns).toHaveBeenCalled());
+    await waitFor(() => expect(get(toast)).toBeNull());
+  });
+
   it('Undo of a reorder keeps a status added (or renamed) since, in its place', async () => {
     const r = setup();
     await menu(r, 'Doing');

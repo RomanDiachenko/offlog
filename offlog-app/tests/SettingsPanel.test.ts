@@ -496,7 +496,7 @@ describe('SettingsPanel Privacy', () => {
     const { getByText } = render(SettingsPanel, { initialCategory: 'privacy' });
     for (const p of LIMITS) expect(getByText(p.title)).toBeTruthy();
     await fireEvent.click(getByText('Copy'));
-    expect(writeText).toHaveBeenCalledWith(PRIVACY_URL);
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(PRIVACY_URL));
     await waitFor(() => getByText('Copied'));
     vi.unstubAllGlobals();
   });

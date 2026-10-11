@@ -23,6 +23,12 @@ describe('hold tip', () => {
     expect(get(toast)?.text).toBe('Tip: hold a task in a list for more actions');
   });
 
+  it('waits while a toast with an action is showing', () => {
+    toast.set({ id: 2, text: 'Reminders may be a few minutes late', action: { label: 'Turn on', run: () => {} } });
+    holdTipOnTap();
+    expect(get(toast)?.text).toBe('Reminders may be a few minutes late');
+  });
+
   it('never shows once a card has been held', () => {
     holdUsed();
     holdTipOnTap();

@@ -1,7 +1,7 @@
 <script lang="ts">
   // Settings → Privacy; the content lives in shared/privacyPoints.ts. The
-  // desktop app has no way to open a web page, so the full policy's address
-  // is shown to copy instead.
+  // Windows app can't open a web page, so the full policy's address is shown
+  // to copy, through Clipboard as the recovery code is.
   import { ICON } from '../../shared/iconPaths';
   import { PRIVATE, LIMITS, PRIVACY_URL } from '../../shared/privacyPoints';
   import { showError } from '../../store';
@@ -9,7 +9,8 @@
   let copied = false;
   async function copyAddress() {
     try {
-      await navigator.clipboard.writeText(PRIVACY_URL);
+      const { Clipboard } = await import('@capacitor/clipboard');
+      await Clipboard.write({ string: PRIVACY_URL });
       copied = true;
       setTimeout(() => (copied = false), 2000);
     } catch {
