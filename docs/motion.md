@@ -352,8 +352,8 @@ delay its own `close` dispatch instead: see
 Two independent sources, and both must be handled:
 
 - **The OS setting**, `(prefers-reduced-motion: reduce)`.
-- **The in-app override**, the Reduce motion switch (desktop Settings → View &
-  Accessibility, phone Settings → Appearance, both rendered by
+- **The in-app override**, the Reduce motion switch (Settings → Appearance
+  on both shells, rendered by
   `shared/AppearanceSettings.svelte`), which the OS query cannot see.
 
 `prefersReducedMotion()` in `theme.ts` ORs them, and `motion.ts`'s

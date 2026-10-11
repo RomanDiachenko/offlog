@@ -657,7 +657,7 @@
             {/if}
           </button>
           <span class="cell-title">
-            {#if task.pinned}<span class="pin-mark" title="Pinned" aria-label="Pinned"><PinStar size={11} filled={false} stroked /></span>{/if}
+            {#if task.pinned}<span class="pin-mark" title="Pinned" role="img" aria-label="Pinned"><PinStar size={11} filled={false} stroked /></span>{/if}
             {task.title}
             {#if task.recurrence}
               <span class="recur-mark" title="Repeats {task.recurrence}">

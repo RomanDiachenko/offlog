@@ -13,7 +13,7 @@ export function shortDate(iso: string, today = new Date()): string {
 
 export type DueTone = 'late' | 'today' | '';
 
-// The date pill on a phone card. A finished task's date is history: it is
+// The date on a phone card. A finished task's date is history: it is
 // never "overdue" (done is positional, so the caller decides).
 export function duePill(due: string | null | undefined, done = false, today = localDateStr(new Date())): { text: string; tone: DueTone } | null {
   if (!due) return null;

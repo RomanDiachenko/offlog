@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../shared/iconPaths';
   import { onMount, createEventDispatcher } from 'svelte';
   import { fade, fly } from 'svelte/transition';
   import { panelIn, panelOut, panelScrimIn, panelScrimOut, exitMs } from '../motion';
@@ -7,10 +8,10 @@
   import { describeLog, fmt, entityLabel, ACTION_LABEL } from '../logFormat';
   // Fixed icons per action (internal constants, never user text).
   const ACTION_ICON: Record<string, string> = {
-    create: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
-    update: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+    create: `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICON.plus}</svg>`,
+    update: `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICON.pen}</svg>`,
     move: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
-    delete: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>',
+    delete: `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICON.trash}</svg>`,
   };
   import { fmtDay, localDateStr } from '../utils';
   import { closeOnBack, isTopLayer } from '../modalStack';
@@ -216,7 +217,7 @@
                 on:click={() => openEntry(log)}
                 on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEntry(log); } }}
               >
-                <span class="action-ic {log.action}" title={ACTION_LABEL[log.action] ?? log.action} aria-label={ACTION_LABEL[log.action] ?? log.action}>{@html ACTION_ICON[log.action] ?? ACTION_ICON.update}</span>
+                <span class="action-ic {log.action}" title={ACTION_LABEL[log.action] ?? log.action} aria-hidden="true">{@html ACTION_ICON[log.action] ?? ACTION_ICON.update}</span>
                 <span class="entry-desc">{describeLog(log)}</span>
                 <span class="entry-meta">
                   <span class="entry-source">{log.source === 'mobile' ? 'Phone' : 'PC'}</span>
@@ -231,7 +232,7 @@
               <!-- role="listitem" matches entries-list's role="list" above;
                    never focusable since these entries have no click action. -->
               <div class="entry" role="listitem">
-                <span class="action-ic {log.action}" title={ACTION_LABEL[log.action] ?? log.action} aria-label={ACTION_LABEL[log.action] ?? log.action}>{@html ACTION_ICON[log.action] ?? ACTION_ICON.update}</span>
+                <span class="action-ic {log.action}" title={ACTION_LABEL[log.action] ?? log.action} aria-hidden="true">{@html ACTION_ICON[log.action] ?? ACTION_ICON.update}</span>
                 <span class="entry-desc">{describeLog(log)}</span>
                 <span class="entry-meta">
                   <span class="entry-source">{log.source === 'mobile' ? 'Phone' : 'PC'}</span>

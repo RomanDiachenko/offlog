@@ -710,7 +710,7 @@
                  steps · links · repeat · blocked on the right. -->
             {#if task.pinned || task.due_date || (task.priority >= 2 && PRIORITY_LABEL[task.priority]) || task.checklist?.length || relatedIds.has(task._id!) || task.recurrence || blockedIds.has(task._id!)}
               <div class="card-foot">
-                {#if task.pinned}<span class="foot-pin" title="Pinned" aria-label="Pinned"><PinStar size={12} filled={false} stroked /></span>{/if}
+                {#if task.pinned}<span class="foot-pin" title="Pinned" role="img" aria-label="Pinned"><PinStar size={12} filled={false} stroked /></span>{/if}
                 {#if task.due_date}
                   <span class="foot-due {dueDateClass(task, $today)}">
                     <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{@html ICON.date}</svg>

@@ -131,7 +131,7 @@ flowchart LR
   (`phone/TaskCard.svelte`: Today, Overdue, Pinned, Agenda, Search) finish
   through the project list's `toggleDone`, so haptic, snackbar and Undo
   match; holding one opens the board's `CardMenuSheet` through
-  `phone/TaskMenu.svelte`. Nothing on a card shows the hold, so the first plain tap on a card with a menu shows a one-time tip (`phone/holdTip.ts`, a localStorage flag also set by any hold). A row drops its date pill when its section
+  `phone/TaskMenu.svelte`. Nothing on a card shows the hold, so the first plain tap on a card with a menu shows a one-time tip (`phone/holdTip.ts`, a localStorage flag also set by any hold). A row drops its date when its section
   already names that day. The phone shell never runs in the Tauri window.
   Widget deep links (`com.offlog.app://focus|quickadd|dashboard|agenda|project`)
   arrive through `@capacitor/app` (`getLaunchUrl()` cold, `appUrlOpen` warm)
@@ -241,8 +241,8 @@ src/
         NotificationSettings.svelte Notifications
         SyncSettings.svelte         Sync and pairing
         OrganizeSettings.svelte     Organize
-        DataSettings.svelte         Backup & Storage
-        SecuritySettings.svelte     App Lock
+        DataSettings.svelte         Backup & restore
+        SecuritySettings.svelte     App lock
         AdvancedSettings.svelte     Advanced (sync URL, maintenance, reset)
 
       SpaceManager.svelte         Manage spaces
@@ -767,11 +767,11 @@ low has no hue of its own (`--border-strong`), so green keeps meaning done. Deri
 | `--glass-blur` | `blur(10px) saturate(115%)` | same | the one blur: low enough that what is underneath reads as matte shapes; never animated |
 | `--glow` | `--accent` 14% | `--accent` 18% | the halo of a selected item (`.is-selected`), kept faint on purpose |
 | `--sel-fill` / `--sel-ring` | `--text` 8% / 1px `--accent` 22% + 8px `--glow` | same | the selected pill and its glow, for components whose own scoped rules outrank `.is-selected` |
-| `--rail-bg` / `--rail-hover` | `--text` 6% / 7% | same | desktop header controls: a 34px rail (Board/List, List/Month, Search + Filters, List toolbar) or a lone 34px square, 26px buttons inside, the selected one a `--surface` pill with the glow; the phone's `.p-seg` reads the same |
+| `--rail-bg` / `--rail-hover` | `--text` 6% / 7% | same | desktop header controls: a 34px rail (Board/List, List/Month, Search + Filters, List toolbar) or a lone 34px square, 26px buttons inside, the selected one a `--surface` pill with the glow; the phone's `.p-seg` is the same shape on `--col-bg` |
 | `--field-bg` | `--text` 5% | same | desktop fields and secondary buttons: a soft fill with a transparent 1px border (focus colours it), never an outline; cards are `--surface` + `--elev-1`, dialogs keep only a `--glass-edge` hairline |
 | `--line` | `--text` 7% | same | the one divider tone. Lines only for dense tables (List), menu groups, the Board card footer, and pinned bars over scrolling content (sheet titles once scrolled); related rows get an inset line that starts at the text; never under a heading. History, Recycle bin, Settings, phone Home, sheets and the command palette have none |
 | `--r-s` / `--r-m` / `--r-l` / `--r-xl` | 8 / 10 / 14 / 20px | same | radius scale: inner controls, fields and buttons, cards and columns, dialogs and glass panels (`--radius` = `--r-l`, `--radius-sm` = `--r-m`) |
-| `--fs-2xs` … `--fs-t` | 10 / 11 / 12.5 / 13.5 / 15 / 17 / 20px | same | desktop type scale; every desktop font-size uses it (the phone keeps `--p-fs-*`) |
+| `--fs-2xs` … `--fs-t` | 10 / 11 / 12.5 / 13.5 / 15 / 17 / 20px | same | desktop type scale for new and restyled desktop text (the phone keeps `--p-fs-*`) |
 | `--elev-1` / `--elev-2` / `--elev-3` | 1–3px soft / 12px soft / 32px 14% (+ `-up`, `-side` for sheets and side panels) | 1px `--text` 7% edge + darker shadows | the only shadows: resting content; floating chrome (glass, toasts, hover lift); overlays (menus = `.glass.pop`, sheets, dialogs, panels, +). Phone `--p-shadow` is `--elev-1`. Only switch knobs, scroll fades, the drag ghost and scrims keep their own |
 
 **Fluid glass** (`.glass` and `.is-selected` in app.css) is for floating chrome only: bars, menus, dropdowns, the date picker, sheets, toasts, and the main views' headers. The red error toast stays solid. Every main view — desktop Board, Dashboard, Agenda, Focus; phone Home, Today, Agenda, Search, Focus and a project — opens with its header as a `.fluid-panel` of glass on a stage lit faintly by the space colour (else the accent): `.fluid-stage` in app.css on desktop, `TopBar panel` (sticky to its screen's scroller, so the list passes under the glass) and Home's hero on the phone. No screen has a solid colour band. Phone sheets sit over a dimming scrim, so they set `--glass-fill` to solid `--surface` locally; their sticky handle and title take the sheet's own fill. Primary buttons on both shells (`.p-go`, desktop Add task and Done) are neutral: `--text` fill, `--bg` ink. The phone tab bar floats over the screens (`--tab-h`, measured, is the room each scroller adds at its end); Board and List panes stop above it instead, and the landscape rail stays in the layout. Never cards, rows, columns or forms, never glass inside glass, and never over a dimming scrim (it turns muddy grey there: the palette, quick add, dialogs and phone sheets stay solid). It is solid by default and turns see-through only where `backdrop-filter` works and neither `prefers-reduced-transparency` nor Settings → Reduce transparency (`body.reduce-transparency`; Android feeds the media query nothing) asks otherwise. A parent with `opacity`, `filter` or `clip-path` confines the blur. Selected means a neutral pill plus weight, with the faint accent glow on `::after`; hover never glows. That covers navigation (sidebar, tab bar), segmented controls (Board/List, List/Month, Settings choices, status pills) and choice chips; on a filled `--col-bg` track the pill is `--surface` with the ring, since the faint fill barely shows there. Calendars on both shells mark today with an accent ring and the selected day with a solid accent dot. Glass goes solid inside glass, under Reduce transparency, and under High contrast (Settings or the OS), where it also gets a 2px edge.

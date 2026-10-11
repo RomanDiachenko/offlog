@@ -59,7 +59,6 @@ export const I = {
   date: svg(ICON.date),
   sync: svg(ICON.sync),
   history: svg(ICON.history),
-  restore: svg(ICON.restore),
   backUpNow: svg(ICON.backUpNow),
   restoreFile: svg(ICON.restoreFile),
 };

@@ -79,7 +79,7 @@
          links, files, blocked on the right. -->
     {#if task.pinned || pill || steps.length || blocked || related || files || task.recurrence}
       <span class="foot">
-        {#if task.pinned}<span class="pin" aria-label="Pinned">{@html I.pin}</span>{/if}
+        {#if task.pinned}<span class="pin" role="img" aria-label="Pinned">{@html I.pin}</span>{/if}
         {#if pill}<span class="due {pill.tone}">{@html I.date}{pill.text}</span>{/if}
         <span class="marks">
           {#if steps.length}<span class="mk">{@html I.steps}{stepsDone}/{steps.length}</span>{/if}

@@ -21,7 +21,7 @@
 // mount and leaves close snapping instantly.
 import { prefersReducedMotion } from './theme';
 
-// Reduce Motion (Settings → View & Accessibility) zeroes every duration
+// Reduce Motion (Settings → Appearance) zeroes every duration
 // rather than skipping the transition, so opacity/position still end at their
 // final values in one frame -- no half-animated elements left behind.
 //

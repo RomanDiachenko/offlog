@@ -14,7 +14,7 @@
   import { toggleDone, canFinish } from './project/actions';
 
   export let task: TaskDoc & { project_name?: string };
-  // The date the surrounding section stands for; a pill repeating it is hidden.
+  // The date the surrounding section stands for; a date repeating it is hidden.
   export let sectionDate: string | null = null;
   export let menu = false;
   // Search text to mark in the title.

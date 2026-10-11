@@ -14,8 +14,6 @@
   /* One elevation for every card, group, tile and field. */
   --p-shadow: var(--elev-1);
 }
-/* Dark cards sit only ~1.2:1 off the page and a shadow can't show on dark,
-   so they take a faint hairline instead. */
 
 .phone-shell svg.i, .psheet svg.i { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 

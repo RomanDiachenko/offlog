@@ -636,9 +636,7 @@
         <div class="fluid-stage" style:--space={activeSpace ? soften(activeSpace.color) : 'var(--accent)'}>
         <header class="board-header fluid fluid-panel glass">
           <button class="hamburger" on:click={() => sidebarOpen = true} aria-label="Menu">
-            <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-              <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
-            </svg>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">{@html ICON.menu}</svg>
           </button>
 
           <div class="title-block">
@@ -667,9 +665,7 @@
               aria-label={currentView === 'list' ? 'Commands and search (Ctrl+K)' : 'Search (Ctrl+K)'}
             >
               {#if currentView === 'list'}
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="4"/><line x1="14" y1="7.5" x2="10" y2="16.5"/>
-                </svg>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">{@html ICON.palette}</svg>
               {:else}
                 <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                   <circle cx="6.5" cy="6.5" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
@@ -721,9 +717,7 @@
         <div class="view-fade" in:fade={viewIn} out:fade={viewOut}>
         <div class="empty-state">
           <button class="hamburger" on:click={() => sidebarOpen = true} aria-label="Menu">
-            <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-              <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
-            </svg>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">{@html ICON.menu}</svg>
           </button>
           <span>Select or create a project.</span>
         </div>

@@ -97,8 +97,8 @@
      that has nothing to do with which typeface renders it. */
   --mono: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   /* Radius scale: inner controls, fields and buttons, cards and columns,
-     dialogs and floating panels. --radius / --radius-sm are the card and
-     field steps under their older names. */
+     dialogs and floating panels. --radius / --radius-sm alias the card and
+     field steps. */
   --r-s: 8px;
   --r-m: 10px;
   --r-l: 14px;
@@ -123,7 +123,7 @@
 
      Durations scale with how far the thing travels: a hover tint is 100ms, a
      dialog 200ms, a full-height side panel 300ms. Reduce Motion
-     (Settings -> View & Accessibility) zeroes all of them via motion.ts. */
+     (Settings -> Appearance) zeroes all of them via motion.ts. */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
   --ease-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
@@ -163,7 +163,7 @@
 
 /* Reduce Motion has two sources and needs both. The media query covers the OS
    setting with no JavaScript at all; body.reduce-motion covers the in-app
-   override (Settings -> View & Accessibility), which the OS query cannot see.
+   override (Settings -> Appearance), which the OS query cannot see.
    Every animated rule in this project reads a --dur-* token, so zeroing the
    tokens reaches all 212 of them without touching a single rule.
 

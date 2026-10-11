@@ -467,7 +467,7 @@ interactions. Merged into one with **Table as the design baseline** (real
 data grid, plain colored text for due dates instead of pill badges, which
 kept clipping) and List's interactions layered on top. Don't reintroduce
 a separate Table view or bring back pill-style due badges in the desktop
-grid; the phone's cards use date pills, which is a different layout. Focus (a
+grid; the phone's cards show the date as text in a footer, a different layout. Focus (a
 separate view) is "what should I do right now," not a re-split of this
 merge.
 

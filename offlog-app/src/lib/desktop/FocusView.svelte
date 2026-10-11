@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../shared/iconPaths';
   import { onMount, createEventDispatcher } from 'svelte';
   import { getOpenTasksForFocusPicker, updateTask, getTaskById, subscribe } from '../db';
   import { projects, showError } from '../store';
@@ -242,9 +243,7 @@
   <div class="fluid-stage over-scroll">
   <div class="fc-header fluid-panel glass">
     <button class="hamburger" on:click={() => dispatch('menu')} aria-label="Menu">
-      <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-        <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
-      </svg>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">{@html ICON.menu}</svg>
     </button>
     <div class="title-block">
       <h1 class="fc-title">Focus</h1>
@@ -263,9 +262,7 @@
          not just the Ctrl+K shortcut — unreachable on mobile with no
          physical keyboard. -->
     <button class="palette-btn" on:click={() => dispatch('search')} title="Commands and search (Ctrl+K)" aria-label="Commands and search (Ctrl+K)">
-      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="4"/><line x1="14" y1="7.5" x2="10" y2="16.5"/>
-      </svg>
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">{@html ICON.palette}</svg>
     </button>
   </div>
   </div>

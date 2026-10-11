@@ -20,6 +20,8 @@ export const ICON = {
   agenda: '<rect x="3.5" y="4.5" width="17" height="16" rx="3"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4M7.5 13.5h9M7.5 17h5"/>',
   // Three plain lines are the menu; a list view has bullets; steps have ticks.
   menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  // The command palette: the "/" key in a box.
+  palette: '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M14 7.5l-4 9"/>',
   listView: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.1"/><circle cx="4.5" cy="12" r="1.1"/><circle cx="4.5" cy="18" r="1.1"/>',
   steps: '<path d="M3.5 6.2l1.6 1.6L8.2 4.7M3.5 12.7l1.6 1.6 3.1-3.1M3.5 19.2l1.6 1.6 3.1-3.1M11.5 6.3h8.5M11.5 12.8h8.5M11.5 19.3h8.5"/>',
   restore: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/>',
