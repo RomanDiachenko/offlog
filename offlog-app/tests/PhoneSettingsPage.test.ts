@@ -112,6 +112,7 @@ import * as nav from '../src/lib/phone/nav';
 import { get, type Writable } from 'svelte/store';
 import * as notif from '../src/lib/notifications';
 import * as db from '../src/lib/db';
+import { LIMITS } from '../src/lib/shared/privacyPoints';
 import { openLayers } from '../src/lib/modalStack';
 
 const settle = (ms = 30) => new Promise(r => setTimeout(r, ms));
@@ -545,6 +546,8 @@ describe('phone settings pages', () => {
       vi.stubGlobal('open', open);
       const { getByText } = render(SettingsPage, { page: 'privacy' });
       expect(getByText('Nothing is collected')).toBeTruthy();
+      expect(getByText('Limits to know')).toBeTruthy();
+      for (const p of LIMITS) expect(getByText(p.title)).toBeTruthy();
       await fireEvent.click(getByText('Full privacy policy'));
       await waitFor(() => expect(open).toHaveBeenCalledWith('https://github.com/hrach-gevorgyan/offlog/blob/main/docs/privacy.md', '_blank', 'noopener'));
     });

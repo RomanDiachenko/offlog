@@ -1,6 +1,6 @@
 # Offlog — Privacy Policy
 
-*Last updated: 2026-10-03*
+*Last updated: 2026-10-11*
 
 This page exists to satisfy app-store requirements (Google Play, and
 Windows/desktop distribution channels that ask for one) with something
@@ -18,8 +18,10 @@ crash reporting, no advertising, no data sent to the developer or to
 any third party, ever. Everything you enter into the app stays on your
 own device(s).
 
-The phone app shows a short version of this page under Settings →
-Advanced → Privacy, with a link back here; the two are kept in step.
+Both apps show a short version of this page (phone: Settings → Advanced →
+Privacy; desktop: Settings → Privacy), with a link back here: what stays
+private, and the limits to know from [security.md](security.md)'s "What
+Offlog does not protect against". The two are kept in step.
 
 This page covers *what data exists and where*. For how that data is
 protected — the pairing handshake, App Lock, where the sync password is

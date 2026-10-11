@@ -8,6 +8,7 @@
   import DataSettings from './settings/DataSettings.svelte';
   import SecuritySettings from './settings/SecuritySettings.svelte';
   import AdvancedSettings from './settings/AdvancedSettings.svelte';
+  import PrivacySettings from './settings/PrivacySettings.svelte';
   import { downloadBlob, freshMaintSteps, formatStorageEstimate, summarizeIssues, type MaintStep } from '../shared/settingsHelpers';
   import { isAutoBackupEnabled, setAutoBackupEnabled, getLastAutoBackupAt, getAutoBackupUsage } from '../autoBackup';
   import db, {
@@ -67,7 +68,7 @@
   // permanently in the tab — keeps every tab's default view the same
   // shape regardless of how much a feature actually needs underneath.
   // Exactly one tab (Advanced) is allowed to be technical.
-  type Category = 'appearance' | 'notifications' | 'sync' | 'organize' | 'data' | 'security' | 'advanced';
+  type Category = 'appearance' | 'notifications' | 'sync' | 'organize' | 'data' | 'security' | 'privacy' | 'advanced';
   const CATEGORIES: { key: Category; label: string; icon: string; vb?: string }[] = [
     { key: 'appearance',    label: 'Appearance',           icon: ICON.sun, vb: '0 0 24 24' },
     { key: 'notifications', label: 'Notifications',        icon: ICON.bell, vb: '0 0 24 24' },
@@ -75,6 +76,7 @@
     { key: 'organize',      label: 'Organize',             icon: ICON.organize, vb: '0 0 24 24' },
     { key: 'data',          label: 'Backup & restore',     icon: ICON.backup, vb: '0 0 24 24' },
     { key: 'security',      label: 'App lock',             icon: ICON.lock, vb: '0 0 24 24' },
+    { key: 'privacy',       label: 'Privacy',              icon: ICON.shield, vb: '0 0 24 24' },
     { key: 'advanced',      label: 'Advanced',             icon: ICON.sliders, vb: '0 0 24 24' },
   ];
 
@@ -1202,6 +1204,8 @@
                 {privacyScreenEnabled} {togglePrivacyScreen}
               />
 
+            {:else if activeCategory === 'privacy'}
+              <PrivacySettings />
             {:else if activeCategory === 'advanced'}
               <AdvancedSettings
                 {isTauri} {isTauriDebug} bind:showMaintenanceModal

@@ -204,6 +204,7 @@ src/
       markdownLiveView.ts         CodeMirror decorations: bold/italic/heading/etc render inline as you type
       TaskHistoryPanel.svelte     Lazy-loaded history for one task
       AppearanceSettings.svelte   Appearance (desktop settings and the phone's Appearance page)
+      privacyPoints.ts            The short privacy page both shells show, and the repo/policy URLs; change with docs/privacy.md
       iconPaths.ts                The one icon set (ICON): one shape per meaning, both shells; never redraw a shared meaning per shell
       taskHelpers.ts              Pure helpers: dates, summary text, image encoding
       focusRank.ts                Focus suggestions: scoring and the round-robin spread (both Focus screens)
@@ -243,6 +244,7 @@ src/
         OrganizeSettings.svelte     Organize
         DataSettings.svelte         Backup & restore
         SecuritySettings.svelte     App lock
+        PrivacySettings.svelte      Privacy (the short page; the policy address to copy)
         AdvancedSettings.svelte     Advanced (sync URL, maintenance, reset)
 
       SpaceManager.svelte         Manage spaces
@@ -282,7 +284,7 @@ src/
       settings/SyncPage.svelte    Sync page: a this-device ↔ computer status card, other devices, this device, Advanced
       settings/BackupPage.svelte  Backup & restore page: back up (scope, daily safety copy), restore, export as rows; PrefsPage does the work
       settings/ServerPage.svelte  Own server: a typed-in CouchDB-compatible server; saving forgets the paired computer
-      settings/PrivacyPage.svelte The short version of docs/privacy.md (change both together)
+      settings/PrivacyPage.svelte The short privacy page, from shared/privacyPoints.ts
       openLink.ts                 Opens a web page in the phone's browser (AppLauncher on Android)
       noteEditor.ts               Loads the note editor chunk on demand, warmed after start-up
       settings/RemindersPage.svelte  Notifications page: default time, quiet hours, a two-step set-up card while Android is in the way

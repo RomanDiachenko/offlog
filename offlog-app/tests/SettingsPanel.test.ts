@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { render, fireEvent, cleanup } from '@testing-library/svelte';
+import { render, fireEvent, cleanup, waitFor } from '@testing-library/svelte';
 import { writable } from 'svelte/store';
 
 // SettingsPanel pulls in config, db, discovery, notifications and the
@@ -110,6 +110,7 @@ vi.mock('../src/lib/theme', () => ({
 import dbDefault, { importJSON } from '../src/lib/db';
 import { closeOnBack } from '../src/lib/modalStack';
 import SettingsPanel from '../src/lib/desktop/SettingsPanel.svelte';
+import { LIMITS, PRIVACY_URL } from '../src/lib/shared/privacyPoints';
 
 // saveSettings() calls location.reload() after a sync change; jsdom has no
 // navigation, so it is stubbed and asserted on instead.
@@ -485,5 +486,26 @@ describe('SettingsPanel reduce transparency', () => {
     expect(sw.getAttribute('aria-checked')).toBe('true');
     await fireEvent.click(sw);
     expect(setReduceTransparency).toHaveBeenLastCalledWith(false);
+  });
+});
+
+describe('SettingsPanel Privacy', () => {
+  it('lists every limit and copies the full policy address', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+    const { getByText } = render(SettingsPanel, { initialCategory: 'privacy' });
+    for (const p of LIMITS) expect(getByText(p.title)).toBeTruthy();
+    await fireEvent.click(getByText('Copy'));
+    expect(writeText).toHaveBeenCalledWith(PRIVACY_URL);
+    await waitFor(() => getByText('Copied'));
+    vi.unstubAllGlobals();
+  });
+
+  it('says so when the address cannot be copied', async () => {
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText: vi.fn().mockRejectedValue(new Error('denied')) } });
+    const { getByText } = render(SettingsPanel, { initialCategory: 'privacy' });
+    await fireEvent.click(getByText('Copy'));
+    await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not copy the address. Please try again.'));
+    vi.unstubAllGlobals();
   });
 });

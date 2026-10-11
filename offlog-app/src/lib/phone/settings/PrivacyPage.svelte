@@ -1,28 +1,25 @@
 <script lang="ts">
-  // Settings → Advanced → Privacy: the short version of docs/privacy.md.
-  // Change both together.
+  // Settings → Advanced → Privacy; the content lives in shared/privacyPoints.ts.
   import { I } from '../icons';
+  import { ICON } from '../../shared/iconPaths';
+  import { PRIVATE, LIMITS } from '../../shared/privacyPoints';
   import { openLink, PRIVACY_URL } from '../openLink';
   import TopBar from '../TopBar.svelte';
-
-  const POINTS = [
-    { icon: I.shield, title: 'Nothing is collected', text: 'No account, no analytics, no crash reports, no ads.' },
-    { icon: I.phone, title: 'Your tasks stay on your devices', text: 'Everything is kept in the app’s own storage on this phone.' },
-    { icon: I.sync, title: 'Sync goes only where you say', text: 'To your own computer or your own server. Never to us, never to a cloud.' },
-    { icon: I.bell, title: 'Reminders are set on the phone', text: 'Android shows them; nothing goes through a server.' },
-  ];
 </script>
 
 <TopBar title="Privacy" />
 
-<div class="p-group">
-  {#each POINTS as p (p.title)}
-    <div class="p-row pt">
-      <span class="ri">{@html p.icon}</span>
-      <span class="p-k"><span>{p.title}</span><span class="p-sub">{p.text}</span></span>
-    </div>
-  {/each}
-</div>
+{#each [{ label: 'What stays private', points: PRIVATE }, { label: 'Limits to know', points: LIMITS }] as g (g.label)}
+  <div class="p-lab">{g.label}</div>
+  <div class="p-group">
+    {#each g.points as p (p.title)}
+      <div class="p-row pt">
+        <span class="ri"><svg class="i" viewBox="0 0 24 24" aria-hidden="true">{@html ICON[p.icon]}</svg></span>
+        <span class="p-k"><span>{p.title}</span><span class="p-sub">{p.text}</span></span>
+      </div>
+    {/each}
+  </div>
+{/each}
 <div class="p-group">
   <button class="p-row" on:click={() => openLink(PRIVACY_URL)}>
     <span class="ri">{@html I.shield}</span>
@@ -35,5 +32,6 @@
   .ri { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); background: var(--col-bg); }
   .pt { cursor: default; align-items: flex-start; }
   .p-row.pt:active { background: none; }
+  .pt .p-k > span:first-child { white-space: normal; }
   .chev { display: flex; margin-left: auto; color: var(--faint); }
 </style>
