@@ -4,9 +4,9 @@ A scheduled audit routine, tailored to this repo. **Not a feature
 session:** external behaviour must stay identical. Read this whole file
 before touching code.
 
-**Current pointer** — last pass: **29th run** (2026-10-10, on `main`,
-see [archive/maintenance.md](archive/maintenance.md)): Fluid redesign
-audit; fixes committed on `main`, unreleased. Next pass due: **2027-01-10, or on
+**Current pointer** — last pass: **30th run** (2026-10-11, on `main`,
+see [archive/maintenance.md](archive/maintenance.md)): audit of the
+redesign's second round; fixes committed on `main`, unreleased. Next pass due: **2027-01-11, or on
 the next bug hit in daily use, whichever comes first.**
 
 This pointer is the only tracker state in this file. Past passes are

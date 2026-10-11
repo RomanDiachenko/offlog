@@ -9,6 +9,42 @@ pass 22 and maintenance.md's scoping note.
 
 ---
 
+## 30th run — 2026-10-11 (on `main`, after the redesign's second round)
+
+Aimed at the 35 commits since the 29th run, in three independent audits:
+the routine sweep, accessibility and cross-shell consistency, and logic
+and long-uptime stability. Gates green by exit code before and after
+(check, zero-warning build, vitest, cargo build with zero warnings).
+Fixed: tag colours never repainted on List, Board and the phone's two tag
+pickers, because the colour function was a plain function the template
+could not track (List showed hash colours even for overrides loaded at
+start); List now also follows the change feed. Selected Status and
+Priority pills had no visible cue under High contrast or Windows contrast
+themes (outline added); Priority was a radiogroup without arrow keys (now
+aria-pressed toggles like Status); Add task's field had a near-invisible
+focus edge; --faint text on --field-bg/--rail-bg/--sel-fill missed 4.5:1
+in dark mode (now --muted); the neutral phone buttons gave no press
+feedback; merged Undo toasts read "Step removed: 2 tasks" (only task kinds
+count tasks now, the project archive toast says "Project archived");
+opaque phone sheets still ran the backdrop blur (`.glass.solid`). Plus
+icons drawn outside the shared set (menu, palette, pin, Dashboard, Focus,
+History), an unused icon and class, role=img on pin marks, and stale tab
+names and "date pill" wording in comments and docs.
+npm audit 0 (prod and dev), no `.env.local` value in `dist/`, no
+`{@html}` sink outside fixed constants, no CSP, permission, workflow or
+dependency change. Size: dist 2.0 MB on disk, unchanged.
+Left for the owner (design calls): merged Undo can also revert an edit
+that had no Undo of its own within the window; the one-time hold tip can
+replace a live Undo; some primary buttons are still accent (confirm,
+update, Fields, Archive, Settings' secondary, Save filter, template
+create, desktop Focus Commit, phone quick-add send); icons with two shapes
+for one meaning (Recycle bin, Focus, Appearance, Advanced, priority flag,
+tag, Archive, Duplicate; Privacy reuses Blocked); phone "Reminders" vs
+desktop "Notifications". No version bump: nothing is released without
+the owner.
+
+---
+
 ## 29th run — 2026-10-10 (on `main`, after the Fluid UI redesign)
 
 Ran after the Fluid redesign, aimed at what that change could break:
