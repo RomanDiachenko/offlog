@@ -9,7 +9,7 @@
   // Explicit tuple type, declared outside the {#each}: inline, TS widens it
   // to (string | number)[][], which silently degrades the filterPrio
   // assignment and the PRIO_COLOR index below to `any`.
-  const PRIO_CHIPS: [number, string][] = [[0, 'All'], [1, 'Low'], [2, 'Med'], [3, 'High']];
+  const PRIO_CHIPS: [number, string][] = [[0, 'All'], [1, 'Low'], [2, 'Medium'], [3, 'High']];
   import { fly } from 'svelte/transition';
   import { popIn, popOut } from '../motion';
   import CustomSelect from './CustomSelect.svelte';
@@ -161,9 +161,9 @@
       {/if}
 
       <div class="menu-label">Priority</div>
-      <div class="prio-chips">
+      <div class="prio-chips" role="group" aria-label="Priority">
         {#each PRIO_CHIPS as [v, label]}
-          <button class="prio-chip" class:active={filterPrio === v} on:click={() => filterPrio = filterPrio === v ? 0 : v}>
+          <button class="prio-chip" class:active={filterPrio === v} aria-pressed={filterPrio === v} on:click={() => filterPrio = filterPrio === v ? 0 : v}>
             {#if v !== 0}<span class="chip-dot" style="background:{PRIO_COLOR[v]}"></span>{/if}
             {label}
           </button>
@@ -230,15 +230,21 @@
     max-height: min(70vh, 420px); overflow-y: auto;
   }
 
-  .prio-chips { display: flex; gap: 3px; flex-wrap: wrap; }
+  /* Soft pills on one track, the picked one lifted with the glow: the same
+     priority switch as the task editor's. */
+  .prio-chips { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--rail-bg); }
   .prio-chip {
     display: flex; align-items: center; gap: 5px;
-    border: 1px solid var(--border-strong); border-radius: var(--r-s);
-    background: var(--bg); color: var(--muted);
-    font-size: var(--fs-s); font-weight: 500; padding: 5px 9px;
-    cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
+    border: 0; border-radius: 999px; background: none; color: var(--muted);
+    font-size: var(--fs-s); font-weight: 600; padding: 4px 10px;
+    cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
-  .prio-chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .prio-chip:hover { background: var(--rail-hover); color: var(--text); }
+  .prio-chip.active, .prio-chip.active:hover { background: var(--surface); color: var(--text); box-shadow: var(--sel-ring); }
+  /* The fill and glow barely show under High contrast and vanish under
+     Windows contrast themes, so the picked pill also gets an outline. */
+  :global(body.high-contrast) .prio-chip.active { outline: 2px solid var(--text); outline-offset: -2px; }
+  @media (forced-colors: active) { .prio-chip.active { outline: 2px solid Highlight; outline-offset: -2px; } }
   .chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
   /* One row per active custom-field filter: field select on top, its value
