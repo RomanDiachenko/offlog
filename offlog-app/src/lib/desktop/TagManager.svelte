@@ -104,59 +104,61 @@
 {#if __introReady}
 <div class="scrim" on:click|self={() => requestClose()} in:fade={panelScrimIn(420)} out:fade={panelScrimOut(420)}></div>
 
-<div class="panel" role="dialog" aria-modal="true" aria-label="Manage Tags" use:trapFocus in:fly={panelIn(420)} out:fly={panelOut(420)}>
+<div class="panel" role="dialog" aria-modal="true" aria-label="Tags" use:trapFocus in:fly={panelIn(420)} out:fly={panelOut(420)}>
   <div class="panel-head">
-    <span class="panel-title">Manage Tags</span>
+    <span class="panel-title">Tags</span>
     <button class="close-btn" on:click={() => requestClose()} aria-label="Close">✕</button>
   </div>
 
   <div class="tg-sub">Rename a tag to match another to merge them.</div>
 
   <div class="item-list">
-    {#if items.length === 0}
-      <div class="empty">No tags yet. Tags are added per-task from the task editor.</div>
-    {:else}
-      {#each items as { tag, count } (tag)}
-        <div class="row">
-          <button
-            class="color-dot"
-            style="background:{soften(resolveTagColor(tag, overrides))}"
-            title="Change color for tag {tag}"
-            aria-label="Change color for tag {tag}"
-            on:click={() => openPicker = openPicker === tag ? null : tag}
-          ></button>
-          {#if editingTag === tag}
-            <!-- svelte-ignore a11y-autofocus -->
-            <input
-              class="name-input"
-              autofocus
-              bind:value={editingName}
-              on:keydown={(e) => { if (e.key === 'Enter') saveEdit(tag); if (e.key === 'Escape') { e.preventDefault(); editingTag = null; } }}
-              on:blur={() => saveEdit(tag)}
-            />
-          {:else}
-            <button class="name-btn" on:click={() => startEdit(tag)}>{tag}</button>
-          {/if}
-          <span class="count">{count}</span>
-          <button class="delete-btn" on:click={() => remove(tag, count)} title="Delete tag" aria-label="Delete tag {tag}">×</button>
-        </div>
-        {#if openPicker === tag}
-          <div class="swatch-row">
-            {#each TAG_PALETTE as c}
-              <button
-                class="swatch"
-                class:swatch-active={overrides[tag] === c}
-                style="background:{soften(c)}"
-                title={c}
-                aria-label="Set tag {tag} color to {c}"
-                on:click={() => pickColor(tag, c)}
-              ></button>
-            {/each}
-            <button class="swatch-auto" on:click={() => pickColor(tag, null)} title="Use automatic color" aria-label="Use automatic color for tag {tag}">Auto</button>
+    <div class="group">
+      {#if items.length === 0}
+        <div class="empty">No tags yet. Tags are added per-task from the task editor.</div>
+      {:else}
+        {#each items as { tag, count } (tag)}
+          <div class="row">
+            <button
+              class="color-dot"
+              style="background:{soften(resolveTagColor(tag, overrides))}"
+              title="Change color for tag {tag}"
+              aria-label="Change color for tag {tag}"
+              on:click={() => openPicker = openPicker === tag ? null : tag}
+            ></button>
+            {#if editingTag === tag}
+              <!-- svelte-ignore a11y-autofocus -->
+              <input
+                class="name-input"
+                autofocus
+                bind:value={editingName}
+                on:keydown={(e) => { if (e.key === 'Enter') saveEdit(tag); if (e.key === 'Escape') { e.preventDefault(); editingTag = null; } }}
+                on:blur={() => saveEdit(tag)}
+              />
+            {:else}
+              <button class="name-btn" on:click={() => startEdit(tag)}>{tag}</button>
+            {/if}
+            <span class="count">{count}</span>
+            <button class="delete-btn" on:click={() => remove(tag, count)} title="Delete tag" aria-label="Delete tag {tag}">×</button>
           </div>
-        {/if}
-      {/each}
-    {/if}
+          {#if openPicker === tag}
+            <div class="swatch-row">
+              {#each TAG_PALETTE as c}
+                <button
+                  class="swatch"
+                  class:swatch-active={overrides[tag] === c}
+                  style="background:{soften(c)}"
+                  title={c}
+                  aria-label="Set tag {tag} color to {c}"
+                  on:click={() => pickColor(tag, c)}
+                ></button>
+              {/each}
+              <button class="swatch-auto" on:click={() => pickColor(tag, null)} title="Use automatic color" aria-label="Use automatic color for tag {tag}">Auto</button>
+            </div>
+          {/if}
+        {/each}
+      {/if}
+    </div>
   </div>
 </div>
 {/if}
@@ -166,7 +168,7 @@
 
   .panel {
     position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw);
-    background: var(--surface); border-left: 1px solid var(--border);
+    background: var(--bg); border-left: 1px solid var(--glass-edge);
     box-shadow: var(--elev-3-side); z-index: 402;
     display: flex; flex-direction: column;
     padding-top: env(safe-area-inset-top, 0px);
@@ -180,7 +182,7 @@
 
   .tg-sub {
     padding: 0 24px 16px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
-    border-bottom: 1px solid var(--border); flex-shrink: 0;
+    flex-shrink: 0;
   }
 
   .close-btn {
@@ -191,6 +193,9 @@
   .close-btn:hover { background: var(--hover); color: var(--text); }
 
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px 24px; }
+  /* One white card of rows, like Settings; an inset line between rows. */
+  .group { background: var(--surface); border-radius: var(--r-l); box-shadow: var(--elev-1); padding: 4px 14px; }
+  .group > .row + .row { box-shadow: inset 0 1px 0 var(--line); }
   .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; line-height: 1.5; }
 
   .row {

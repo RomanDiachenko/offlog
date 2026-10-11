@@ -168,95 +168,97 @@
 {#if __introReady}
 <div class="scrim" on:click|self={() => requestClose()} in:fade={panelScrimIn(420)} out:fade={panelScrimOut(420)}></div>
 
-<div class="panel" role="dialog" aria-modal="true" aria-label="Manage Spaces" use:trapFocus in:fly={panelIn(420)} out:fly={panelOut(420)}>
+<div class="panel" role="dialog" aria-modal="true" aria-label="Spaces" use:trapFocus in:fly={panelIn(420)} out:fly={panelOut(420)}>
   <div class="panel-head">
-    <span class="panel-title">Manage Spaces</span>
+    <span class="panel-title">Spaces</span>
     <button class="close-btn" on:click={() => requestClose()} aria-label="Close">✕</button>
   </div>
 
   <div class="item-list">
-    {#each items as s, i (s._id)}
-      <div class="row">
-        <label class="swatch-wrap" title="Change color">
-          <input type="color" value={s.color} on:change={(e) => setColor(s, (e.target as HTMLInputElement).value)} />
-          <span class="swatch" style="background:{soften(s.color)}"></span>
-        </label>
-
-        <div class="icon-picker-wrap">
-          <button type="button" class="icon-btn" title="Change icon" aria-label="Change icon" on:click={() => toggleIconPicker(s._id)}>
-            {@html getSpaceIconSvg(s)}
-          </button>
-          {#if iconPickerFor === s._id}
-            <div class="icon-picker" in:fly={popIn} out:fly={popOut}>
-              {#each SPACE_ICONS as opt (opt.key)}
-                <button type="button" class="icon-opt" class:selected={(s.icon ?? DEFAULT_SPACE_ICON_KEY) === opt.key} title={opt.key} on:click={() => setIcon(s, opt.key)}>
-                  {@html `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${opt.svg}</svg>`}
-                </button>
-              {/each}
-            </div>
+    <div class="group">
+      {#each items as s, i (s._id)}
+        <div class="row">
+          <label class="swatch-wrap" title="Change color">
+            <input type="color" value={s.color} on:change={(e) => setColor(s, (e.target as HTMLInputElement).value)} />
+            <span class="swatch" style="background:{soften(s.color)}"></span>
+          </label>
+  
+          <div class="icon-picker-wrap">
+            <button type="button" class="icon-btn" title="Change icon" aria-label="Change icon" on:click={() => toggleIconPicker(s._id)}>
+              {@html getSpaceIconSvg(s)}
+            </button>
+            {#if iconPickerFor === s._id}
+              <div class="icon-picker" in:fly={popIn} out:fly={popOut}>
+                {#each SPACE_ICONS as opt (opt.key)}
+                  <button type="button" class="icon-opt" class:selected={(s.icon ?? DEFAULT_SPACE_ICON_KEY) === opt.key} title={opt.key} on:click={() => setIcon(s, opt.key)}>
+                    {@html `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${opt.svg}</svg>`}
+                  </button>
+                {/each}
+              </div>
+            {/if}
+          </div>
+  
+          {#if editingId === s._id}
+            <!-- svelte-ignore a11y-autofocus -->
+            <input
+              class="name-input"
+              autofocus
+              bind:value={editingName}
+              on:keydown={(e) => { if (e.key === 'Enter') saveEdit(s); if (e.key === 'Escape') { e.stopPropagation(); editingId = null; } }}
+              on:blur={() => saveEdit(s)}
+            />
+          {:else}
+            <button class="name-btn" on:click={() => startEdit(s)}>{s.name}</button>
+          {/if}
+  
+          <div class="reorder-btns">
+            <button on:click={() => move(i, -1)} disabled={i === 0} aria-label="Move up" title="Move up">↑</button>
+            <button on:click={() => move(i, 1)} disabled={i === items.length - 1} aria-label="Move down" title="Move down">↓</button>
+          </div>
+  
+          {#if s._id !== 'space:unsorted'}
+            <button class="delete-btn" on:click={() => remove(s)} title="Delete space" aria-label="Delete space">×</button>
           {/if}
         </div>
-
-        {#if editingId === s._id}
+        {#if editingId === s._id && editDupHint}<p class="dup-name-hint">{editDupHint}</p>{/if}
+      {/each}
+  
+      {#if adding}
+        <div class="row new-row">
+          <label class="swatch-wrap" title="Pick a color">
+            <input type="color" bind:value={newColor} />
+            <span class="swatch" style="background:{soften(newColor)}"></span>
+          </label>
+          <div class="icon-picker-wrap">
+            <button type="button" class="icon-btn" title="Change icon" aria-label="Change icon" on:click={() => toggleIconPicker('new')}>
+              {@html `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${SPACE_ICONS.find(i => i.key === newIcon)!.svg}</svg>`}
+            </button>
+            {#if iconPickerFor === 'new'}
+              <div class="icon-picker" in:fly={popIn} out:fly={popOut}>
+                {#each SPACE_ICONS as opt (opt.key)}
+                  <button type="button" class="icon-opt" class:selected={newIcon === opt.key} title={opt.key} on:click={() => { newIcon = opt.key; iconPickerFor = null; }}>
+                    {@html `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${opt.svg}</svg>`}
+                  </button>
+                {/each}
+              </div>
+            {/if}
+          </div>
           <!-- svelte-ignore a11y-autofocus -->
           <input
             class="name-input"
             autofocus
-            bind:value={editingName}
-            on:keydown={(e) => { if (e.key === 'Enter') saveEdit(s); if (e.key === 'Escape') { e.stopPropagation(); editingId = null; } }}
-            on:blur={() => saveEdit(s)}
+            placeholder="Space name…"
+            bind:value={newName}
+            on:input={() => checkSpaceNameDuplicate(newName)}
+            on:keydown={(e) => { if (e.key === 'Enter') addSpace(); if (e.key === 'Escape') { e.stopPropagation(); cancellingAddSpace = true; adding = false; duplicateSpaceHint = ''; } }}
+            on:blur={addSpace}
           />
-        {:else}
-          <button class="name-btn" on:click={() => startEdit(s)}>{s.name}</button>
-        {/if}
-
-        <div class="reorder-btns">
-          <button on:click={() => move(i, -1)} disabled={i === 0} aria-label="Move up" title="Move up">↑</button>
-          <button on:click={() => move(i, 1)} disabled={i === items.length - 1} aria-label="Move down" title="Move down">↓</button>
         </div>
-
-        {#if s._id !== 'space:unsorted'}
-          <button class="delete-btn" on:click={() => remove(s)} title="Delete space" aria-label="Delete space">×</button>
-        {/if}
-      </div>
-      {#if editingId === s._id && editDupHint}<p class="dup-name-hint">{editDupHint}</p>{/if}
-    {/each}
-
-    {#if adding}
-      <div class="row new-row">
-        <label class="swatch-wrap" title="Pick a color">
-          <input type="color" bind:value={newColor} />
-          <span class="swatch" style="background:{soften(newColor)}"></span>
-        </label>
-        <div class="icon-picker-wrap">
-          <button type="button" class="icon-btn" title="Change icon" aria-label="Change icon" on:click={() => toggleIconPicker('new')}>
-            {@html `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${SPACE_ICONS.find(i => i.key === newIcon)!.svg}</svg>`}
-          </button>
-          {#if iconPickerFor === 'new'}
-            <div class="icon-picker" in:fly={popIn} out:fly={popOut}>
-              {#each SPACE_ICONS as opt (opt.key)}
-                <button type="button" class="icon-opt" class:selected={newIcon === opt.key} title={opt.key} on:click={() => { newIcon = opt.key; iconPickerFor = null; }}>
-                  {@html `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${opt.svg}</svg>`}
-                </button>
-              {/each}
-            </div>
-          {/if}
-        </div>
-        <!-- svelte-ignore a11y-autofocus -->
-        <input
-          class="name-input"
-          autofocus
-          placeholder="Space name…"
-          bind:value={newName}
-          on:input={() => checkSpaceNameDuplicate(newName)}
-          on:keydown={(e) => { if (e.key === 'Enter') addSpace(); if (e.key === 'Escape') { e.stopPropagation(); cancellingAddSpace = true; adding = false; duplicateSpaceHint = ''; } }}
-          on:blur={addSpace}
-        />
-      </div>
-      {#if duplicateSpaceHint}<p class="dup-name-hint">{duplicateSpaceHint}</p>{/if}
-    {:else}
-      <button class="add-btn" on:click={() => { adding = true; newName = ''; newColor = '#6366f1'; cancellingAddSpace = false; }}>+ New space</button>
-    {/if}
+        {#if duplicateSpaceHint}<p class="dup-name-hint">{duplicateSpaceHint}</p>{/if}
+      {:else}
+        <button class="add-btn" on:click={() => { adding = true; newName = ''; newColor = '#6366f1'; cancellingAddSpace = false; }}>+ New space</button>
+      {/if}
+    </div>
   </div>
 </div>
 {/if}
@@ -266,7 +268,7 @@
 
   .panel {
     position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw);
-    background: var(--surface); border-left: 1px solid var(--border);
+    background: var(--bg); border-left: 1px solid var(--glass-edge);
     box-shadow: var(--elev-3-side); z-index: 402;
     display: flex; flex-direction: column;
     padding-top: env(safe-area-inset-top, 0px);
@@ -274,7 +276,7 @@
 
   .panel-head {
     display: flex; align-items: center; gap: 8px;
-    padding: 20px 24px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    padding: 20px 24px 16px; flex-shrink: 0;
   }
   .panel-title { font-size: var(--fs-xl); font-weight: 700; flex: 1; letter-spacing: -.015em; }
 
@@ -286,6 +288,9 @@
   .close-btn:hover { background: var(--hover); color: var(--text); }
 
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px 24px; }
+  /* One white card of rows, like Settings; an inset line between rows. */
+  .group { background: var(--surface); border-radius: var(--r-l); box-shadow: var(--elev-1); padding: 4px 14px; }
+  .group > .row + .row { box-shadow: inset 0 1px 0 var(--line); }
 
   .row {
     display: flex; align-items: center; gap: 10px;

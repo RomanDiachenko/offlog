@@ -111,44 +111,46 @@
 {#if __introReady}
 <div class="scrim" on:click|self={() => requestClose()} in:fade={panelScrimIn(420)} out:fade={panelScrimOut(420)}></div>
 
-<div class="panel" role="dialog" aria-modal="true" aria-label="Manage Fields" use:trapFocus in:fly={panelIn(420)} out:fly={panelOut(420)}>
+<div class="panel" role="dialog" aria-modal="true" aria-label="Fields" use:trapFocus in:fly={panelIn(420)} out:fly={panelOut(420)}>
   <div class="panel-head">
-    <span class="panel-title">Manage Fields</span>
+    <span class="panel-title">Fields</span>
     <button class="close-btn" on:click={() => requestClose()} aria-label="Close">✕</button>
   </div>
 
   <div class="cf-sub">Fields apply to every task in every project — keep the list short so cards stay readable.</div>
 
   <div class="item-list">
-    {#if fields.length === 0}
-      <div class="empty">No fields yet.</div>
-    {:else}
-      {#each fields as field (field.id)}
-        {#if editingId === field.id}
-          <div class="row row-editing">
-            <input class="name-input" bind:value={editName} placeholder="Field name" enterkeyhint="done" on:keydown={(e) => e.key === 'Enter' && saveEdit(field)} />
-            <div class="type-select">
-              <CustomSelect options={typeOptions} value={editType} placement="up" on:change={(e) => editType = e.detail as CustomFieldDef['type']} />
+    <div class="group">
+      {#if fields.length === 0}
+        <div class="empty">No fields yet.</div>
+      {:else}
+        {#each fields as field (field.id)}
+          {#if editingId === field.id}
+            <div class="row row-editing">
+              <input class="name-input" bind:value={editName} placeholder="Field name" enterkeyhint="done" on:keydown={(e) => e.key === 'Enter' && saveEdit(field)} />
+              <div class="type-select">
+                <CustomSelect options={typeOptions} value={editType} placement="up" on:change={(e) => editType = e.detail as CustomFieldDef['type']} />
+              </div>
+              {#if editType === 'select'}
+                <input class="name-input" bind:value={editOptions} placeholder="Options, comma-separated" />
+              {/if}
+              <div class="row-edit-actions">
+                <button class="edit-cancel-btn" on:click={cancelEdit}>Cancel</button>
+                <button class="edit-save-btn" on:click={() => saveEdit(field)} disabled={!editName.trim()}>Save</button>
+              </div>
             </div>
-            {#if editType === 'select'}
-              <input class="name-input" bind:value={editOptions} placeholder="Options, comma-separated" />
-            {/if}
-            <div class="row-edit-actions">
-              <button class="edit-cancel-btn" on:click={cancelEdit}>Cancel</button>
-              <button class="edit-save-btn" on:click={() => saveEdit(field)} disabled={!editName.trim()}>Save</button>
+          {:else}
+            <div class="row">
+              <button class="row-text row-edit-trigger" on:click={() => startEdit(field)} title="Edit field" aria-label="Edit field {field.name}">
+                <span class="name">{field.name}</span>
+                <span class="type">{field.type}{#if field.type === 'select' && field.options?.length} · {field.options.join(', ')}{/if}</span>
+              </button>
+              <button class="delete-btn" on:click={() => remove(field)} title="Remove field" aria-label="Remove field {field.name}">×</button>
             </div>
-          </div>
-        {:else}
-          <div class="row">
-            <button class="row-text row-edit-trigger" on:click={() => startEdit(field)} title="Edit field" aria-label="Edit field {field.name}">
-              <span class="name">{field.name}</span>
-              <span class="type">{field.type}{#if field.type === 'select' && field.options?.length} · {field.options.join(', ')}{/if}</span>
-            </button>
-            <button class="delete-btn" on:click={() => remove(field)} title="Remove field" aria-label="Remove field {field.name}">×</button>
-          </div>
-        {/if}
-      {/each}
-    {/if}
+          {/if}
+        {/each}
+      {/if}
+    </div>
   </div>
 
   <div class="add-form">
@@ -169,7 +171,7 @@
 
   .panel {
     position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw);
-    background: var(--surface); border-left: 1px solid var(--border);
+    background: var(--bg); border-left: 1px solid var(--glass-edge);
     box-shadow: var(--elev-3-side); z-index: 402;
     display: flex; flex-direction: column;
     padding-top: env(safe-area-inset-top, 0px);
@@ -183,7 +185,7 @@
 
   .cf-sub {
     padding: 0 24px 16px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
-    border-bottom: 1px solid var(--border); flex-shrink: 0; line-height: 1.5;
+    flex-shrink: 0; line-height: 1.5;
   }
 
   .close-btn {
@@ -194,6 +196,9 @@
   .close-btn:hover { background: var(--hover); color: var(--text); }
 
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px; }
+  /* One white card of rows, like Settings; an inset line between rows. */
+  .group { background: var(--surface); border-radius: var(--r-l); box-shadow: var(--elev-1); padding: 4px 14px; }
+  .group > .row + .row { box-shadow: inset 0 1px 0 var(--line); }
   .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; line-height: 1.5; }
 
   .row {

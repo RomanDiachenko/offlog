@@ -109,24 +109,26 @@
   <div class="ap-sub">Archiving hides a project and its open tasks — nothing is deleted.</div>
 
   <div class="item-list">
-    <div class="picker-row">
-      <div class="picker-select">
-        <CustomSelect options={pickerOptions} bind:value={pickerId} />
-      </div>
-      <button class="archive-btn" on:click={doArchive} disabled={!pickerId}>Archive</button>
-    </div>
-
-    {#if archivedProjects.length === 0}
-      <div class="empty">No archived projects yet.</div>
-    {:else}
-      {#each archivedProjects as p (p._id)}
-        <div class="row">
-          <span class="name">{p.name}</span>
-          <button class="restore-btn" on:click={() => doRestore(p._id)}>Restore</button>
-          <button class="delete-btn" title="Delete project" aria-label="Delete project {p.name}" on:click={() => doDelete(p._id, p.name)}>×</button>
+    <div class="group">
+      <div class="picker-row">
+        <div class="picker-select">
+          <CustomSelect options={pickerOptions} bind:value={pickerId} />
         </div>
-      {/each}
-    {/if}
+        <button class="archive-btn" on:click={doArchive} disabled={!pickerId}>Archive</button>
+      </div>
+  
+      {#if archivedProjects.length === 0}
+        <div class="empty">No archived projects yet.</div>
+      {:else}
+        {#each archivedProjects as p (p._id)}
+          <div class="row">
+            <span class="name">{p.name}</span>
+            <button class="restore-btn" on:click={() => doRestore(p._id)}>Restore</button>
+            <button class="delete-btn" title="Delete project" aria-label="Delete project {p.name}" on:click={() => doDelete(p._id, p.name)}>×</button>
+          </div>
+        {/each}
+      {/if}
+    </div>
   </div>
 </div>
 {/if}
@@ -136,7 +138,7 @@
 
   .panel {
     position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw);
-    background: var(--surface); border-left: 1px solid var(--border);
+    background: var(--bg); border-left: 1px solid var(--glass-edge);
     box-shadow: var(--elev-3-side); z-index: 402;
     display: flex; flex-direction: column;
     padding-top: env(safe-area-inset-top, 0px);
@@ -150,7 +152,7 @@
 
   .ap-sub {
     padding: 0 24px 16px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
-    border-bottom: 1px solid var(--border); flex-shrink: 0;
+    flex-shrink: 0;
   }
 
   .close-btn {
@@ -161,6 +163,9 @@
   .close-btn:hover { background: var(--hover); color: var(--text); }
 
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px 24px; }
+  /* One white card of rows, like Settings; an inset line between rows. */
+  .group { background: var(--surface); border-radius: var(--r-l); box-shadow: var(--elev-1); padding: 4px 14px; }
+  .group > .row + .row { box-shadow: inset 0 1px 0 var(--line); }
   .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; line-height: 1.5; }
 
   .picker-row {
