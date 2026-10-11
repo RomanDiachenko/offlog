@@ -17,6 +17,66 @@ exceeds 10 releases, move the oldest into the archive.
 
 ---
 
+## [6.12.0] — 2026-10-11
+
+The Fluid redesign on both shells, a short Privacy page, and the fixes from
+two maintenance passes (28th–30th) and a final audit. Glass chrome, almost no
+colour, and selection shown by a soft glow; one shared icon set
+(`shared/iconPaths.ts`) where every meaning has one shape. No storage, sync
+or backup format changed — older installs read, sync and restore as before.
+
+### Added
+- **Privacy page** on both shells (phone Settings → Advanced → Privacy, a new
+  desktop Settings tab): what stays private and the everyday limits, from
+  `shared/privacyPoints.ts`; `tests/privacyPoints.test.ts` pins every limit.
+- Desktop: Ctrl+K opens a project by name; Undo after archiving a task or a
+  whole status; add to or remove from today's Focus without resetting; a
+  duplicate-name hint when renaming a project or space; Dashboard project
+  tiles show progress and the next due date.
+- `Reduce transparency` switch in Appearance.
+- Phone: a one-time tip that holding a task card opens its menu
+  (`phone/holdTip.ts`); a second Undo while one is showing merges into it.
+
+### Changed
+- **Fluid style**: `.glass` chrome (headers, menus, sheets, toasts, tab bar)
+  that turns solid over a scrim, inside other glass, under Reduce
+  transparency and High contrast; `--sel-*` glow for selection; one
+  three-level shadow scale (`--elev-1/2/3`); radius and desktop type scales
+  (`--r-*`, `--fs-*`); fewer divider lines (`--line`, inset where related).
+- Board card redesigned (title, tags, then a footer with pin, date and
+  priority word); List, Agenda and Focus rows follow it; List's column header
+  stays pinned while rows scroll.
+- Desktop task editor in the phone task screen's language: icon rows, a
+  compact Low/Medium/High switch, More details as one soft group; it saves on
+  close.
+- Settings regrouped into cards, one unit per setting, short copy, Done
+  instead of Save; Organize panels, the command palette, Add task and
+  Filters in the same style.
+- Every filled primary button is neutral (`--text` fill); the accent is kept
+  for the + buttons, Undo in a toast, state and wayfinding.
+- Phone Settings says "Notifications", as the desktop does.
+- Windows installer and uninstaller in Offlog's own words, with the brand banner.
+
+### Fixed
+- Tag colours did not repaint on List, Board and the phone's tag pickers (a
+  colour function the template could not track; List ignored overrides).
+- A merged Undo could revert a later edit that had no Undo of its own;
+  `nav.sealUndo()` now ends the group and retires a live Undo.
+- A leaving snackbar's Undo could run twice on a fast double tap.
+- Selected Status/Priority pills had no visible cue under High contrast or
+  Windows contrast themes; Add task's focus edge was nearly invisible; small
+  `--faint` text on fills missed 4.5:1 in dark mode.
+- Sync: overlapping starts ran two replications; the desktop sync host
+  stayed down after a crash burst; a stalled pairing request held its slot.
+- Reminders stalled through sleep and could fire twice on desktop.
+- Data: Delete forever could remove a task another device had restored;
+  conflicting field definitions led repair to delete values; a new status
+  was added after "done".
+
+### Security
+- npm audit clean (source-map-js 1.2.2, GHSA-68fv-2mgg-jv7q); yoke-derive
+  0.8.4 (0.8.3 yanked); NyxDB built from the tag's pinned commit, `--locked`.
+
 ## [6.11.0] — 2026-10-04
 
 The phone app is rebuilt as its own shell (`src/lib/phone/`), replacing the
@@ -527,89 +587,7 @@ data-losing on every shipping platform.
 
 ---
 
-## [6.7.0] — 2026-08-26
-
-Two threads: motion, which had never actually run, and the maintenance tool,
-which was slow, vague, and in one case destructive.
-
-### Added
-- **Maintenance asks before repairing, and says what it found.** The confirm
-  groups issues in plain language ("8 tasks on a status that no longer
-  exists") and marks the ones it will not touch. The list stays in the modal
-  afterwards. `MaintOptions.confirmRepair` is a callback so `db/` still never
-  imports UI.
-- **Maintenance can be cancelled**, polled between steps via
-  `MaintOptions.isCancelled`. A step already in flight finishes — neither a
-  `bulkDocs` nor a compaction can be interrupted safely.
-- **Four integrity checks that did not exist**: values stranded by a deleted
-  custom field, `related`/`blocked_by` ids left dangling by the 3-month hard
-  prune, active tasks inside an archived project, and `attachments[]`
-  metadata disagreeing with PouchDB's own `_attachments`. All repair safely.
-- **The compaction step reports what it actually freed**, from
-  `navigator.storage.estimate()` before and after, instead of asserting it
-  freed something.
-- **`scripts/seed-full.js`** — every writable feature at volume, to exact
-  counts, with a fixed-seed PRNG so two runs are comparable.
-
-### Fixed
-- **Conflicts are no longer auto-resolved.** `repairDatabase()` deleted every
-  losing revision and kept whichever one PouchDB calls the winner —
-  deterministic, but arbitrary, not "most recent". Editing the same task on
-  two devices and running maintenance silently discarded one edit.
-  `scanConflicts()` already auto-settles the only safe case; whatever remains
-  is a genuine disagreement, and Settings → Sync → Resolve conflicts is where
-  it gets decided.
-- **Deleting a custom field stranded every value under it.** `custom_values`
-  is keyed by field id, so `removeCustomFieldDef()` rewriting the definition
-  list left the values on every task — invisible, never cleaned, carried in
-  every sync payload. It now sweeps them in one `bulkDocs`, trashed tasks
-  included.
-- **Repairing an orphaned task claimed success without fixing it.** With no
-  project in Unsorted the fallback archived the task and left `project_id`
-  dangling; `checkIntegrity()` does not skip archived tasks, so it returned
-  as an orphan every run while repair reported "Fixed 1" each time.
-- **No modal or panel transition had ever run.** Svelte does not run intro
-  transitions on a component's own root elements when the component itself is
-  being created, and every panel is created by a parent's `{#if}`. Gating the
-  markup on a flag set in `onMount()` makes them the product of an update
-  inside the component, which is what Svelte animates.
-- **Closes were destroyed before they could animate.** A parent's `{#if}`
-  removed each panel the instant it dispatched `close`. Components now delay
-  only that dispatch, by `exitMs`; `modalStack` is untouched, so back-button
-  semantics are unchanged.
-- **Hover was invisible on Kanban columns in light mode** — `--hover` was
-  `#eceef2` and so is `--col-bg`. Hover and pressed are now derived state
-  layers (`color-mix` of the element's own ink), declared on `body` so theme
-  classes can reach them.
-- **The sidebar teleported its contents while its width animated**, then
-  flickered once crossfaded — a keyframe restarts from its 0% frame on the
-  element that mounts mid-swap. It is a transition now, with the width driven
-  off a separate flag so the box still moves on the click.
-- **Six controls were below WCAG 2.2's 24px minimum target size** (2.5.8),
-  the tag remove `×` worst at 8×14. Only the hit boxes grew.
-- **Views overlapped during a switch** — `.main` is a CSS grid so both
-  occupy one cell instead of splitting a flex column.
-
-### Changed
-- **Motion rebuilt on Material 3**: entering decelerates, leaving
-  accelerates, exits ≈0.75x, duration scales with travel. Durations and
-  curves are tokens in `app.css`, mirrored in `motion.ts`.
-  [docs/motion.md](motion.md) is the rulebook.
-- **Compaction runs once, ever.** PouchDB's `_compact` walks the changes feed
-  from seq 0 and fires one `compactDocument()` per row concurrently, blocking
-  the UI for minutes; `auto_compaction` means there is nothing for a second
-  pass to collect. Databases predating the flag get one real pass.
-- **A maintenance run scans once, not two or three times.**
-  `repairDatabase()` accepts the issue list the caller already computed, and
-  `checkIntegrity()` scans by id prefix rather than the whole database — the
-  old scan loaded every `log:` doc and counted them as "items checked".
-- **`pruneOldLogs()` range-scans to the cutoff.** Log ids are time-ordered,
-  so the cutoff is an endkey and no bodies are loaded.
-
----
-
----
-
+[6.12.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.11.0...v6.12.0
 [6.11.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.10.5...v6.11.0
 [6.10.5]: https://github.com/hrach-gevorgyan/offlog/compare/v6.10.4...v6.10.5
 [6.10.4]: https://github.com/hrach-gevorgyan/offlog/compare/v6.10.3...v6.10.4
@@ -619,4 +597,3 @@ which was slow, vague, and in one case destructive.
 [6.10.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.9.0...v6.10.0
 [6.9.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.8.0...v6.9.0
 [6.8.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.7.0...v6.8.0
-[6.7.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.6.0...v6.7.0

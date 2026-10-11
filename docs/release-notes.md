@@ -31,6 +31,33 @@ for (const m of s.matchAll(/## (v[\d.]+)\n+### In short\n([\s\S]*?)\n\n/g))
 
 ---
 
+## v6.12.0
+
+### In short
+
+A calmer new look on phone and desktop: soft glass bars, almost no color, and one set of icons. A redesigned task card and task editor, clearer Settings, and a new Privacy page that says plainly what stays private and what the limits are. Plus Undo after archiving, opening a project from Ctrl+K on desktop, and fixes to sync, reminders, Undo and contrast.
+
+### New
+- A new look on phone and desktop: soft glass bars and menus, almost no color, and a gentle glow on what's selected.
+- One set of icons on both apps, so each icon always means the same thing.
+- A redesigned task card: title, tags, then the date and priority in one line.
+- The desktop task editor matches the phone's task screen, with a small Low / Medium / High switch.
+- Clearer Settings: each setting in one place, with short plain wording.
+- A Privacy page in Settings: what stays private, and the limits you should know.
+- Desktop: open a project by name from Ctrl+K, and Undo after archiving a task or a whole status.
+- Desktop: add a task to today's Focus, or remove it, without starting over.
+- A Reduce transparency switch in Appearance.
+- Phone: a one-time tip that holding a task opens its menu.
+
+### Fixed
+- Tag colors now update everywhere as soon as you change them.
+- Undo never quietly reverts a change you made after it.
+- A quick double tap on Undo no longer runs it twice.
+- Selected options stay visible in high contrast mode, and small grey text is easier to read in dark mode.
+- Sync no longer runs twice at once, and the PC's sync server restarts after a crash.
+- Reminders on the PC come back after sleep and never arrive twice.
+- A task restored on one device can no longer be deleted forever from another.
+
 ## v6.11.0
 
 ### In short
