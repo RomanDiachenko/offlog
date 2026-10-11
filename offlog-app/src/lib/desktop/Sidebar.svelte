@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../shared/iconPaths';
   import { soften } from '../tagColors';
   import { spaces, projects, activeSpaceId, activeProjectId, showError, reloadTasks } from '../store';
   import db, {
@@ -558,13 +559,7 @@
       aria-label="Agenda"
       on:click={() => { showAgenda = true; showDashboard = false; showFocus = false; activeProjectId.set(''); dispatch('navigate'); }}
     >
-      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
-        <rect x="2" y="3" width="14" height="12" rx="2"/>
-        <line x1="2" y1="7" x2="16" y2="7"/>
-        <line x1="6" y1="1.5" x2="6" y2="4.5"/>
-        <line x1="12" y1="1.5" x2="12" y2="4.5"/>
-        <line x1="6" y1="11" x2="12" y2="11"/>
-      </svg>
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.agenda}</svg>
       {#if !effectiveCollapsed}Agenda{/if}
     </button>
   </nav>
@@ -635,7 +630,7 @@
                      buttons that kept their width made every long name wrap. -->
                 <div class="proj-actions">
                   <button class="proj-pin-btn proj-edit-btn" title="Rename or move project" aria-label="Rename or move {project.name}" on:click|stopPropagation={() => startEditProject(project)}>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{@html ICON.pen}</svg>
                   </button>
                   <button
                     class="proj-pin-btn"
@@ -644,15 +639,13 @@
                     aria-label="{project.pinned ? 'Unpin' : 'Pin'} {project.name}"
                     on:click|stopPropagation={() => toggleProjectPin(project)}
                   >
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill={project.pinned ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 17v5"/><path d="M9 3h6l-.5 6.5L17 12v2H7v-2l2.5-2.5L9 3Z"/>
-                    </svg>
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill={project.pinned ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{@html ICON.pin}</svg>
                   </button>
                   <button class="proj-delete-btn" title="Delete project" aria-label="Delete project {project.name}" on:click={() => doDeleteProject(project._id, project.name)}>×</button>
                 </div>
                 {#if project.pinned}
                   <span class="proj-pinned-mark" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 3h6l-.5 6.5L17 12v2H7v-2l2.5-2.5L9 3Z"/></svg>
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{@html ICON.pin}</svg>
                   </span>
                 {/if}
               </div>
@@ -723,9 +716,7 @@
          show, so they must stay folded into the title text below. -->
     <div class="bottom-row" class:bottom-row-collapsed={effectiveCollapsed}>
       <button class="icon-btn" on:click={() => { openTimeTravel(); dispatch('navigate'); }} title="History" aria-label="History">
-        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M2 8a6 6 0 1 1 1.8 4.3"/><polyline points="2,4 2,8 6,8"/><polyline points="8,5 8,8.5 10.5,10"/>
-        </svg>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.history}</svg>
       </button>
       <button class="icon-btn" on:click={() => { openTrash(); dispatch('navigate'); }} title="Recycle bin{breakdown && breakdown.deletedTasks > 0 ? ` (${breakdown.deletedTasks})` : ''}" aria-label="Recycle bin{breakdown && breakdown.deletedTasks > 0 ? `, ${breakdown.deletedTasks} items` : ''}">
         <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -733,10 +724,7 @@
         </svg>
       </button>
       <button class="icon-btn" on:click={() => { openSettings(); dispatch('navigate'); }} title="Settings" aria-label="Settings">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.gear}</svg>
       </button>
       {#if !syncNotConfigured}
         <!-- A device that's never been paired has no status and no
@@ -756,9 +744,7 @@
           on:click={() => { openSettings('sync'); dispatch('navigate'); }}
           title={syncTooltip}
         >
-          <svg viewBox="0 0 18 18" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9a6 6 0 0 1 10.2-4.2M15 9a6 6 0 0 1-10.2 4.2"/><polyline points="13,1.5 13.2,4.8 9.9,5"/><polyline points="5,16.5 4.8,13.2 8.1,13"/>
-          </svg>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.sync}</svg>
           {#if conflictCount > 0}<span class="conflict-badge">{conflictCount}</span>{/if}
           {#if $staleHostAlert}<span class="conflict-badge stale-host-badge">!</span>{/if}
         </button>

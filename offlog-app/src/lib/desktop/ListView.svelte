@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../shared/iconPaths';
   import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { toastIn, toastOut, revealIn, revealOut } from '../motion';
@@ -660,7 +661,7 @@
             {task.title}
             {#if task.recurrence}
               <span class="recur-mark" title="Repeats {task.recurrence}">
-                <svg viewBox="0 0 14 14" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7a5 5 0 0 1 8.5-3.5M12 2v3h-3"/><path d="M12 7a5 5 0 0 1-8.5 3.5M2 12V9h3"/></svg>
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{@html ICON.repeat}</svg>
               </span>
             {/if}
           </span>

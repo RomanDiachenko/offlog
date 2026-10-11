@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../shared/iconPaths';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fade, fly, scale } from 'svelte/transition';
   import { popIn, popOut, easeDecelerate, easeAccelerate } from '../motion';
@@ -608,9 +609,7 @@
         {:else}
           <span class="col-name">{col.name}</span>
           <button class="col-rename" title="Rename status" aria-label="Rename status" on:click|stopPropagation={() => { editingColId = col.id; editingColName = col.name; }}>
-            <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9.5 1.5l3 3L4 13H1v-3L9.5 1.5z"/>
-            </svg>
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{@html ICON.pen}</svg>
           </button>
           {#if (tasksByCol[col.id]?.length ?? 0) > 0}
             <button class="col-archive" title="Archive all tasks in this status" aria-label="Archive all tasks in {col.name}" on:click={() => archiveAll(col)}>
@@ -714,7 +713,7 @@
                 {#if task.pinned}<span class="foot-pin" title="Pinned" aria-label="Pinned"><PinStar size={12} filled={false} stroked /></span>{/if}
                 {#if task.due_date}
                   <span class="foot-due {dueDateClass(task, $today)}">
-                    <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="11" height="10" rx="1.5"/><line x1="1.5" y1="5.5" x2="12.5" y2="5.5"/><line x1="4" y1="1" x2="4" y2="3.5"/><line x1="10" y1="1" x2="10" y2="3.5"/></svg>
+                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{@html ICON.date}</svg>
                     {dueLabel(task.due_date, '', task.column_id === project.columns.at(-1)?.id, $today)}
                   </span>
                 {/if}
@@ -722,23 +721,23 @@
                 <span class="foot-marks">
                   {#if task.checklist?.length}
                     <span class="meta-badge checklist-badge" class:complete={task.checklist.every(i => i.done)} title="Steps">
-                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h2M4 12h2M4 18h2M9 6h11M9 12h11M9 18h11"/></svg>
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{@html ICON.steps}</svg>
                       {task.checklist.filter(i => i.done).length}/{task.checklist.length}
                     </span>
                   {/if}
                   {#if relatedIds.has(task._id!)}
                     <span class="meta-badge related-badge" title="Has related tasks">
-                      <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="3.5" cy="3.5" r="1.8"/><circle cx="10.5" cy="10.5" r="1.8"/><path d="M4.8 4.8l4.4 4.4"/></svg>
+                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{@html ICON.related}</svg>
                     </span>
                   {/if}
                   {#if task.recurrence}
                     <span class="meta-badge recur-badge" title="Repeats {task.recurrence}">
-                      <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7a5 5 0 0 1 8.5-3.5M12 2v3h-3"/><path d="M12 7a5 5 0 0 1-8.5 3.5M2 12V9h3"/></svg>
+                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{@html ICON.repeat}</svg>
                     </span>
                   {/if}
                   {#if blockedIds.has(task._id!)}
                     <span class="meta-badge blocked-badge" title="Blocked by another task">
-                      <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="10" height="6" rx="1.5"/><path d="M4.5 6V4a2.5 2.5 0 0 1 5 0v2"/></svg>
+                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{@html ICON.blocked}</svg>
                     </span>
                   {/if}
                 </span>

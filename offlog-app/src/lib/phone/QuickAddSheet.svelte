@@ -322,7 +322,7 @@
       {/if}
       {#each chipList as k (k)}
         {#if k === 'due'}
-          <button class="p-chip" class:on={!!due} aria-expanded={panel === 'due'} on:click={() => onChip('due')} aria-label="Due: {dueText(due)}">{@html I.today}{due ? dueText(due) : 'Date'}</button>
+          <button class="p-chip" class:on={!!due} aria-expanded={panel === 'due'} on:click={() => onChip('due')} aria-label="Due: {dueText(due)}">{@html I.date}{due ? dueText(due) : 'Date'}</button>
         {:else if k === 'reminder'}
           <button class="p-chip" class:on={!!reminder} aria-expanded={panel === 'reminder'} on:click={() => onChip('reminder')} aria-label="Reminder: {reminder ? reminderText(reminder) : 'none'}">{@html I.bell}{#if reminder}{reminderText(reminder)}{/if}</button>
         {:else if k === 'project'}

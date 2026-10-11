@@ -27,12 +27,12 @@
   <div class="p-sec" role="heading" aria-level="2">Back up</div>
   <div class="p-group">
     <button class="p-row" aria-label="Back up now" on:click={doBackup}>
-      <span class="ri">{@html I.down}</span>
+      <span class="ri">{@html I.backUpNow}</span>
       <span class="p-k"><span>Back up now</span><span class="p-sub">Saves a file you keep anywhere</span></span>
       <span class="chev">{@html I.chev}</span>
     </button>
     <button class="p-row" aria-label="What to include: {scopeLabel}" on:click={pickScope}>
-      <span class="ri">{@html I.setBox}</span>
+      <span class="ri">{@html I.sliders}</span>
       <span class="p-k"><span>What to include</span></span>
       <span class="p-v">{scopeLabel}</span>
       <span class="chev">{@html I.chev}</span>
@@ -49,7 +49,7 @@
   <div class="p-sec" role="heading" aria-level="2">Restore</div>
   <div class="p-group">
     <button class="p-row" aria-label="Restore from a file" on:click={handleImport} disabled={importBusy}>
-      <span class="ri">{@html I.up}</span>
+      <span class="ri">{@html I.restoreFile}</span>
       <span class="p-k"><span>Restore from a file</span><span class="p-sub" role="status">{importStatus || 'Shows what’s inside before anything changes'}</span></span>
       <span class="chev">{@html I.chev}</span>
     </button>

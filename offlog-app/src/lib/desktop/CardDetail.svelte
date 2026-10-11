@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../shared/iconPaths';
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import { fade, fly, scale, slide } from 'svelte/transition';
   import { scrimIn, scrimOut, centredIn, centredOut, popIn, popOut, revealIn, revealOut, exitMs } from '../motion';
@@ -753,7 +754,7 @@
               {pinned ? 'Unpin' : 'Pin to top'}
             </button>
             <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; loadHistory(); }}>
-              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3l2 1.5"/></svg>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.history}</svg>
               {showHistory ? 'Hide history' : 'Show history'}
             </button>
             <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; archive(); }}>

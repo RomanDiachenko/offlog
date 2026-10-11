@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../shared/iconPaths';
   import { createEventDispatcher, onMount } from 'svelte';
   import { fade, fly } from 'svelte/transition';
   import { panelIn, panelOut, panelScrimIn, panelScrimOut, exitMs } from '../motion';
@@ -152,10 +153,7 @@
             </div>
             <span class="item-time">{timeAgo(t.updated_at)}</span>
             <button class="restore-btn" on:click={() => restore(t._id!)} title="Restore" aria-label="Restore {t.title}">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="1 4 1 10 7 10"/>
-                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-              </svg>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.restore}</svg>
             </button>
             <button class="forever-btn" on:click={() => removeForever(t)} title="Delete forever" aria-label="Delete forever: {t.title}">
               <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">

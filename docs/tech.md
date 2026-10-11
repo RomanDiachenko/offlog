@@ -203,7 +203,8 @@ src/
       MarkdownEditor.svelte       CodeMirror 6 wrapper, one live-rendering pane (the phone loads it lazily, phone/noteEditor.ts)
       markdownLiveView.ts         CodeMirror decorations: bold/italic/heading/etc render inline as you type
       TaskHistoryPanel.svelte     Lazy-loaded history for one task
-      AppearanceSettings.svelte   View & Accessibility (desktop settings and the phone's Appearance page)
+      AppearanceSettings.svelte   Appearance (desktop settings and the phone's Appearance page)
+      iconPaths.ts                The one icon set (ICON): one shape per meaning, both shells; never redraw a shared meaning per shell
       taskHelpers.ts              Pure helpers: dates, summary text, image encoding
       focusRank.ts                Focus suggestions: scoring and the round-robin spread (both Focus screens)
       conflictFormat.ts           How Resolve conflicts shows each field's value (both Sync screens)

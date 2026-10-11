@@ -476,7 +476,7 @@
   <!-- Rows show values, not labels; each still names itself for screen readers. -->
   <div class="p-group vals">
     <button class="p-row" aria-label="Due: {dueText || 'none'}" on:click={() => openSheet('due')}>
-      <span class="p-ico">{@html I.today}</span>
+      <span class="p-ico">{@html I.date}</span>
       {#if pill}<span class="p-k {pill.tone}"><span>{dueText}</span></span>{:else}<span class="p-k empty"><span>Add due date</span></span>{/if}
     </button>
     {#if reminderText}
@@ -565,7 +565,7 @@
         <TaskHistoryPanel taskId={task._id} />
       {:else if sheet === 'more'}
         <div class="p-group">
-          <button class="p-row" on:click={() => afterClosing(close, () => openSheet('history'))}><span class="p-ico">{@html I.clock}</span><span class="p-k"><span>History</span></span></button>
+          <button class="p-row" on:click={() => afterClosing(close, () => openSheet('history'))}><span class="p-ico">{@html I.history}</span><span class="p-k"><span>History</span></span></button>
           {#if upPos !== null}<button class="p-row" on:click={() => { const p = upPos ?? 0; afterClosing(close, () => move(p)); }}><span class="p-ico">{@html I.up}</span><span class="p-k"><span>Move up</span></span></button>{/if}
           {#if downPos !== null}<button class="p-row" on:click={() => { const p = downPos ?? 0; afterClosing(close, () => move(p)); }}><span class="p-ico">{@html I.down}</span><span class="p-k"><span>Move down</span></span></button>{/if}
           <button class="p-row" on:click={() => afterClosing(close, duplicate)}><span class="p-ico">{@html I.copy}</span><span class="p-k"><span>Duplicate</span></span></button>

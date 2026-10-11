@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../shared/iconPaths';
   import { createEventDispatcher, onMount, onDestroy, tick } from 'svelte';
   import AppearanceSettings from '../shared/AppearanceSettings.svelte';
   import NotificationSettings from './settings/NotificationSettings.svelte';
@@ -67,13 +68,13 @@
   // shape regardless of how much a feature actually needs underneath.
   // Exactly one tab (Advanced) is allowed to be technical.
   type Category = 'appearance' | 'notifications' | 'sync' | 'organize' | 'data' | 'security' | 'advanced';
-  const CATEGORIES: { key: Category; label: string; icon: string }[] = [
+  const CATEGORIES: { key: Category; label: string; icon: string; vb?: string }[] = [
     { key: 'appearance',    label: 'Appearance',           icon: '<circle cx="9" cy="9" r="4"/><path d="M9 1v2M9 15v2M17 9h-2M3 9H1M14.7 3.3l-1.4 1.4M4.7 13.3l-1.4 1.4M14.7 14.7l-1.4-1.4M4.7 4.7 3.3 3.3"/>' },
-    { key: 'notifications', label: 'Notifications',        icon: '<path d="M9 2a4 4 0 0 0-4 4v3l-1.5 3h11L13 9V6a4 4 0 0 0-4-4z"/><path d="M7 15a2 2 0 0 0 4 0"/>' },
-    { key: 'sync',          label: 'Sync',                 icon: '<path d="M3 9a6 6 0 0 1 10.2-4.2M15 9a6 6 0 0 1-10.2 4.2"/><polyline points="13,1.5 13.2,4.8 9.9,5"/><polyline points="5,16.5 4.8,13.2 8.1,13"/>' },
-    { key: 'organize',      label: 'Organize',             icon: '<rect x="2" y="2" width="6" height="6" rx="1"/><rect x="10" y="2" width="6" height="6" rx="1"/><rect x="2" y="10" width="6" height="6" rx="1"/><rect x="10" y="10" width="6" height="6" rx="1"/>' },
-    { key: 'data',          label: 'Backup & restore',     icon: '<path d="M2 4c0-1.1 3.1-2 7-2s7 .9 7 2-3.1 2-7 2-7-.9-7-2z"/><path d="M2 4v10c0 1.1 3.1 2 7 2s7-.9 7-2V4"/><path d="M2 9c0 1.1 3.1 2 7 2s7-.9 7-2"/>' },
-    { key: 'security',      label: 'App lock',             icon: '<rect x="3" y="8" width="12" height="8" rx="1.5"/><path d="M6 8V5.5a3 3 0 0 1 6 0V8"/>' },
+    { key: 'notifications', label: 'Notifications',        icon: ICON.bell, vb: '0 0 24 24' },
+    { key: 'sync',          label: 'Sync',                 icon: ICON.sync, vb: '0 0 24 24' },
+    { key: 'organize',      label: 'Organize',             icon: ICON.organize, vb: '0 0 24 24' },
+    { key: 'data',          label: 'Backup & restore',     icon: ICON.backup, vb: '0 0 24 24' },
+    { key: 'security',      label: 'App lock',             icon: ICON.lock, vb: '0 0 24 24' },
     { key: 'advanced',      label: 'Advanced',             icon: '<path d="M2 5h6M11 5h5M2 13h9M14 13h2"/><circle cx="9" cy="5" r="2"/><circle cx="12" cy="13" r="2"/>' },
   ];
 
@@ -1135,7 +1136,7 @@
         <h3 class="nav-title">Settings</h3>
         {#each CATEGORIES as cat (cat.key)}
           <button class="nav-item" class:active={activeCategory === cat.key} aria-current={activeCategory === cat.key ? 'page' : undefined} on:click={() => selectCategory(cat.key)}>
-            <svg viewBox="0 0 18 18" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">{@html cat.icon}</svg>
+            <svg viewBox={cat.vb ?? '0 0 18 18'} width="16" height="16" fill="none" stroke="currentColor" stroke-width={cat.vb ? 1.8 : 1.5} stroke-linecap="round" stroke-linejoin="round">{@html cat.icon}</svg>
             <span>{cat.label}</span>
             {#if cat.key === 'sync' && conflictCount > 0}<span class="nav-badge">{conflictCount}</span>{/if}
             <svg class="chevron" viewBox="0 0 8 14" width="7" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,1 7,7 1,13"/></svg>

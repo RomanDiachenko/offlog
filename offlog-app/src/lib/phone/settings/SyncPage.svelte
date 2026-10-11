@@ -265,9 +265,9 @@
   <h2 id="sync-title">{card.title}</h2>
   <p role="status">{card.text}</p>
   {#if card.act === 'sync'}
-    <button class="cbtn" on:click={runSyncNow} disabled={$syncing || syncStatus === 'syncing'}>{@html I.repeat}Sync now</button>
+    <button class="cbtn" on:click={runSyncNow} disabled={$syncing || syncStatus === 'syncing'}>{@html I.sync}Sync now</button>
   {:else if card.act === 'retry'}
-    <button class="cbtn solid" on:click={runSyncNow} disabled={$syncing || syncStatus === 'syncing'}>{@html I.repeat}Try again</button>
+    <button class="cbtn solid" on:click={runSyncNow} disabled={$syncing || syncStatus === 'syncing'}>{@html I.sync}Try again</button>
   {:else if card.act === 'on'}
     <button class="cbtn solid" on:click={toggleSyncEnabled}>Turn on sync</button>
   {:else if card.act === 'connect'}
@@ -319,7 +319,7 @@
   </button>
   {#if syncUrl}
   <button class="p-row" role="switch" aria-checked={syncEnabled} on:click={toggleSyncEnabled}>
-    <span class="ri">{@html I.repeat}</span>
+    <span class="ri">{@html I.sync}</span>
     <span class="p-k"><span>Sync this {here}</span><span class="p-sub">Off keeps everything here only</span></span>
     <span class="p-sw" class:on={syncEnabled}></span>
   </button>

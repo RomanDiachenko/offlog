@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../shared/iconPaths';
   import { fly } from 'svelte/transition';
   import { popIn, popOut } from '../motion';
   import { createEventDispatcher, onMount, onDestroy, tick } from 'svelte';
@@ -201,7 +202,7 @@
               <button type="button" class="cal-time" class:on={!showTimeBox && timeVal === t} on:click={() => { typing = false; setTime(t); }}>{timeLabel(t)}</button>
             {/each}
             <button type="button" class="cal-time" class:on={showTimeBox} aria-label="Another time" aria-pressed={showTimeBox} on:click={() => { typing = !typing; positionPopover(); }}>
-              <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5l3 3L6 13H3v-3z"/></svg>
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.clock}</svg>
             </button>
           </div>
         </div>

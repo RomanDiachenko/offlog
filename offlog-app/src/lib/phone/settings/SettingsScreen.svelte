@@ -89,7 +89,7 @@
     ],
     [
       { page: 'trash', icon: I.trash, label: 'Recycle bin', value: trashCount ? String(trashCount) : '' },
-      { page: 'history', icon: I.clock, label: 'History' },
+      { page: 'history', icon: I.history, label: 'History' },
       { page: 'advanced', icon: I.sliders, label: 'Advanced' },
     ],
   ] as Row[][];
