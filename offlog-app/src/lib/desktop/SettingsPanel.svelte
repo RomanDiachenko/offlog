@@ -69,13 +69,13 @@
   // Exactly one tab (Advanced) is allowed to be technical.
   type Category = 'appearance' | 'notifications' | 'sync' | 'organize' | 'data' | 'security' | 'advanced';
   const CATEGORIES: { key: Category; label: string; icon: string; vb?: string }[] = [
-    { key: 'appearance',    label: 'Appearance',           icon: '<circle cx="9" cy="9" r="4"/><path d="M9 1v2M9 15v2M17 9h-2M3 9H1M14.7 3.3l-1.4 1.4M4.7 13.3l-1.4 1.4M14.7 14.7l-1.4-1.4M4.7 4.7 3.3 3.3"/>' },
+    { key: 'appearance',    label: 'Appearance',           icon: ICON.sun, vb: '0 0 24 24' },
     { key: 'notifications', label: 'Notifications',        icon: ICON.bell, vb: '0 0 24 24' },
     { key: 'sync',          label: 'Sync',                 icon: ICON.sync, vb: '0 0 24 24' },
     { key: 'organize',      label: 'Organize',             icon: ICON.organize, vb: '0 0 24 24' },
     { key: 'data',          label: 'Backup & restore',     icon: ICON.backup, vb: '0 0 24 24' },
     { key: 'security',      label: 'App lock',             icon: ICON.lock, vb: '0 0 24 24' },
-    { key: 'advanced',      label: 'Advanced',             icon: '<path d="M2 5h6M11 5h5M2 13h9M14 13h2"/><circle cx="9" cy="5" r="2"/><circle cx="12" cy="13" r="2"/>' },
+    { key: 'advanced',      label: 'Advanced',             icon: ICON.sliders, vb: '0 0 24 24' },
   ];
 
   // Multi-step flows open as a modal instead of living inline in a tab.

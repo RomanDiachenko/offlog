@@ -713,9 +713,7 @@
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.history}</svg>
       </button>
       <button class="icon-btn" on:click={() => { openTrash(); dispatch('navigate'); }} title="Recycle bin{breakdown && breakdown.deletedTasks > 0 ? ` (${breakdown.deletedTasks})` : ''}" aria-label="Recycle bin{breakdown && breakdown.deletedTasks > 0 ? `, ${breakdown.deletedTasks} items` : ''}">
-        <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M2 4h10M5.5 4V2.5h3V4M3 4l.6 8.5a1 1 0 0 0 1 .9h4.8a1 1 0 0 0 1-.9L11 4"/>
-        </svg>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.trash}</svg>
       </button>
       <button class="icon-btn" on:click={() => { openSettings(); dispatch('navigate'); }} title="Settings" aria-label="Settings">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.gear}</svg>

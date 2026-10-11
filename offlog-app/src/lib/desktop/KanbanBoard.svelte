@@ -612,9 +612,7 @@
           </button>
           {#if (tasksByCol[col.id]?.length ?? 0) > 0}
             <button class="col-archive" title="Archive all tasks in this status" aria-label="Archive all tasks in {col.name}" on:click={() => archiveAll(col)}>
-              <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="1" y="1" width="12" height="3" rx="1"/><path d="M2 4v8a1 1 0 001 1h8a1 1 0 001-1V4"/><line x1="5" y1="7" x2="9" y2="7"/>
-              </svg>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.archive}</svg>
             </button>
           {/if}
           <button class="col-remove" on:click={() => doRemoveCol(col.id)} title="Remove status" aria-label="Remove {col.name} status">
@@ -675,11 +673,11 @@
                       {task.pinned ? 'Unpin' : 'Pin to top'}
                     </button>
                     <button type="button" class="card-menu-item" on:click={() => { openCardMenu = null; cardArchive(task); }}>
-                      <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2" width="11" height="3" rx="1"/><path d="M2.5 5v6.5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V5M5.5 8h3"/></svg>
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.archive}</svg>
                       Archive
                     </button>
                     <button type="button" class="card-menu-item" on:click={() => { openCardMenu = null; cardDuplicate(task); }}>
-                      <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="4.5" y="4.5" width="8" height="8" rx="1"/><path d="M9.5 4.5V2.5a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2"/></svg>
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.copy}</svg>
                       Duplicate
                     </button>
                     {#if project.columns.length > 1}
@@ -693,7 +691,7 @@
                     {/if}
                     <div class="card-menu-divider"></div>
                     <button type="button" class="card-menu-item card-menu-item-danger" on:click={() => { openCardMenu = null; cardDelete(task); }}>
-                      <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M2.5 3.5h9M5.5 3.5V2a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M3.5 3.5l.6 8a1 1 0 0 0 1 .9h3.8a1 1 0 0 0 1-.9l.6-8"/></svg>
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.trash}</svg>
                       Delete
                     </button>
                   </div>

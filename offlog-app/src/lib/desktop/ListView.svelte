@@ -520,9 +520,7 @@
       <FilterBar {project} {allTags} {tasks} {customFields} bind:search bind:filterCol bind:filterPrio bind:filterTag bind:customFieldFilters />
 
       <button class="action-btn" class:active={showArchived} on:click={() => showArchived = !showArchived} aria-label="Show archived tasks ({archivedTasksRaw.length})" title="Show archived tasks">
-        <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="1" y="1" width="12" height="3" rx="1"/><path d="M2 4v8a1 1 0 001 1h8a1 1 0 001-1V4"/><line x1="5" y1="7" x2="9" y2="7"/>
-        </svg>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.archive}</svg>
         <span class="action-label">Archived{#if archivedTasksRaw.length > 0}{' · '}{archivedTasksRaw.length}{/if}</span>
       </button>
 
