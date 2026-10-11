@@ -553,7 +553,7 @@
 
   .commit-btn {
     width: auto; min-width: 240px;
-    background: var(--accent); color: var(--on-accent); border: 1.5px solid var(--accent);
+    background: var(--text); color: var(--bg); border: 1.5px solid var(--text);
     font-size: var(--fs-l); font-weight: 700; padding: 13px 32px; border-radius: var(--r-l);
     cursor: pointer; transition: opacity var(--dur-hover) var(--ease-hover);
   }

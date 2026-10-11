@@ -221,7 +221,7 @@
     padding: .4rem .75rem; border-radius: var(--radius-sm); font-size: var(--fs-s); font-weight: 500; cursor: pointer;
     border: 1px solid transparent; background: var(--field-bg); color: var(--text);
   }
-  .edit-save-btn { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .edit-save-btn { background: var(--text); border-color: var(--text); color: var(--bg); }
   .edit-save-btn:disabled { opacity: .5; cursor: not-allowed; }
 
   .delete-btn {
@@ -241,8 +241,8 @@
   }
   .type-select { flex: 1; min-width: 90px; }
   .add-btn {
-    padding: .45rem .8rem; border-radius: var(--radius-sm); border: 1px solid var(--accent);
-    background: var(--accent); color: var(--on-accent); font-size: var(--fs-m); font-weight: 500; cursor: pointer;
+    padding: .45rem .8rem; border-radius: var(--radius-sm); border: 1px solid var(--text);
+    background: var(--text); color: var(--bg); font-size: var(--fs-m); font-weight: 500; cursor: pointer;
     white-space: nowrap;
   }
   .add-btn:disabled { opacity: .5; cursor: not-allowed; }

@@ -477,7 +477,7 @@
   .card p { margin: 4px 0 16px; font-size: var(--p-fs-m); color: var(--muted); line-height: 1.45; }
   .cbtn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; border: 0; border-radius: 12px; cursor: pointer;
     font: inherit; font-size: var(--p-fs-l); font-weight: 700; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
-  .cbtn.solid { color: var(--on-accent); background: var(--accent); }
+  .cbtn.solid { color: var(--bg); background: var(--text); }
   .cbtn:disabled { opacity: .5; cursor: default; }
   .ri, .ava { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); background: var(--col-bg); }
   .ava { border-radius: 50%; font-weight: 700; font-size: var(--p-fs-m); }

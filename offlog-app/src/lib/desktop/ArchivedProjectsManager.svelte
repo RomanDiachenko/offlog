@@ -174,8 +174,8 @@
   }
   .picker-select { flex: 1; min-width: 0; }
   .archive-btn {
-    flex-shrink: 0; background: var(--accent); border: none; cursor: pointer;
-    color: var(--on-accent); font-size: var(--fs-m); font-weight: 600; padding: .48rem .8rem;
+    flex-shrink: 0; background: var(--text); border: none; cursor: pointer;
+    color: var(--bg); font-size: var(--fs-m); font-weight: 600; padding: .48rem .8rem;
     border-radius: var(--radius-sm); transition: opacity var(--dur-hover) var(--ease-hover);
   }
   .archive-btn:hover:not(:disabled) { opacity: .88; }

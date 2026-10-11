@@ -404,9 +404,9 @@
   }
   .send {
     width: 44px; height: 44px; border-radius: 50%; border: 0; padding: 0; cursor: pointer; flex-shrink: 0;
-    background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center;
+    background: var(--text); color: var(--bg); display: flex; align-items: center; justify-content: center;
   }
-  .send:not(:disabled):active { filter: brightness(.94); }
+  .send:not(:disabled):active { opacity: .8; }
   .send:disabled { opacity: .4; cursor: default; }
   /* A scrolling row clips overflow on both axes; padding keeps the chips'
      44px tap extension inside it. */

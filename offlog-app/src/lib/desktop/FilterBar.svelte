@@ -273,7 +273,7 @@
     border: 1px solid transparent; border-radius: var(--r-s); background: var(--field-bg); color: var(--text);
   }
   .filter-save-btn {
-    background: var(--accent); color: var(--on-accent); border: none; border-radius: var(--r-s);
+    background: var(--text); color: var(--bg); border: none; border-radius: var(--r-s);
     padding: .4rem .6rem; font-size: var(--fs-s); font-weight: 600; cursor: pointer;
   }
   .filter-save-btn:disabled { opacity: .5; cursor: default; }

@@ -1116,7 +1116,7 @@
     border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); cursor: pointer;
   }
   .template-create-btn {
-    background: var(--accent); color: var(--on-accent); border-color: var(--accent);
+    background: var(--text); color: var(--bg); border-color: var(--text);
   }
   .template-create-btn:disabled { opacity: .5; cursor: default; }
 

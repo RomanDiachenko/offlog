@@ -986,7 +986,7 @@
     padding: .35rem .7rem; border-radius: var(--radius-sm); font-size: var(--fs-s); font-weight: 600; cursor: pointer;
     border: 1px solid transparent; background: var(--field-bg); color: var(--text);
   }
-  .update-banner-view { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .update-banner-view { background: var(--text); border-color: var(--text); color: var(--bg); }
   .update-banner-dismiss:hover { background: var(--hover); }
   .update-banner-view:hover { opacity: .88; }
 

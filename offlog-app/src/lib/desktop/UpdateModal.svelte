@@ -135,6 +135,6 @@
     transition: background var(--dur-hover) var(--ease-hover), opacity var(--dur-hover) var(--ease-hover);
   }
   .later-btn:hover { background: var(--hover); }
-  .primary-btn { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .primary-btn { background: var(--text); border-color: var(--text); color: var(--bg); }
   .primary-btn:hover { opacity: .88; }
 </style>

@@ -1706,8 +1706,8 @@
      each modal inventing its own "important button" look. */
   .btn-primary {
     padding: .35rem .8rem; border-radius: var(--radius-sm);
-    border: 1px solid var(--accent); cursor: pointer;
-    background: var(--accent); color: var(--on-accent); font-size: var(--fs-s); font-weight: 600;
+    border: 1px solid var(--text); cursor: pointer;
+    background: var(--text); color: var(--bg); font-size: var(--fs-s); font-weight: 600;
     white-space: nowrap;
   }
   .btn-primary:hover { opacity: .9; }
