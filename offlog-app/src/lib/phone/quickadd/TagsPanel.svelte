@@ -20,7 +20,7 @@
   let seen: string[] = [...selected];
   $: seen = [...seen, ...selected.filter(t => !seen.includes(t))];
   $: all = [...seen, ...known.filter(t => !seen.includes(t))];
-  const color = (t: string) => soften(resolveTagColor(t, colors));
+  $: color = (t: string) => soften(resolveTagColor(t, colors));
 
   function onKey(e: KeyboardEvent) {
     if (e.key !== 'Enter' && e.key !== ',') return;

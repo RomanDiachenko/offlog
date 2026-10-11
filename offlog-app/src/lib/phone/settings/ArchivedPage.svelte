@@ -65,7 +65,7 @@
     // An archived project left as the active one blanks the board.
     if ($activeProjectId === p._id) activeProjectId.set('');
     await refresh();
-    showToast(`Archived: ${p.name}`, async () => {
+    showToast(`Project archived: ${p.name}`, async () => {
       try {
         await unarchiveProject(p._id!);
       } catch {

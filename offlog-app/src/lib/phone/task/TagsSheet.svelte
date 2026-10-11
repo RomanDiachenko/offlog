@@ -27,7 +27,7 @@
   $: ours = projectTags.filter(t => !tags.includes(t) && (!q || t.startsWith(q)));
   $: others = allTags.filter(t => !tags.includes(t) && !projectTags.includes(t) && (!q || t.startsWith(q)));
 
-  const color = (t: string) => soften(resolveTagColor(t, colors));
+  $: color = (t: string) => soften(resolveTagColor(t, colors));
 
   function set(next: string[]) { return save({ tags: next }, ERR); }
 

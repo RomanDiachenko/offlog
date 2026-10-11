@@ -225,7 +225,7 @@
   .cal-trigger {
     display: flex; align-items: center; gap: .45rem; width: 100%;
     padding: .38rem .5rem; border: 1px solid transparent;
-    border-radius: var(--radius-sm); background: var(--field-bg); color: var(--faint);
+    border-radius: var(--radius-sm); background: var(--field-bg); color: var(--muted);
     font-size: var(--fs-m); font-family: 'Hanken Grotesk', sans-serif; cursor: pointer;
     transition: border-color var(--dur-hover) var(--ease-hover);
   }

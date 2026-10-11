@@ -419,13 +419,12 @@
   }
 
   // Hash-to-palette fallback (tagColors.ts) plus any per-tag color set in
-  // Settings -> Organize -> Manage Tags. Reloaded on any db change
+  // Settings -> Organize -> Tags. Reloaded on any db change
   // (below) since an override can be set from that panel while this board
   // stays mounted.
   let tagColorOverrides: Record<string, string> = {};
-  function tagColor(tag: string): string {
-    return soften(resolveTagColor(tag, tagColorOverrides));
-  }
+  // Reactive, so the template repaints when the overrides arrive or change.
+  $: tagColor = (tag: string): string => soften(resolveTagColor(tag, tagColorOverrides));
 
   function onTouchStart(e: TouchEvent, task: TaskDoc, el: HTMLElement) {
     touchTask = task;

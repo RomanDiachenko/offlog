@@ -96,7 +96,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
   <div class="psheet-scrim" class:raised on:click={requestClose} in:fade={scrimIn} out:fade={scrimOut}></div>
   <div
-    class="psheet glass" class:raised class:dragging class:kbjump={kbJump} role="dialog" aria-modal="true" aria-label={label || title || 'Sheet'} tabindex="-1" bind:this={panel}
+    class="psheet glass solid" class:raised class:dragging class:kbjump={kbJump} role="dialog" aria-modal="true" aria-label={label || title || 'Sheet'} tabindex="-1" bind:this={panel}
     on:scroll={() => (scrolled = panel.scrollTop > 4)}
     style:transform={dragY || kbOff ? `translateY(${dragY + kbOff}px)` : null}
     use:trapFocus

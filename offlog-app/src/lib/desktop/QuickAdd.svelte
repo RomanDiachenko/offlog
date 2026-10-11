@@ -243,7 +243,7 @@
 
   .help-btn {
     width: 18px; height: 18px; border-radius: 50%; border: 1px solid transparent;
-    background: var(--field-bg); color: var(--faint); font-size: var(--fs-xs); font-weight: 700;
+    background: var(--field-bg); color: var(--muted); font-size: var(--fs-xs); font-weight: 700;
     line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
@@ -252,13 +252,13 @@
   .help-panel { border-radius: var(--radius-sm); background: var(--field-bg); padding: 10px 12px; font-size: var(--fs-s); }
   .help-title { color: var(--muted); margin-bottom: 8px; line-height: 1.4; }
   .help-list { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 0; }
-  .help-list dt { color: var(--faint); font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase; letter-spacing: .03em; align-self: baseline; }
+  .help-list dt { color: var(--muted); font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase; letter-spacing: .03em; align-self: baseline; }
   .help-list dd { margin: 0; color: var(--text); }
   .help-list code {
     font-family: var(--mono); font-size: var(--fs-xs); background: var(--col-bg);
     padding: 1px 5px; border-radius: 4px; color: var(--text);
   }
-  .help-example { margin-top: 10px; color: var(--faint); font-style: italic; font-size: var(--fs-xs); }
+  .help-example { margin-top: 10px; color: var(--muted); font-style: italic; font-size: var(--fs-xs); }
 
   .title-input {
     width: 100%; border: 1px solid transparent; border-radius: var(--radius-sm);
@@ -267,7 +267,7 @@
     transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
     box-sizing: border-box;
   }
-  .title-input:focus { background: var(--surface); box-shadow: var(--sel-ring); }
+  .title-input:focus { background: var(--surface); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 45%, transparent), var(--sel-ring); }
   .title-input::placeholder { color: var(--faint); }
 
   /* Live preview of what nlpParse.ts picked out of the title -- only
@@ -279,7 +279,7 @@
     font-size: var(--fs-xs); font-weight: 600; padding: 3px 9px; border-radius: 999px;
     background: var(--rail-bg); color: var(--muted);
   }
-  .chip-raw { color: var(--faint); font-style: italic; }
+  .chip-raw { color: var(--muted); font-style: italic; }
 
   .row { display: flex; align-items: center; gap: 10px; }
 

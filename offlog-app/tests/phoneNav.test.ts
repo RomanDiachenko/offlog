@@ -236,6 +236,17 @@ describe('phone snackbar merging', () => {
     expect(get(toast)?.text).toBe('Done: C');
   });
 
+  it('a repeated kind that is not a task kind reads as changes', () => {
+    toast.set(null);
+    showToast('Step removed', () => {});
+    showToast('Step removed', () => {});
+    expect(get(toast)?.text).toBe('2 changes');
+    toast.set(null);
+    showToast('Project archived: X', () => {});
+    showToast('Project archived: Y', () => {});
+    expect(get(toast)?.text).toBe('2 changes');
+  });
+
   it('once the bar is gone, the next Undo stands alone', () => {
     toast.set(null);
     showToast('Done: A', () => {});

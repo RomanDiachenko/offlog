@@ -6,7 +6,7 @@
   import { flip } from 'svelte/animate';
   import { cubicOut } from 'svelte/easing';
   import type { ProjectDoc, TaskDoc, CustomFieldDef } from '../types';
-  import { updateTask, unarchiveTask, getArchivedTasksForProject, getCustomFieldDefs, getTaskById, getTagColorOverrides } from '../db';
+  import { updateTask, unarchiveTask, getArchivedTasksForProject, getCustomFieldDefs, getTaskById, getTagColorOverrides, subscribe } from '../db';
   import { resolveTagColor, soften } from '../tagColors';
   import { reloadTasks, showError, projects } from '../store';
   import { PRIORITY_COLOR as PRIO_COLOR, PRIORITY_LABEL as PRIO_LABEL } from '../constants';
@@ -215,8 +215,10 @@
 
   // Tag dots use the same colours as the Board's.
   let tagColorOverrides: Record<string, string> = {};
-  const tagColor = (tag: string) => soften(resolveTagColor(tag, tagColorOverrides));
-  onMount(() => { getTagColorOverrides().then(o => tagColorOverrides = o).catch(() => {}); });
+  // Reactive, so the template repaints when the overrides arrive or change.
+  $: tagColor = (tag: string) => soften(resolveTagColor(tag, tagColorOverrides));
+  // A tag recoloured elsewhere (Tags panel, sync) arrives through the change feed.
+  onMount(() => { const load = () => getTagColorOverrides().then(o => tagColorOverrides = o).catch(() => {}); load(); return subscribe(load); });
 
   onMount(async () => {
     // Fields are global (not per-project) — fetched once here so

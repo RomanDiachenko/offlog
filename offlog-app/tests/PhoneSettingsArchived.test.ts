@@ -100,7 +100,7 @@ describe('phone Archived projects', () => {
     expect(confirmAction).not.toHaveBeenCalled();
     expect(document.querySelector('.psheet')).toBeNull();
     await waitFor(() => expect(get(activeProjectId)).toBe(''));
-    await waitFor(() => expect(get(toast)?.text).toBe('Archived: Live Sprint'));
+    await waitFor(() => expect(get(toast)?.text).toBe('Project archived: Live Sprint'));
     await get(toast)!.undo!();
     expect(unarchiveProject).toHaveBeenCalledWith('project:live');
     unarchiveProject.mockRejectedValueOnce(new Error('x'));
@@ -127,7 +127,7 @@ describe('phone Archived projects', () => {
     await waitFor(() => getByText('Old Sprint'));
     await fireEvent.click(getByText('Archive a project'));
     await fireEvent.click(getByText('Live Sprint'));
-    await waitFor(() => expect(get(toast)?.text).toBe('Archived: Live Sprint'));
+    await waitFor(() => expect(get(toast)?.text).toBe('Project archived: Live Sprint'));
     expect(showError).not.toHaveBeenCalled();
   });
 

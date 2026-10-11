@@ -15,6 +15,8 @@ const archiveColumnTasks = vi.fn().mockResolvedValue(['task:1']);
 // board with no cards in the target column appends, so a constant is
 // enough to assert the value is threaded through unchanged.
 const computeDropPosition = vi.fn().mockReturnValue(4242);
+const getTagColorOverrides = vi.fn().mockResolvedValue({});
+const changeFeed = new Set<() => void>();
 vi.mock('../src/lib/db', () => ({
   updateTask: (...args: unknown[]) => updateTask(...args),
   computeDropPosition: (...args: unknown[]) => computeDropPosition(...args),
@@ -34,8 +36,8 @@ vi.mock('../src/lib/db', () => ({
   // both resolve to a Set, not an array — the board calls .has() on them
   getTaskIdsWithRelatedLinks: vi.fn().mockResolvedValue(new Set<string>()),
   getTaskIdsBlocked: vi.fn().mockResolvedValue(new Set<string>()),
-  getTagColorOverrides: vi.fn().mockResolvedValue({}),
-  subscribe: vi.fn().mockReturnValue({ cancel: vi.fn() }),
+  getTagColorOverrides: (...args: unknown[]) => getTagColorOverrides(...args),
+  subscribe: (fn: () => void) => { changeFeed.add(fn); return () => { changeFeed.delete(fn); }; },
   // reached only when a card is opened into CardDetail
   getAllTags: vi.fn().mockResolvedValue([]),
   getCustomFieldDefs: vi.fn().mockResolvedValue([]),
@@ -110,6 +112,19 @@ afterEach(cleanup);
 
 // The card menu is the only keyboard/touch route to a column change —
 // drag-and-drop cannot be driven without a pointer.
+describe('KanbanBoard tag colors', () => {
+  it('a tag recolored elsewhere repaints its dot on the next change', async () => {
+    getTagColorOverrides.mockResolvedValue({});
+    const { container } = render(KanbanBoard, { project: mkProject(), tasks: [{ ...mkTask(), tags: ['home'] }] });
+    const dot = () => (container.querySelector('.card-tag-dot') as HTMLElement).style.background;
+    await waitFor(() => expect(dot()).not.toBe(''));
+    const before = dot();
+    getTagColorOverrides.mockResolvedValue({ home: '#3b82f6' });
+    changeFeed.forEach(fn => fn());
+    await waitFor(() => expect(dot()).not.toBe(before));
+  });
+});
+
 describe('KanbanBoard pinned card', () => {
   it('shows a pushpin in the footer only when pinned; the title stays plain', () => {
     const { getByLabelText } = render(KanbanBoard, { project: mkProject(), tasks: [{ ...mkTask(), pinned: true }] });

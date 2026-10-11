@@ -353,6 +353,8 @@ body.dark {
     /* Glass inside glass (a dropdown in a menu): the inner blur would only
        see its parent, so it goes solid. */
     body:not(.reduce-transparency):not(.high-contrast) .glass .glass { background: var(--glass-solid); backdrop-filter: none; }
+    /* .solid: glass that is opaque anyway (phone sheets over the scrim), so no blur to pay for. */
+    body:not(.reduce-transparency):not(.high-contrast) .glass.solid { backdrop-filter: none; }
   }
 }
 /* More contrast, from the OS or Settings: solid, with a strong edge. The

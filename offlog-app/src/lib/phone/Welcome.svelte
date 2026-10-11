@@ -72,7 +72,7 @@
   .points b { display: block; font-size: 16px; color: var(--text); font-weight: 600; }
   .actions { margin-top: auto; padding-top: 28px; display: flex; flex-direction: column; gap: 4px; }
   .go { border: 0; border-radius: 14px; padding: 16px; cursor: pointer; font: inherit; font-size: 17px; font-weight: 700; background: var(--text); color: var(--bg); }
-  .go:active { filter: brightness(.94); }
+  .go:active { opacity: .8; }
   .link { border: 0; background: none; padding: 14px; cursor: pointer; font: inherit; font-size: 16px; font-weight: 600; color: var(--accent); }
 
   /* Sideways: the greeting on the left, the points and the buttons on the

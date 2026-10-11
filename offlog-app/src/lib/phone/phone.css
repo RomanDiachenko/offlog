@@ -121,7 +121,7 @@
 /* Pressed feedback for everything tappable that has no hover on touch. */
 .phone-shell .p-chip:active, .psheet .p-chip:active,
 .phone-shell .p-seg button:not(.on):active, .psheet .p-seg button:not(.on):active { background: var(--col-bg); }
-.phone-shell .p-go:active, .psheet .p-go:active { filter: brightness(.94); }
+.phone-shell .p-go:active, .psheet .p-go:active { opacity: .8; }
 .phone-shell .p-tbtn:disabled, .psheet .p-tbtn:disabled { opacity: .45; cursor: default; }
 .phone-shell .p-tbtn:disabled:active, .psheet .p-tbtn:disabled:active { background: none; }
 

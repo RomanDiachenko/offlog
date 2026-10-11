@@ -8,13 +8,16 @@ import type { ProjectDoc, TaskDoc } from '../src/lib/types';
 // database round-trip (db.test.ts covers that).
 const updateTask = vi.fn().mockResolvedValue(undefined);
 const getCustomFieldDefs = vi.fn().mockResolvedValue([]);
+const getTagColorOverrides = vi.fn().mockResolvedValue({});
+const changeFeed = new Set<() => void>();
 vi.mock('../src/lib/db', () => ({
+  subscribe: (fn: () => void) => { changeFeed.add(fn); return () => { changeFeed.delete(fn); }; },
   updateTask: (...args: unknown[]) => updateTask(...args),
   unarchiveTask: vi.fn().mockResolvedValue(undefined),
   getArchivedTasksForProject: vi.fn().mockResolvedValue([]),
   getCustomFieldDefs: (...args: unknown[]) => getCustomFieldDefs(...args),
   getTaskById: vi.fn().mockResolvedValue(null),
-  getTagColorOverrides: vi.fn().mockResolvedValue({}),
+  getTagColorOverrides: (...args: unknown[]) => getTagColorOverrides(...args),
   // reached only when a row is opened into CardDetail
   getAllTags: vi.fn().mockResolvedValue([]),
   findTasksByTitleInProject: vi.fn().mockResolvedValue([]),
@@ -89,6 +92,19 @@ const undoButton = (container: HTMLElement) =>
 
 beforeEach(() => vi.clearAllMocks());
 afterEach(cleanup);
+
+describe('ListView tag colors', () => {
+  it('a tag recolored elsewhere repaints its dot on the next change', async () => {
+    getTagColorOverrides.mockResolvedValue({});
+    const { container } = render(ListView, { project: mkProject(), tasks: [mkTask({ tags: ['home'] })] });
+    const dot = () => (container.querySelector('.tag i') as HTMLElement).style.background;
+    await waitFor(() => expect(dot()).not.toBe(''));
+    const before = dot();
+    getTagColorOverrides.mockResolvedValue({ home: '#3b82f6' });
+    changeFeed.forEach(fn => fn());
+    await waitFor(() => expect(dot()).not.toBe(before));
+  });
+});
 
 describe('ListView mark done', () => {
   it('moves the task into the project\'s last status', async () => {

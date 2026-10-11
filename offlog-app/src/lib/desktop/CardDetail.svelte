@@ -806,9 +806,9 @@
       </div>
       <div class="row">
         <span class="row-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4.5M5 4.5h11l-2 4 2 4H5"/></svg></span>
-        <div class="prio-seg" role="radiogroup" aria-label="Priority">
+        <div class="prio-seg" role="group" aria-label="Priority">
           {#each priorityOptions as o (o.value)}
-            <button type="button" class="prio-opt" class:on={priorityStr === o.value} role="radio" aria-checked={priorityStr === o.value} on:click={() => priorityStr = o.value}><i style:background={o.dotColor}></i>{o.label}</button>
+            <button type="button" class="prio-opt" class:on={priorityStr === o.value} aria-pressed={priorityStr === o.value} on:click={() => priorityStr = o.value}><i style:background={o.dotColor}></i>{o.label}</button>
           {/each}
         </div>
       </div>
@@ -1158,6 +1158,10 @@
   .prio-opt i { width: 7px; height: 7px; border-radius: 50%; display: block; }
   .prio-opt:hover { background: var(--rail-hover); color: var(--text); }
   .prio-opt.on, .prio-opt.on:hover { background: var(--surface); color: var(--text); box-shadow: var(--sel-ring); }
+  /* The fill and glow barely show under High contrast and vanish under
+     Windows contrast themes, so the selected pill also gets an outline. */
+  :global(body.high-contrast) .st.on, :global(body.high-contrast) .prio-opt.on { outline: 2px solid var(--text); outline-offset: -2px; }
+  @media (forced-colors: active) { .st.on, .prio-opt.on { outline: 2px solid Highlight; outline-offset: -2px; } }
   /* The date picker's own icon sits in the icon column, like the rows below. */
   .rows :global(.cal-trigger) { padding-left: 0; }
   .rows .due-date-row { flex: 1; min-width: 0; }

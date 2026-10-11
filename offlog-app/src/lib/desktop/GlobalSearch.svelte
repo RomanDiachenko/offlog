@@ -314,6 +314,8 @@
   .result-proj { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); white-space: nowrap; }
   .result-prio { color: var(--muted); }
   .result-prio.high { color: var(--danger); }
+  /* --faint misses 4.5:1 on the selected fill in dark mode. */
+  .result-row.selected .result-proj, .result-row.selected .result-tags { color: var(--muted); }
   .result-due { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--muted); }
   .result-due.overdue { color: var(--danger); }
 
@@ -324,7 +326,7 @@
 
   .footer {
     display: flex; gap: 16px; padding: 9px 18px; background: var(--field-bg);
-    font-size: var(--fs-xs); color: var(--faint);
+    font-size: var(--fs-xs); color: var(--muted);
   }
   .footer kbd {
     font: inherit; font-size: var(--fs-2xs); font-weight: 600; color: var(--muted);
