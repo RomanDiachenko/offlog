@@ -124,9 +124,12 @@ don't grow this list with generic-audit filler.
   runs the real replicator, but only between two in-memory databases — no
   HTTP, no credentials, no batch sizes, no live/retry session.
   `offlog-desktop/scripts/phase0-repro/` covers those against a real
-  NyxDB instance and is the only thing that does. Run all three scripts
-  after any NyxDB or PouchDB version change; a green CI run is not
-  evidence here. Nothing imports them, so nothing will remind you.
+  NyxDB instance and is the only thing that does. A first full pull is not
+  enough: every doc is at rev 1 there, so a server that drops `_revisions`
+  passes it and still forks every later edit into a phantom conflict
+  (NyxDB before v0.1.7, unnoticed for months). `edit-replication.js`
+  edits and deletes after the first sync and runs in Desktop CI; run the
+  three full-pull scripts by hand after any NyxDB or PouchDB version change.
 - **Script exit paths.** Read every `.ps1`/`.sh` end to end: does every
   failure path fail loudly, and does the success path actually exit 0?
   Real incident: a script succeeded completely yet exited 1, because

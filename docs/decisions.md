@@ -172,11 +172,19 @@ appears in daily use.
 [NyxDB](https://github.com/hrach-gevorgyan/nyxdb) is a from-scratch Rust
 reimplementation of CouchDB's replication protocol, by the same owner.
 `offlog-desktop` embeds it instead of bundling real CouchDB: the protocol
-layer is a drop-in (zero `offlog-app` code changes, full test suite
-passing including byte-for-byte conflict parity) and the size win is
+layer is a drop-in (zero `offlog-app` code changes) and the size win is
 large — **installer 52.7MB → 4.98MB (~10.6x), installed footprint 164MB →
 20.4MB (~8.0x)**, measured when NyxDB replaced CouchDB in v5.8.0;
-maintenance.md tracks current sizes. Requires NyxDB ≥ v0.1.5: v0.1.4 fixed `_bulk_get`
+maintenance.md tracks current sizes. Requires NyxDB ≥ v0.1.7. Before it, NyxDB's
+read paths never returned `_revisions` (`_bulk_get?revs=true`, `open_revs`,
+`?revs`), so a pulling PouchDB stored every edit of an already-synced doc as
+a sibling of its copy: a phantom conflict on the other device after every
+edit, from v5.8.0 on. The in-memory test suite's conflict parity said nothing
+about this; only HTTP replication of a second edit shows it, which
+`phase0-repro/edit-replication.js` now runs in Desktop CI. v0.1.7 also
+persists the server uuid (checkpoints survive restarts), acknowledges a
+write only once flushed, and creates a database only on `PUT /{db}`, which
+the sidecar's `ensure_database()` already does. v0.1.4 fixed `_bulk_get`
 misreporting a tombstoned/losing-conflict revision as `"deleted"` for a
 live document (hit on every first-time device pairing, since both devices
 independently create the same fixed default-seed IDs before syncing), and

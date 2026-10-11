@@ -26,10 +26,10 @@ name: Desktop CI
 on:
   push:
     branches: [main]
-    paths: ['offlog-desktop/src-tauri/**', '!offlog-desktop/src-tauri/tauri.conf.json', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', '.github/workflows/desktop-ci.yml']
+    paths: ['offlog-desktop/src-tauri/**', '!offlog-desktop/src-tauri/tauri.conf.json', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', 'offlog-desktop/scripts/phase0-repro/**', '.github/workflows/desktop-ci.yml']
   pull_request:
     branches: [main]
-    paths: ['offlog-desktop/src-tauri/**', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', '.github/workflows/desktop-ci.yml']
+    paths: ['offlog-desktop/src-tauri/**', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', 'offlog-desktop/scripts/phase0-repro/**', '.github/workflows/desktop-ci.yml']
 
 # Least-privilege default -- this workflow only checks out code and runs
 # a cargo build, it never needs to write anything back to the repo.
@@ -85,12 +85,19 @@ jobs:
           # script's $Ref -- a stale cache would otherwise pin an old
           # NyxDB forever (the script skips fetching when the directory
           # already exists).
-          key: nyxdb-win-v0.1.5
+          key: nyxdb-win-v0.1.7
 
       - name: Fetch vendored NyxDB (no-op on cache hit)
         working-directory: offlog-desktop
         shell: pwsh
         run: ./scripts/fetch-nyxdb-win.ps1
+
+      # Edits after the first sync, over HTTP against the vendored binary:
+      # a server that drops _revisions turns every edit into a phantom
+      # conflict, which in-memory replication tests can't see.
+      - name: NyxDB edit replication (HTTP)
+        working-directory: offlog-desktop
+        run: node scripts/phase0-repro/edit-replication.js
 
       - name: Cargo build (release profile, matches release.yml)
         working-directory: offlog-desktop/src-tauri
