@@ -17,6 +17,31 @@ exceeds 10 releases, move the oldest into the archive.
 
 ---
 
+## [6.12.2] — 2026-10-11
+
+A sync fix: every edit synced through the desktop's NyxDB showed up as a
+conflict on the other device. NyxDB v0.1.5 never returned `_revisions` on
+its read paths, so a pulling PouchDB stored each edit as a sibling of its
+copy (since v5.8.0). No storage, sync or backup format changed on Offlog's
+side; NyxDB's own data directory upgrades itself on first start.
+
+### Changed
+- Bundled NyxDB v0.1.7 (tag + commit `fecc058` pinned in
+  `fetch-nyxdb-win.ps1`; CI cache keys bumped). It also persists its server
+  uuid (checkpoints survive restarts), flushes each write before
+  acknowledging it, and creates a database only on `PUT /{db}`, which the
+  sidecar's `ensure_database()` already does.
+
+### Fixed
+- Phantom conflicts after every edit. Existing ones are cleaned once per
+  device by `removePhantomConflicts()` (`db/sync.ts`): a losing leaf goes
+  only if the server's history of the shown version lists it; genuine
+  conflicts stay. Marked done (`offlog_phantom_cleanup_v1`) only after every
+  conflicting doc was checked.
+- Tests: `phase0-repro/edit-replication.js` (edits and a delete after the
+  first sync, over HTTP against the real binary; fails on v0.1.5) now runs
+  in Desktop CI; `tests/phantomConflicts.test.ts` covers the cleanup rule.
+
 ## [6.12.1] — 2026-10-11
 
 A phone polish release after v6.12.0: the status bar and the launch hand over
@@ -415,101 +440,9 @@ matching every other field on the card.
 - 25th maintenance pass: a handful of dead/unused exports, a `MaintStatus`
   naming collision between two modules, a stale `windows`-crate comment.
 
-## [6.9.0] — 2026-08-28
-
-Notes gets real live markdown; Card Detail's tag colors, spacing, and
-recurrence controls get a round of retouches; and a sixth feature audit —
-the Settings menu, walked live rather than read as code — turns up an
-Escape-key bug that could lose a PIN mid-entry, a footer that lied about
-what Cancel/Save did, and a long tail of smaller UX gaps across Sync,
-Notifications, App Lock, and Backup & Storage.
-
-### Added
-- **Notes renders markdown live, in one pane**, instead of a Write/Preview
-  tab toggle. A CodeMirror 6 editor (`MarkdownEditor.svelte`,
-  `markdownLiveView.ts`) decorates bold/italic/strikethrough/headings/code/
-  blockquotes/lists/links/rules inline as you type — formatting marks (`**`,
-  `#`, `` ` ``) stay visible but dimmed, never hidden. Replaces the earlier
-  `marked`+`DOMPurify` render-on-preview approach; both dependencies are
-  gone, since there's no `{@html}` sink left to sanitize for.
-- **Tag chip colors expanded to a 24-color palette**, hue-ordered, at 45%
-  tint (`var(--radius-sm)` chips, not a full pill — matches Notion/GitHub's
-  small-rounded-rectangle convention rather than a Material filter-chip
-  shape). `ensureFreshTagColor()` now avoids handing a new tag a color
-  that's already in heavy use, checking both persisted tags and the current
-  card's own not-yet-saved ones.
-- **Repeat & Reminder's interval collapses behind "Customize"** for the
-  ordinary every-1 case — reads as a plain sentence ("every week") instead
-  of an always-visible number input — with a next-occurrence preview
-  computed through the same `advanceDate()` math a real save uses, so it
-  can't drift from what saving actually produces. Customize/Weekdays/Skip
-  now share one pill design instead of a mix of a bare text link and two
-  differently-styled buttons.
-- **The EXTRAS summary balances onto two lines** (`balanceIntoTwoLines()`)
-  instead of wrapping naively wherever the text happens to run out of room.
-- **Settings' "Reset test data"** (debug-only) now confirms through the
-  app's own `confirmAction()`, danger-styled, instead of the browser's
-  native `confirm()` — and its button gets the same `var(--danger)`
-  treatment as every other irreversible-delete control in the app, instead
-  of looking like "Check for updates."
-- **Sync's connection status visually distinguishes "connected" from
-  "nothing configured yet"** — the `ok` tone was already computed but never
-  rendered differently from `muted` until now.
-- **Restore's preview shows which file you actually picked** — name and
-  modified time, not just aggregate counts — since the app itself produces
-  several similarly-named backups on one device (daily auto-backups, manual
-  full/per-project exports).
-- Pairing a device now reports "couldn't reach that computer" for a network
-  failure instead of a raw `fetch()` `TypeError`; an Android scan that
-  finds nothing says so instead of the button silently reverting; "Devices
-  seen recently" and the conflict modal both mark which entry is this
-  device; PIN setup filters non-digit input live and shows "Doesn't match
-  yet" before Save is clicked; the Sync tab signposts where Advanced's
-  manual server fields live; Notifications' disclosure sections slide
-  open/closed like every other one in the app instead of snapping.
-
-### Fixed
-- **Escape during PIN entry closed all of Settings**, discarding whatever
-  was typed, instead of backing out of just that step.
-  `onWindowKeydown` special-cased every other in-panel sub-flow (connect,
-  conflicts, maintenance, import preview) but not `showPinForm` or
-  `pinGateMode`. `ConfirmPinGate`'s own Escape handler needed
-  `stopPropagation()` too — without it, the same keystroke both correctly
-  cancelled the gate *and* reached the window handler and closed Settings,
-  since the gate's own `dispatch('cancel')` had already nulled
-  `pinGateMode` before the event finished bubbling. Covered by a
-  regression test.
-- **The footer Cancel/Save buttons were live on every Settings tab, but
-  only ever meant something on one.** Verified by reproduction: toggling
-  Theme and High Contrast, then clicking Cancel, left both changes in
-  place — every tab but Advanced-with-Sync-on already writes its controls
-  straight to their store on click. A first fix replaced the footer with a
-  single "Close" everywhere else; reverted after real user feedback that a
-  missing Save button reads as "did my change even take?", not as
-  "nothing to save here." Save is shown on every tab again; Cancel stays
-  Advanced-only, where there's actually something to discard.
-
-### Changed
-- `CustomSelect` gained an optional per-option color dot (used by Priority).
-- `advanceDate()` moved from `db/entities.ts` to `utils.ts` — a pure
-  function with no DB access, now shared by the real recurrence advance and
-  the Repeat block's preview instead of each keeping its own copy.
-- jsdom test noise silenced: `HTMLCanvasElement.prototype.getContext` and
-  `HTMLAnchorElement.prototype.click` (the download trigger) are stubbed in
-  `tests/setup.ts`, matching its existing animate/matchMedia/scrollIntoView
-  pattern — no more "Not implemented" lines in every test run.
-- A long tail of Settings copy/consistency fixes, all owner-reviewed and
-  selected from a ranked UX audit rather than applied wholesale: Organize's
-  content-free "Manage" section title became "Workspace" with a hint under
-  every row (not just Custom Fields); the quiet-hours toggle reads "Delay
-  reminders until quiet hours end" instead of "Queue…"; the healthy-storage
-  headline dropped its jokey tone; the Connect-a-device modal's primary
-  actions moved into a pinned footer, matching every other modal-within-
-  Settings, and desktop pairing success gets the same explicit "Done" close
-  Android's already had.
-
 ---
 
+[6.12.2]: https://github.com/hrach-gevorgyan/offlog/compare/v6.12.1...v6.12.2
 [6.12.1]: https://github.com/hrach-gevorgyan/offlog/compare/v6.12.0...v6.12.1
 [6.12.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.11.0...v6.12.0
 [6.11.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.10.5...v6.11.0
@@ -519,4 +452,3 @@ Notifications, App Lock, and Backup & Storage.
 [6.10.2]: https://github.com/hrach-gevorgyan/offlog/compare/v6.10.1...v6.10.2
 [6.10.1]: https://github.com/hrach-gevorgyan/offlog/compare/v6.10.0...v6.10.1
 [6.10.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.9.0...v6.10.0
-[6.9.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.8.0...v6.9.0

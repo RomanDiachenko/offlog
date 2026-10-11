@@ -31,6 +31,20 @@ for (const m of s.matchAll(/## (v[\d.]+)\n+### In short\n([\s\S]*?)\n\n/g))
 
 ---
 
+## v6.12.2
+
+### In short
+
+Fixes sync between your phone and PC: editing a task no longer shows up as a conflict on the other device. Conflicts left over from before are cleaned up automatically, and real conflicts still wait for you to choose. Update both the phone and the PC app.
+
+### New
+- Leftover fake conflicts are cleaned up automatically the first time each device syncs.
+
+### Fixed
+- Editing a task on one device no longer shows a sync conflict on the other.
+- Sync picks up where it left off after the PC app restarts, instead of checking everything again.
+- A change saved just before closing the PC app is no longer lost.
+
 ## v6.12.1
 
 ### In short
