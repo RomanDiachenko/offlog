@@ -172,8 +172,9 @@
   {#each $toast ? [$toast] : [] as t (t.id)}
     <div class="snack glass" in:fly={swap ? snackSwapIn : snackIn} out:fly={swap ? snackSwapOut : snackOut}>
       <span class="msg">{t.text}</span>
-      {#if t.undo}<button on:click={() => { const u = t.undo; toast.set(null); u?.(); }}>Undo</button>
-      {:else if t.action}<button on:click={() => { const a = t.action; toast.set(null); a?.run(); }}>{t.action.label}</button>{/if}
+      <!-- A leaving snackbar keeps its buttons through the outro: only the live one may act, so a fast double tap runs once. -->
+      {#if t.undo}<button on:click={() => { if ($toast?.id !== t.id) return; const u = t.undo; toast.set(null); u?.(); }}>Undo</button>
+      {:else if t.action}<button on:click={() => { if ($toast?.id !== t.id) return; const a = t.action; toast.set(null); a?.run(); }}>{t.action.label}</button>{/if}
     </div>
   {/each}
 

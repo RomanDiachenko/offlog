@@ -207,7 +207,7 @@ body.dark {
   --inverse-surface: #353b49;
   --on-inverse: #f3f4f6;
   --inverse-accent: #a9b0f0;
-  --on-accent: #181a20; /* dark accent is light — needs dark text, not white (was hardcoded #fff before, 2.98:1) */
+  --on-accent: #181a20; /* dark accent is light, so its text is dark: white on it reads only 2.98:1 */
   --danger: #e77f7c;
   --success: #74d791;
   --success-ink: color-mix(in srgb, var(--success) 50%, var(--text));

@@ -60,7 +60,7 @@
 <style>
   .history {
     border: 1px solid var(--border); border-radius: var(--radius-sm);
-    overflow: hidden; font-size: .78rem;
+    overflow: hidden; font-size: var(--fs-s);
   }
   .history-empty { display: flex; align-items: center; gap: 8px; padding: 10px 12px; color: var(--faint); }
   .history-row {
@@ -68,15 +68,15 @@
     padding: 7px 10px;
   }
   .h-pill {
-    font-family: var(--mono); font-size: .6rem; font-weight: 600;
+    font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 600;
     text-transform: uppercase; letter-spacing: .04em;
     padding: 1px 6px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
   }
   .h-desc { flex: 1; color: var(--text); line-height: 1.4; }
   .h-time-group { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0; }
   .h-source {
-    font-size: .58rem; color: var(--faint); font-weight: 600;
+    font-size: var(--fs-2xs); color: var(--faint); font-weight: 600;
     text-transform: uppercase; letter-spacing: .03em; white-space: nowrap;
   }
-  .h-time { font-family: var(--mono); font-size: .6rem; color: var(--faint); white-space: nowrap; }
+  .h-time { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); white-space: nowrap; }
 </style>

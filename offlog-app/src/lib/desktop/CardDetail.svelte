@@ -93,7 +93,10 @@
     set();
     bar.addEventListener('scroll', set, { passive: true });
     bar.addEventListener('wheel', wheel, { passive: false });
-    return { destroy() { bar.removeEventListener('scroll', set); bar.removeEventListener('wheel', wheel); } };
+    // Resizing the window changes what overflows, so the fades follow it too.
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(set);
+    ro?.observe(bar);
+    return { destroy() { bar.removeEventListener('scroll', set); bar.removeEventListener('wheel', wheel); ro?.disconnect(); } };
   }
 
   const DUE_SHORTCUTS: { label: string; days: number; months?: number }[] = [

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ICON } from '../shared/iconPaths';
   import { soften } from '../tagColors';
-  import { spaces, projects, activeSpaceId, activeProjectId, showError, reloadTasks } from '../store';
+  import { spaces, projects, activeSpaceId, activeProjectId, showError } from '../store';
   import db, {
     createProject, createProjectFromTemplate, deleteProject, updateProject, syncState,
     getStorageBreakdown, type StorageBreakdown, subscribe as subscribeDb,
