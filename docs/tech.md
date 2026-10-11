@@ -285,7 +285,7 @@ src/
       settings/PrivacyPage.svelte The short version of docs/privacy.md (change both together)
       openLink.ts                 Opens a web page in the phone's browser (AppLauncher on Android)
       noteEditor.ts               Loads the note editor chunk on demand, warmed after start-up
-      settings/RemindersPage.svelte  Reminders page: default time, quiet hours, a two-step set-up card while Android is in the way
+      settings/RemindersPage.svelte  Notifications page: default time, quiet hours, a two-step set-up card while Android is in the way
       settings/TimeSheet.svelte   The app's own time picker: hour and minute wheels (plus AM/PM in 12 h mode)
       Wheel.svelte                One snap-scrolling wheel; arrow keys step it, tapping an item centres it
       TimeWheels.svelte           Hour and minute wheels on one band (AM/PM in 12 h); TimeSheet and reminders

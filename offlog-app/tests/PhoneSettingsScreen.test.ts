@@ -60,7 +60,7 @@ describe('phone Settings home', () => {
   it('shows each row with its current value', async () => {
     const { container, getByText } = render(SettingsScreen);
     expect(rowValue(container, 'Appearance')).toBe('Dark');
-    expect(rowValue(container, 'Reminders')).toBe('Not yet');
+    expect(rowValue(container, 'Notifications')).toBe('Not yet');
     expect(rowValue(container, 'App lock')).toBe('Off');
     await waitFor(() => expect(rowValue(container, 'Recycle bin')).toBe('3'));
     expect(rowValue(container, 'Archived projects')).toBe('1');
@@ -70,7 +70,7 @@ describe('phone Settings home', () => {
   it('every row pushes its settings page', async () => {
     const { container } = render(SettingsScreen);
     const expected: [string, string][] = [
-      ['Appearance', 'appearance'], ['Reminders', 'notifications'],
+      ['Appearance', 'appearance'], ['Notifications', 'notifications'],
       ['App lock', 'security'], ['Spaces, tags & fields', 'organize'], ['Archived projects', 'archived'],
       ['Backup & restore', 'data'], ['Recycle bin', 'trash'], ['History', 'history'], ['Advanced', 'advanced'],
     ];
@@ -83,15 +83,15 @@ describe('phone Settings home', () => {
   it('Reminders says Not yet until Android has been asked', () => {
     permissionState.set('default');
     const { container } = render(SettingsScreen);
-    expect(tileValue(container, 'Reminders')).toBe('Not yet');
+    expect(tileValue(container, 'Notifications')).toBe('Not yet');
   });
 
   it('the glance tiles show Sync, Reminders and App lock, and open their pages', async () => {
     permissionState.set('granted');
     const { container } = render(SettingsScreen);
-    expect(tileValue(container, 'Reminders')).toBe('On');
+    expect(tileValue(container, 'Notifications')).toBe('On');
     expect(tileValue(container, 'App lock')).toBe('Off');
-    for (const [label, page] of [['Sync', 'sync'], ['Reminders', 'notifications'], ['App lock', 'security']]) {
+    for (const [label, page] of [['Sync', 'sync'], ['Notifications', 'notifications'], ['App lock', 'security']]) {
       await fireEvent.click(tile(container, label));
       expect(get(stack).at(-1)).toMatchObject({ k: 'set', page });
     }

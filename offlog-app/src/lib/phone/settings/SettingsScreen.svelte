@@ -79,7 +79,7 @@
   $: groups = [
     [
       { page: 'appearance', icon: I.setSun, label: 'Appearance', value: THEME[theme] },
-      { page: 'notifications', icon: I.bell, label: 'Reminders', value: remindTile.value },
+      { page: 'notifications', icon: I.bell, label: 'Notifications', value: remindTile.value },
       { page: 'security', icon: I.setLock, label: 'App lock', value: appLock ? 'On' : 'Off' },
     ],
     [
@@ -105,7 +105,7 @@
   </div>
   <div class="tiles">
     <button class="tile" on:click={() => go('sync')}><small>Sync</small><strong class={syncTile.tone}>{syncTile.value}</strong></button>
-    <button class="tile" on:click={() => go('notifications')}><small>Reminders</small><strong class={remindTile.tone}>{remindTile.value}</strong></button>
+    <button class="tile" on:click={() => go('notifications')}><small>Notifications</small><strong class={remindTile.tone}>{remindTile.value}</strong></button>
     <button class="tile" on:click={() => go('security')}><small>App lock</small><strong class={lockTile.tone}>{lockTile.value}</strong></button>
   </div>
   {#if alert}<button class="alert" on:click={() => go('sync')}>{alert}</button>{/if}

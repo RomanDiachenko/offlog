@@ -39,7 +39,7 @@
   export let page: string;
 
   const TITLE: Record<string, string> = {
-    appearance: 'Appearance', notifications: 'Reminders',
+    appearance: 'Appearance', notifications: 'Notifications',
     data: 'Backup & restore', security: 'App lock', advanced: 'Advanced',
   };
 

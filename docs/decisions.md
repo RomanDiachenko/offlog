@@ -483,7 +483,7 @@ Both read the same stores and `db.ts`; nothing in the data model differs.
 Every decision and the owner's verdicts are in
 [redesign/plan.md](redesign/plan.md). Owner decisions there that override
 an earlier rule: phone Settings opens with an Offlog header card holding the
-version and three tiles (Sync, Reminders, App lock), while its rows keep plain
+version and three tiles (Sync, Notifications, App lock), while its rows keep plain
 grey line icons; the + is a plain
 rounded square; the Home hero shifts slightly by season and evening. Rejected
 there and not to be re-proposed without new evidence: dotted row lines, and

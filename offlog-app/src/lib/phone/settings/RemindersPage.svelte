@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The phone's Reminders page: the settings people use first, a set-up card
+  // The phone's Notifications page: the settings people use first, a set-up card
   // only while Android is in the way, and the off switch last. Times open
   // the app's own time sheet.
   import { slide } from 'svelte/transition';
@@ -32,7 +32,7 @@
   }
 </script>
 
-              <!-- The phone page is "Reminders": the two settings people use
+              <!-- The phone's Notifications page: the two settings people use
                    first, a fix-it row only when Android is in the way, and the
                    off switch last. -->
               {#if notificationsEnabled}
