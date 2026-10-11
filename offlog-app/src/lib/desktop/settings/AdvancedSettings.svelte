@@ -41,7 +41,7 @@
                       <span class="toggle-knob"></span>
                     </button>
                   </div>
-                  <p class="setting-hint compact-hint">Turn this off if you type with AltGr and Ctrl+Alt+O gets in the way, for example ó on a Polish keyboard.</p>
+                  <p class="setting-hint compact-hint">Turn off if Ctrl+Alt+O types a letter on your keyboard (AltGr).</p>
                 </div>
                 <div class="setting-group">
                   <div class="setting-section-title">Software updates</div>
@@ -73,9 +73,9 @@
               {#if syncEnabled}
                 <div class="setting-group">
                   <div class="setting-section-title">Manual server connection (advanced)</div>
-                  <p class="setting-hint">Most people never need this — the "Find my computer" option above already handles connecting for you. This is only for advanced users running their own sync server by hand, instead of pairing a device.</p>
+                  <p class="setting-hint">Only if you run your own sync server. Pairing a device doesn't need this.</p>
                   <label class="field-label">
-                    Server address (must be a CouchDB-protocol-compatible server)
+                    Server address
                     <input bind:value={syncUrl} placeholder="http://192.168.1.100:5984/offlog" />
                   </label>
                   <label class="field-label">

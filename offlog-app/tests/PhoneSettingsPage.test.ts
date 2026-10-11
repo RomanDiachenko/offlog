@@ -171,7 +171,7 @@ describe('phone settings pages', () => {
     expect(setHighContrast).toHaveBeenCalledTimes(2);
     expect(setHighContrast).toHaveBeenLastCalledWith(false);
     // A hint below the row is not part of it.
-    await fireEvent.click(getByText(/Raises border and text contrast/));
+    await fireEvent.click(getByText(/Stronger text and borders/));
     expect(setHighContrast).toHaveBeenCalledTimes(2);
   });
 

@@ -68,12 +68,12 @@
   // Exactly one tab (Advanced) is allowed to be technical.
   type Category = 'appearance' | 'notifications' | 'sync' | 'organize' | 'data' | 'security' | 'advanced';
   const CATEGORIES: { key: Category; label: string; icon: string }[] = [
-    { key: 'appearance',    label: 'View & Accessibility', icon: '<circle cx="9" cy="9" r="4"/><path d="M9 1v2M9 15v2M17 9h-2M3 9H1M14.7 3.3l-1.4 1.4M4.7 13.3l-1.4 1.4M14.7 14.7l-1.4-1.4M4.7 4.7 3.3 3.3"/>' },
+    { key: 'appearance',    label: 'Appearance',           icon: '<circle cx="9" cy="9" r="4"/><path d="M9 1v2M9 15v2M17 9h-2M3 9H1M14.7 3.3l-1.4 1.4M4.7 13.3l-1.4 1.4M14.7 14.7l-1.4-1.4M4.7 4.7 3.3 3.3"/>' },
     { key: 'notifications', label: 'Notifications',        icon: '<path d="M9 2a4 4 0 0 0-4 4v3l-1.5 3h11L13 9V6a4 4 0 0 0-4-4z"/><path d="M7 15a2 2 0 0 0 4 0"/>' },
     { key: 'sync',          label: 'Sync',                 icon: '<path d="M3 9a6 6 0 0 1 10.2-4.2M15 9a6 6 0 0 1-10.2 4.2"/><polyline points="13,1.5 13.2,4.8 9.9,5"/><polyline points="5,16.5 4.8,13.2 8.1,13"/>' },
     { key: 'organize',      label: 'Organize',             icon: '<rect x="2" y="2" width="6" height="6" rx="1"/><rect x="10" y="2" width="6" height="6" rx="1"/><rect x="2" y="10" width="6" height="6" rx="1"/><rect x="10" y="10" width="6" height="6" rx="1"/>' },
-    { key: 'data',          label: 'Backup & Storage',     icon: '<path d="M2 4c0-1.1 3.1-2 7-2s7 .9 7 2-3.1 2-7 2-7-.9-7-2z"/><path d="M2 4v10c0 1.1 3.1 2 7 2s7-.9 7-2V4"/><path d="M2 9c0 1.1 3.1 2 7 2s7-.9 7-2"/>' },
-    { key: 'security',      label: 'App Lock',             icon: '<rect x="3" y="8" width="12" height="8" rx="1.5"/><path d="M6 8V5.5a3 3 0 0 1 6 0V8"/>' },
+    { key: 'data',          label: 'Backup & restore',     icon: '<path d="M2 4c0-1.1 3.1-2 7-2s7 .9 7 2-3.1 2-7 2-7-.9-7-2z"/><path d="M2 4v10c0 1.1 3.1 2 7 2s7-.9 7-2V4"/><path d="M2 9c0 1.1 3.1 2 7 2s7-.9 7-2"/>' },
+    { key: 'security',      label: 'App lock',             icon: '<rect x="3" y="8" width="12" height="8" rx="1.5"/><path d="M6 8V5.5a3 3 0 0 1 6 0V8"/>' },
     { key: 'advanced',      label: 'Advanced',             icon: '<path d="M2 5h6M11 5h5M2 13h9M14 13h2"/><circle cx="9" cy="5" r="2"/><circle cx="12" cy="13" r="2"/>' },
   ];
 
@@ -822,7 +822,7 @@
       showArchivedProjectsManager = true;
     } catch (e) {
       archivedProjectsManagerActive = false;
-      showError('Could not open Archived Projects. Please try again.');
+      showError('Could not open Archived projects. Please try again.');
     }
   }
   function onArchivedProjectsManagerClosed() { showArchivedProjectsManager = false; archivedProjectsManagerActive = false; }
@@ -1555,8 +1555,13 @@
     max-height: min(85vh, 640px);
     overflow: hidden;
   }
+  /* One steady size on desktop: tabs switch inside it instead of the panel
+     jumping to each tab's height. */
+  @media (min-width: 641px) { .settings-panel { height: min(85vh, 640px); } }
 
   .settings-body { display: flex; flex: 1; min-height: 0; }
+  /* The phone's grouped look: a tinted page under the tab, white cards on it. */
+  .settings-detail { background: var(--bg); }
 
   .settings-nav {
     width: 190px; flex-shrink: 0; display: flex; flex-direction: column; gap: .1rem;
@@ -1630,9 +1635,18 @@
      hole there even though it looks right in light mode. */
   .detail-content :global(.setting-group) {
     display: flex; flex-direction: column; gap: .6rem;
-    background: color-mix(in srgb, var(--text) 4%, transparent);
-    border: 1px solid transparent; border-radius: var(--radius-sm);
-    padding: .85rem .9rem;
+    background: var(--surface); box-shadow: var(--elev-1);
+    border: 1px solid transparent; border-radius: var(--r-l);
+    padding: .95rem 1.05rem;
+  }
+  /* A setting reads as one unit: its description sits tight under the label,
+     kept clear of the control on the right; an inset line starts the next. */
+  .detail-content :global(.setting-row + .setting-hint:not(.setting-hint-warn):not(.success-hint):not(.setting-hint-error)) {
+    margin-top: -.45rem; padding-right: 5.5rem;
+  }
+  .detail-content :global(.setting-hint + .setting-row),
+  .detail-content :global(.setting-row + .setting-row) {
+    border-top: 1px solid var(--line); padding-top: .6rem;
   }
   /* A slide/fade reveal wrapper (NotificationSettings' Permission/Reminder
      timing/Quiet hours groups, mounted only once notificationsEnabled) has
@@ -1643,16 +1657,10 @@
     display: flex; flex-direction: column; gap: 1rem;
   }
   .detail-content :global(.setting-section-title) {
-    display: flex; align-items: center; gap: .4rem;
-    font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
-    letter-spacing: .08em; color: var(--muted); font-weight: 600;
-  }
-  .detail-content :global(.setting-section-title)::before {
-    content: ''; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--accent); flex-shrink: 0;
+    font-size: var(--fs-m); font-weight: 700; color: var(--text); margin-bottom: .05rem;
   }
   .setting-row, .detail-content :global(.setting-row) { display: flex; align-items: center; gap: .75rem; }
-  .setting-hint, .detail-content :global(.setting-hint) { margin: 0; font-size: var(--fs-s); color: var(--muted); line-height: 1.5; }
+  .setting-hint, .detail-content :global(.setting-hint) { margin: 0; font-size: var(--fs-xs); color: var(--faint); line-height: 1.5; }
   /* Pulls a status line up against the row it reports on, instead of
      sitting a full group-gap away as if it were a separate setting. */
   .detail-content :global(.setting-hint.compact-hint) { margin-top: -.3rem; }
@@ -1706,8 +1714,7 @@
 
   .field-label, .detail-content :global(.field-label) {
     display: flex; flex-direction: column; gap: .35rem;
-    font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: .06em;
-    text-transform: uppercase; color: var(--muted);
+    font-size: var(--fs-s); font-weight: 600; color: var(--muted);
   }
   .field-label input, .detail-content :global(.field-label input) {
     padding: .5rem .6rem; border: 1px solid transparent; border-radius: var(--radius-sm);

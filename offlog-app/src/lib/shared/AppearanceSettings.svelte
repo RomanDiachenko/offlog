@@ -39,7 +39,7 @@
                     {/each}
                   </div>
                 </div>
-                {#if !phone}<p class="setting-hint">"System" follows your device's light/dark setting automatically.</p>{/if}
+                {#if !phone}<p class="setting-hint">"System" follows your device.</p>{/if}
 
                 <div class="setting-row">
                   <div class="setting-label">Week starts on</div>
@@ -62,7 +62,7 @@
                     >Monday</button>
                   </div>
                 </div>
-                {#if !phone}<p class="setting-hint">Controls Agenda's month grid and "this week" grouping.</p>{/if}
+                {#if !phone}<p class="setting-hint">For Agenda's month grid and "this week".</p>{/if}
 
                 <div class="setting-row">
                   <div class="setting-label">Time format</div>
@@ -85,7 +85,7 @@
                     >24h</button>
                   </div>
                 </div>
-                {#if !phone}<p class="setting-hint">Controls every clock time shown in the app (History, reminders, task history, last synced).</p>{/if}
+                {#if !phone}<p class="setting-hint">For every time shown in the app.</p>{/if}
               </div>
 
               <div class="setting-group">
@@ -96,7 +96,7 @@
                     <span class="toggle-knob"></span>
                   </button>
                 </div>
-                <p class="setting-hint">Raises border and text contrast throughout, on top of Light or Dark.</p>
+                <p class="setting-hint">Stronger text and borders, in Light or Dark.</p>
 
                 <div class="setting-row">
                   <div class="setting-label">Reduce motion</div>
@@ -104,7 +104,7 @@
                     <span class="toggle-knob"></span>
                   </button>
                 </div>
-                {#if !phone}<p class="setting-hint">Turns off panel/dialog slide and fade animations throughout the app.</p>{/if}
+                {#if !phone}<p class="setting-hint">Turns off slide and fade animations.</p>{/if}
 
                 <div class="setting-row">
                   <div class="setting-label">Reduce transparency</div>

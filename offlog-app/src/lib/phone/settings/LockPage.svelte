@@ -83,7 +83,9 @@
 <p class="p-say intro">A PIN keeps Offlog closed to anyone who picks up your phone. It isn't encryption, so keep your phone's own lock on too.</p>
 
 {#if !appLockEnabled}
-  <button class="p-go" on:click={openPinForm}>Set a PIN</button>
+  <div class="p-group">
+    <button class="p-row" on:click={openPinForm}><span class="p-ico">{@html I.setLock}</span><span class="p-k">Set a PIN</span><span class="p-v">Off{@html I.chev}</span></button>
+  </div>
 {:else}
   <div class="p-group">
     <div class="p-row static">

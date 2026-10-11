@@ -100,9 +100,9 @@
 {#if __introReady}
 <div class="scrim" on:click|self={() => requestClose()} in:fade={panelScrimIn(420)} out:fade={panelScrimOut(420)}></div>
 
-<div class="panel" role="dialog" aria-modal="true" aria-label="Archived Projects" use:trapFocus in:fly={panelIn(420)} out:fly={panelOut(420)}>
+<div class="panel" role="dialog" aria-modal="true" aria-label="Archived projects" use:trapFocus in:fly={panelIn(420)} out:fly={panelOut(420)}>
   <div class="panel-head">
-    <span class="panel-title">Archived Projects</span>
+    <span class="panel-title">Archived projects</span>
     <button class="close-btn" on:click={() => requestClose()} aria-label="Close">✕</button>
   </div>
 

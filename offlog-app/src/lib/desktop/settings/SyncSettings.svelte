@@ -18,8 +18,7 @@
 </script>
 
               <div class="setting-group">
-                <div class="setting-section-title">Status</div>
-                <div class="setting-row">
+                                <div class="setting-row">
                   <span class="setting-label">{syncEnabled ? 'Sync enabled' : 'Sync paused'}</span>
                   <button class="toggle-btn" class:on={syncEnabled} on:click={toggleSyncEnabled} aria-label="Toggle sync" role="switch" aria-checked={syncEnabled}>
                     <span class="toggle-knob"></span>
@@ -44,9 +43,9 @@
                       <svg viewBox="0 0 8 14" width="7" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,1 7,7 1,13"/></svg>
                     </button>
                   {:else}
-                    <p class="setting-hint">Happens from the Android app (Settings → Sync → "Find my computer") or the PC app (Settings → Sync → "Generate a code") — not from a plain web browser.</p>
+                    <p class="setting-hint">On your phone, open Settings → Sync → Find my computer.</p>
                   {/if}
-                  <p class="setting-hint">Running your own sync server by hand instead? Enter its address in Settings → Advanced.</p>
+                  <p class="setting-hint">Using your own server? Set it up in Advanced.</p>
                 </div>
 
                 <div class="setting-group">
@@ -56,7 +55,7 @@
                     <input bind:value={deviceName} placeholder="PC" on:blur={saveDeviceName} enterkeyhint="done"
                       on:keydown={(e) => { if (e.key === 'Enter') (e.currentTarget as HTMLInputElement).blur(); }} />
                   </label>
-                  <p class="setting-hint">Shown on this device's own edits from now on — changelog entries, task history, and the list below.</p>
+                  <p class="setting-hint">Shown next to changes made here.</p>
                 </div>
 
                 {#if deviceLastSeen.length}
