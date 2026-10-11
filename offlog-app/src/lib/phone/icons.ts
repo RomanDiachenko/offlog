@@ -32,7 +32,7 @@ export const I = {
   steps: svg(ICON.steps),
   clip: svg(ICON.attach),
   status: svg('<rect x="4" y="4" width="6" height="16" rx="1.5"/><rect x="14" y="4" width="6" height="10" rx="1.5"/>'),
-  field: svg('<rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M7.5 10v4M11 12h5"/>'),
+  field: svg(ICON.field),
   clock: svg(ICON.clock),
   copy: svg('<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 00-1.5-1.5H6A1.5 1.5 0 004.5 6v8A1.5 1.5 0 006 15.5h2.5"/>'),
   arch: svg('<rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M5 8.5V19a1 1 0 001 1h12a1 1 0 001-1V8.5M10 12.5h4"/>'),

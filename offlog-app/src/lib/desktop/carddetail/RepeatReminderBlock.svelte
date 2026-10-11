@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../../shared/iconPaths';
   import { slide } from 'svelte/transition';
   import { revealIn, revealOut } from '../../motion';
   import type { TaskDoc } from '../../types';
@@ -44,7 +45,7 @@
 
           <div class="extra-block">
             <button type="button" class="extra-block-toggle" on:click={() => showRepeatReminder = !showRepeatReminder} aria-expanded={showRepeatReminder}>
-              <span class="field-label">Repeat &amp; reminder</span>
+              <span class="xb-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.repeat}</svg></span><span class="field-label">Repeat &amp; reminder</span>
               <svg class="section-chevron" class:open={showRepeatReminder} viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,1 7,5 2,9"/></svg>
             </button>
             {#if showRepeatReminder}

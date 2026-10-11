@@ -14,7 +14,6 @@
   import { trapFocus } from '../focusTrap';
   import PinStar from './PinStar.svelte';
   import CalendarPicker from './CalendarPicker.svelte';
-  import CustomSelect from './CustomSelect.svelte';
   import { findDuplicateChecklistItems } from '../utils';
   import { hapticToggle } from '../haptics';
   import RepeatReminderBlock from './carddetail/RepeatReminderBlock.svelte';
@@ -153,8 +152,7 @@
   });
   $: if (showAttachmentsBlock) ensureThumbnails();
   let priority = task.priority;
-  // CustomSelect only takes string values — priority stays 1|2|3 for
-  // persist()/everything else, this is just a bound proxy for the picker.
+  // The picker works in strings; priority stays 1|2|3 for persist().
   let priorityStr = String(priority);
   $: priority = (Number(priorityStr) || 1) as 1 | 2 | 3;
   const statusOptions = project.columns.map(col => ({ value: col.id, label: col.name }));
@@ -808,7 +806,11 @@
       </div>
       <div class="row">
         <span class="row-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4.5M5 4.5h11l-2 4 2 4H5"/></svg></span>
-        <label class="row-field"><span class="sr">Priority</span><CustomSelect options={priorityOptions} bind:value={priorityStr} /></label>
+        <div class="prio-seg" role="radiogroup" aria-label="Priority">
+          {#each priorityOptions as o (o.value)}
+            <button type="button" class="prio-opt" class:on={priorityStr === o.value} role="radio" aria-checked={priorityStr === o.value} on:click={() => priorityStr = o.value}><i style:background={o.dotColor}></i>{o.label}</button>
+          {/each}
+        </div>
       </div>
       <div class="row row-tags">
         <span class="row-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1l8 8a1 1 0 0 1 0 1.4l-6.7 6.7a1 1 0 0 1-1.4 0z"/><circle cx="8" cy="8" r="1.3"/></svg></span>
@@ -976,11 +978,6 @@
      .remind-on-due-row below). Giving the checkbox flex:1 stretches it
      past its own nowrap text and leaves visible dead space. */
   .extras-panel :global(.reminder-row .cal-field) { flex: 1; min-width: 150px; }
-  label {
-    display: flex; flex-direction: column; gap: .22rem;
-    font-family: var(--mono); font-size: var(--fs-2xs); letter-spacing: .05em;
-    text-transform: uppercase; color: var(--faint);
-  }
   /* Same gap as fields-row's Status/Priority pair (.5rem). The field is
      wider than before -- 150px only left the shortcuts a narrower share
      than 4 pills need, which pushed "1 month" into a horizontal-scroll
@@ -1150,8 +1147,17 @@
   .row-tags { align-items: flex-start; }
   .row-tags .row-ic { margin-top: 9px; }
   .row-ic { display: flex; width: 16px; justify-content: center; color: var(--faint); flex-shrink: 0; }
-  .row-field { flex: 1; min-width: 0; text-transform: none; letter-spacing: normal; }
   .rows :global(.cs-trigger), .rows :global(.cal-trigger), .rows .tags-input-row { background: transparent; }
+  /* Priority: three small pills, only as wide as their words. */
+  .prio-seg { display: flex; gap: 4px; }
+  .prio-opt {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 0; border-radius: 999px;
+    background: none; cursor: pointer; font: inherit; font-size: var(--fs-s); font-weight: 600; color: var(--muted);
+    transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
+  }
+  .prio-opt i { width: 7px; height: 7px; border-radius: 50%; display: block; }
+  .prio-opt:hover { background: var(--rail-hover); color: var(--text); }
+  .prio-opt.on, .prio-opt.on:hover { background: var(--surface); color: var(--text); box-shadow: var(--sel-ring); }
   /* The date picker's own icon sits in the icon column, like the rows below. */
   .rows :global(.cal-trigger) { padding-left: 0; }
   .rows .due-date-row { flex: 1; min-width: 0; }
@@ -1296,20 +1302,26 @@
      rather than implied by a caption + hairline. The faint 1px
      border-left anchors the indent -- a bare margin-left with no visual
      anchor reads as a misalignment glitch. */
+  /* One soft group of icon rows (the phone task screen's language); a row
+     opens in place, and an inset line starts the next. */
   .extras-panel {
-    display: flex; flex-direction: column; gap: .4rem;
-    margin-left: 8px; padding-left: 8px;
-    border-left: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    display: flex; flex-direction: column;
+    background: var(--field-bg); border-radius: var(--r-l); padding: 2px 0;
   }
-  .extras-panel :global(.extra-block) {
-    background: var(--col-bg); border: 1px solid var(--border); border-radius: 8px;
-    padding: .1rem .6rem;
+  .extras-panel :global(.extra-block) { padding: 0 12px; }
+  .extras-panel :global(.extra-block + .extra-block) {
+    background-image: linear-gradient(var(--line), var(--line)); background-size: calc(100% - 50px) 1px; background-position: 38px 0; background-repeat: no-repeat;
   }
   .extras-panel :global(.extra-block-toggle) {
-    display: flex; align-items: center; gap: 8px; width: 100%;
+    display: flex; align-items: center; gap: 10px; width: 100%;
     background: none; border: none; cursor: pointer; text-align: left;
-    padding: .45rem 0;
+    padding: .6rem 0; color: var(--text);
   }
+  .extras-panel :global(.xb-ic) { display: flex; width: 16px; justify-content: center; color: var(--faint); flex-shrink: 0; }
+  .extras-panel :global(.extra-block-toggle .field-label) {
+    font-family: inherit; font-size: var(--fs-m); letter-spacing: 0; text-transform: none; color: var(--text); font-weight: 500;
+  }
+  .extras-panel :global(.extra-block-body) { padding-left: 26px; }
   .extras-panel :global(.extra-block-toggle .field-label) { flex: 1; }
   .extras-panel :global(.extra-block-body) { display: flex; flex-direction: column; gap: .3rem; padding-bottom: .5rem; }
 
@@ -1339,10 +1351,10 @@
   .extras-panel :global(.blocked-badge-active) { color: var(--danger); }
 
   .extras-panel :global(.checklist-field) { display: flex; flex-direction: column; gap: .3rem; }
-  .extras-panel :global(.checklist-progress) { color: var(--accent); font-weight: 600; margin-left: 4px; }
+  .extras-panel :global(.checklist-progress) { color: var(--faint); font-weight: 500; margin-left: 6px; }
   .extras-panel :global(.checklist-row) { display: flex; align-items: center; gap: 7px; }
   .extras-panel :global(.checklist-check) {
-    flex-shrink: 0; width: 17px; height: 17px; border-radius: 5px;
+    flex-shrink: 0; width: 17px; height: 17px; border-radius: 50%;
     border: 1.5px solid var(--border-strong); background: var(--surface);
     display: flex; align-items: center; justify-content: center;
     font-size: var(--fs-xs); color: var(--on-accent); cursor: pointer; padding: 0;

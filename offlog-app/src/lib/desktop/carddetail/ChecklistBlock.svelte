@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../../shared/iconPaths';
   import { slide } from 'svelte/transition';
   import { revealIn, revealOut } from '../../motion';
 
@@ -14,8 +15,8 @@
 
           <div class="extra-block">
             <button type="button" class="extra-block-toggle" on:click={() => showChecklistBlock = !showChecklistBlock} aria-expanded={showChecklistBlock}>
-              <span class="field-label">
-                Checklist{#if checklist.length} <span class="checklist-progress">{checklist.filter(i => i.done).length}/{checklist.length}</span>{/if}
+              <span class="xb-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.steps}</svg></span><span class="field-label">
+                Steps{#if checklist.length} <span class="checklist-progress">{checklist.filter(i => i.done).length}/{checklist.length}</span>{/if}
               </span>
               <svg class="section-chevron" class:open={showChecklistBlock} viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,1 7,5 2,9"/></svg>
             </button>

@@ -20,7 +20,7 @@
 
           <div class="extra-block">
             <button type="button" class="extra-block-toggle" on:click={() => showAttachmentsBlock = !showAttachmentsBlock} aria-expanded={showAttachmentsBlock}>
-              <span class="field-label">
+              <span class="xb-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.attach}</svg></span><span class="field-label">
                 Attachments{#if attachments.length} <span class="checklist-progress">{attachments.length}</span>{/if}
               </span>
               <svg class="section-chevron" class:open={showAttachmentsBlock} viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,1 7,5 2,9"/></svg>
