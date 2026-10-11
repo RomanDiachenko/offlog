@@ -14,6 +14,15 @@ describe('hold tip', () => {
     expect(get(toast)).toBeNull();
   });
 
+  it('waits while an Undo is showing, then shows on a later tap', () => {
+    toast.set({ id: 1, text: 'Done: A', undo: () => {} });
+    holdTipOnTap();
+    expect(get(toast)?.text).toBe('Done: A');
+    toast.set(null);
+    holdTipOnTap();
+    expect(get(toast)?.text).toBe('Tip: hold a task in a list for more actions');
+  });
+
   it('never shows once a card has been held', () => {
     holdUsed();
     holdTipOnTap();

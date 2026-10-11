@@ -1,8 +1,10 @@
-import { showToast } from './nav';
+import { get } from 'svelte/store';
+import { showToast, toast } from './nav';
 
 // A task card's menu opens on a long press, which nothing on the card shows.
 // The first plain tap on such a card says so, once per device; having held a
-// card already counts as knowing.
+// card already counts as knowing. A live Undo is never replaced by the tip:
+// it waits for a later tap.
 const KEY = 'offlog_hold_tip';
 
 function seen(): boolean {
@@ -13,7 +15,7 @@ function remember(): void {
 }
 
 export function holdTipOnTap(): void {
-  if (seen()) return;
+  if (seen() || get(toast)?.undo) return;
   remember();
   showToast('Tip: hold a task in a list for more actions');
 }
