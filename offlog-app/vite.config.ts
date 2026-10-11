@@ -1,3 +1,4 @@
+import { MARK_PATHS } from './src/lib/phone/mark.ts';
 import { defineConfig, type Plugin } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 
@@ -17,6 +18,18 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 // warning on every launch.
 const CSP = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; font-src 'self'; connect-src 'self' http://*:* https://*:*; object-src 'none'; base-uri 'self'; form-action 'self'"
 
+// The launch cover's mark comes from the same paths the app draws, so the two
+// can never drift (index.html's <!--launch-cover-->).
+function launchCoverPlugin(): Plugin {
+  return {
+    name: 'launch-cover',
+    transformIndexHtml(html) {
+      const svg = `<svg viewBox="0 0 1024 1024">${MARK_PATHS.map(d => `<path d="${d}"/>`).join('')}</svg>`;
+      return html.replace('<!--launch-cover-->', `<div id="launch" aria-hidden="true">${svg}</div>`);
+    },
+  };
+}
+
 function cspPlugin(): Plugin {
   return {
     name: 'inject-csp',
@@ -28,6 +41,6 @@ function cspPlugin(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [svelte(), cspPlugin()],
+  plugins: [svelte(), launchCoverPlugin(), cspPlugin()],
   base: './',
 })

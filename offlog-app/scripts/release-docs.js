@@ -57,7 +57,8 @@ export function archiveRow({ version, text }) {
   const intro = paras.find(p => p && !p.startsWith('#') && !p.startsWith('-'));
   const bullet = paras.flatMap(p => p.split('\n')).find(l => l.startsWith('- '));
   const raw = intro ?? (bullet ? bullet.slice(2) : '');
-  const summary = raw.replace(/\s+/g, ' ').replace(/\*\*/g, '').replace(/\|/g, '\\|').trim();
+  // Backslashes first: escaping only | would let a summary's own "\|" undo it.
+  const summary = raw.replace(/\s+/g, ' ').replace(/\*\*/g, '').replace(/\\/g, '\\\\').replace(/\|/g, '\\|').trim();
   return `| v${version} | ${summary} |`;
 }
 

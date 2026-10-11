@@ -52,6 +52,10 @@ describe('archiveRow', () => {
     expect(archiveRow({ version: '1.1.0', text: '## [1.1.0] — d\n\n### Fixed\n- **A | B** fixed' }))
       .toBe('| v1.1.0 | A \\| B fixed |');
   });
+  it('a backslash before a pipe cannot cancel the pipe\'s escape', () => {
+    expect(archiveRow({ version: '1.1.0', text: '## [1.1.0] — d\n\nPath a\\|b.' }))
+      .toBe('| v1.1.0 | Path a\\\\\\|b. |');
+  });
   it('lands at the top of the history table', () => {
     const out = addArchiveRows('# H\n\n| Release | Summary |\n|---|---|\n| v1.0.0 | old |\n', ['| v1.1.0 | new |']);
     expect(out).toContain('|---|---|\n| v1.1.0 | new |\n| v1.0.0 | old |');

@@ -293,6 +293,14 @@ stacking container, so overlapping them gives a 200dvh document and a
 scrollbar for the duration. On desktop this is invisible anyway — the Tauri
 window is held hidden until `revealTauriWindow()`.
 
+On Android the cut is hidden by the **launch cover** (`index.html`'s
+`#launch`, switched on by `public/theme-init.js` before the stylesheet
+loads): the splash's colour and mark at the splash icon's size, fixed over
+the whole screen including the status bar. Once the first real screen is
+drawn, `launch.ts` fades it out (`launchOutMs()`, the large step, accelerate
+easing) while the mark shrinks to 92%, so the splash flows into the app
+instead of cutting. Reduce Motion ends it at once.
+
 ## Transitions do not run on a component's own root elements
 
 Svelte does not play an intro transition on an element when the element's own

@@ -28,7 +28,7 @@ vi.mock('../src/config', () => ({
   isNativePlatform: () => false,
   getTimeFormat24h: () => true,
 }));
-vi.mock('../src/lib/theme', () => ({ getThemeMode: () => 'dark' }));
+vi.mock('../src/lib/theme', () => ({ getThemeMode: () => 'dark', claimStatusBar: () => ({ set() {}, release() {} }) }));
 
 import SettingsScreen from '../src/lib/phone/settings/SettingsScreen.svelte';
 import { stack, switchTab, toast } from '../src/lib/phone/nav';

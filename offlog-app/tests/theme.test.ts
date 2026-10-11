@@ -76,6 +76,21 @@ describe('theme — native status bar', () => {
     strip.remove();
   });
 
+  it('a glow claim tints the strip with dark icons; a plain screen on top clears it', async () => {
+    const { claimStatusBar, setStatusBarOnHero } = await import('../src/lib/theme');
+    nativeOff();
+    setStatusBarOnHero(false);
+    const glow = claimStatusBar({ lightIcons: false, glow: true });
+    expect(document.body.classList.contains('statusbar-glow')).toBe(true);
+    expect(document.body.classList.contains('statusbar-hero')).toBe(false);
+    const plain = claimStatusBar(null);
+    expect(document.body.classList.contains('statusbar-glow')).toBe(false);
+    plain.release();
+    expect(document.body.classList.contains('statusbar-glow')).toBe(true);
+    glow.release();
+    expect(document.body.classList.contains('statusbar-glow')).toBe(false);
+  });
+
   it('a plain claim covers the hero tint, and releasing it hands the strip back', async () => {
     const { setStatusBarOnHero, claimStatusBar } = await import('../src/lib/theme');
     nativeOff();

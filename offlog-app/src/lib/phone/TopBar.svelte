@@ -1,6 +1,8 @@
 <script lang="ts">
   import { back, actions } from './nav';
   import { I } from './icons';
+  import { onDestroy } from 'svelte';
+  import { claimStatusBar } from '../theme';
 
   export let title: string;
   export let sub = '';
@@ -12,6 +14,10 @@
   // (else the accent), the desktop views' look. Expects the screen's 16px gutter.
   export let panel = false;
   export let space: string | null = null;
+  // Every screen has one TopBar, so it decides the strip under the clock: a
+  // glowing header carries its tint up there, any other screen the plain strip.
+  const strip = claimStatusBar(panel ? { lightIcons: false, glow: true } : null);
+  onDestroy(() => strip.release());
 </script>
 
 <div class="wrap-stage" class:stage={panel} style:--space={panel ? space : null}>
@@ -55,9 +61,9 @@
     position: sticky; top: 0; z-index: 3;
     margin: 0 -16px 14px; padding: 10px 12px 6px;
     background:
-      radial-gradient(70% 120% at 10% 0%, color-mix(in srgb, var(--space, var(--accent)) 10%, transparent), transparent 70%),
-      radial-gradient(50% 100% at 90% 10%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 70%),
-      linear-gradient(var(--bg) 10px, transparent 10px);
+      radial-gradient(70% 110% at 10% 55%, color-mix(in srgb, var(--space, var(--accent)) 9%, transparent), transparent 70%),
+      radial-gradient(50% 100% at 90% 50%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 70%),
+      linear-gradient(var(--top-tint), var(--bg));
   }
   .head { padding: 2px 10px 2px 14px; }
   .head .sub { margin-bottom: 12px; }

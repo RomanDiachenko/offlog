@@ -95,6 +95,7 @@ vi.mock('../src/lib/autoBackup', () => ({
   getLastAutoBackupAt: () => null, getAutoBackupUsage: vi.fn().mockResolvedValue(null),
 }));
 vi.mock('../src/lib/theme', () => ({
+  claimStatusBar: () => ({ set() {}, release() {} }),
   getThemeMode: () => 'system', setThemeMode: (...a: unknown[]) => setThemeMode(...a),
   getHighContrast: () => false, setHighContrast: (...a: unknown[]) => setHighContrast(...a),
   getReduceMotion: () => false, setReduceMotion: vi.fn(),

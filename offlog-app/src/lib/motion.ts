@@ -130,6 +130,10 @@ export function panelScrimOut(w: number) {
 //
 // Read at close time, never cached: these are getters so Reduce Motion (which
 // makes them 0) is honoured even if it was toggled after the modal opened.
+// The Android launch cover's fade into the app (launch.ts): a full-screen
+// exit, so the large step.
+export function launchOutMs(): number { return d(DUR.large); }
+
 export const exitMs = {
   get small() { return d(OUT(DUR.small)); },
   get medium() { return d(OUT(DUR.medium)); },

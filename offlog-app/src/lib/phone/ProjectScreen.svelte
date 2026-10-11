@@ -21,7 +21,7 @@
   $: project = $projects.find(p => p._id === id) ?? null;
   $: space = project ? $spaces.find(s => s._id === project!.space_id) : undefined;
 
-  // Claims the plain strip under the clock over Home's hero colour.
+  // Claims the plain strip while the project loads; its TopBar then claims the glow.
   const strip = claimStatusBar(null);
   onDestroy(() => strip.release());
   // $projectTasks follows the store's active project, so the screen on top

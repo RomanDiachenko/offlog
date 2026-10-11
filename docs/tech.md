@@ -736,7 +736,8 @@ low has no hue of its own (`--border-strong`), so green keeps meaning done. Deri
 | `--bg` | `#F6F7F9` | `#181A20` | page background |
 | `--surface` | `#FFFFFF` | `#242934` | cards, panels |
 | `--sidebar-bg` | `#FBFBFC` | `#101218` | sidebar (follows theme) |
-| `--statusbar-fill` | `#f6f7f9` | `#181a20` | Android status-bar strip. `--bg` at rest; `body.statusbar-hero` makes it `--hero` (the loading screen). Claims go through `theme.ts` (`setStatusBarOnHero`, `claimStatusBar`; latest live claim wins), applied after the native icon style lands |
+| `--top-tint` | `--accent` 6% over `--bg` | same | the flat band a glowing phone header (Home's hero, a TopBar panel) starts with, so the status-bar strip can take the same colour |
+| `--statusbar-fill` | `#f6f7f9` | `#181a20` | Android status-bar strip. `--bg` at rest; `body.statusbar-glow` makes it `--top-tint` under a glowing header (every TopBar claims: a panel the glow, any other the plain strip); `body.statusbar-hero` makes it `--hero` (the loading screen). Claims go through `theme.ts` (`setStatusBarOnHero`, `claimStatusBar`; latest live claim wins), applied after the native icon style lands |
 | `--col-bg` | `#ECEEF2` | `#1E222C` | Board status column fill |
 | `--border` | `#E2E4EA` | `#2F3542` | hairlines |
 | `--border-strong` | `#C7CBD6` | `#3F4657` | stronger dividers, scrollbar |

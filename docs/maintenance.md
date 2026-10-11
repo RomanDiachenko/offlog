@@ -6,7 +6,7 @@ before touching code.
 
 **Current pointer** — last pass: **30th run** (2026-10-11, on `main`,
 see [archive/maintenance.md](archive/maintenance.md)): audit of the
-redesign's second round; fixes committed on `main`, unreleased. Next pass due: **2027-01-11, or on
+redesign's second round; its fixes shipped in v6.12.0. Next pass due: **2027-01-11, or on
 the next bug hit in daily use, whichever comes first.**
 
 This pointer is the only tracker state in this file. Past passes are

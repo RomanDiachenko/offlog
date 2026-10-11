@@ -24,6 +24,7 @@
   import { updateState, showUpdateModal, startBackgroundUpdateChecks } from './lib/desktop/updateChecker';
   import { isPhone, actions as phoneActions, backAtRoot, switchTab, navigate, showToast, tab as phoneTab } from './lib/phone/nav';
   import { setStatusBarSuppressed, setStatusBarOnHero, refreshStatusBar } from './lib/theme';
+  import { endLaunchCover } from './lib/launch';
   import { fly } from 'svelte/transition';
   import { snackIn, snackOut } from './lib/motion';
   // On the phone errors drop in from the top, clear of the + button and
@@ -536,10 +537,16 @@
   $: if (!$isPhone) loadDesktop();
   $: setStatusBarSuppressed(locked);
   // The phone loading screen is --hero (it continues the splash), so the
-  // status icons go light with it; Home claims the hero itself once mounted.
-  let heroWhileLoading = false;
+  // status icons go light with it until the launch cover has faded away.
+  let heroWhileLoading = false, launchGone = false, launchEnding = false;
   $: if ($isPhone && !ready && !initError && !heroWhileLoading) { heroWhileLoading = true; setStatusBarOnHero(true); }
-  $: if ((ready || initError) && heroWhileLoading) { heroWhileLoading = false; setStatusBarOnHero(false); }
+  $: if (launchGone && heroWhileLoading) { heroWhileLoading = false; setStatusBarOnHero(false); }
+  // The cover fades once something real is drawn under it: the app, the
+  // first-launch page, or the startup error. A frame first, so it has painted.
+  $: if (!launchEnding && (initError || (showNamePrompt && Welcome) || (ready && ($isPhone ? PhoneApp : Desktop)))) {
+    launchEnding = true;
+    tick().then(() => requestAnimationFrame(() => endLaunchCover(() => { launchGone = true; })));
+  }
   // Toasts sit above the phone's navigation bar rather than on top of it.
   $: document.body.classList.toggle('phone', $isPhone);
 

@@ -250,6 +250,11 @@ body.dark.high-contrast {
   :root, body.dark { --hero: oklch(from var(--hero-base) calc(l + var(--hero-dl, 0)) c calc(h + var(--hero-dh, 0))); }
 }
 body.statusbar-hero { --statusbar-fill: var(--hero); }
+/* A screen whose header glows (phone Home and the TopBar panel screens) starts
+   with a flat band of --top-tint, and the strip takes the same colour, so the
+   header runs on under the clock. Declared on body for the theme's --bg. */
+body { --top-tint: color-mix(in srgb, var(--accent) 6%, var(--bg)); }
+body.statusbar-glow { --statusbar-fill: var(--top-tint); }
 /* The strip's height is a fractional inset; a pixel of the same colour below
    it covers the rounding seam against the hero. */
 body.statusbar-hero .status-bar-fill { box-shadow: 0 1px 0 var(--statusbar-fill); }

@@ -48,10 +48,10 @@
 
   let unsub: (() => void) | undefined;
   onMount(() => { applyHeroShift(); load(); unsub = subscribe(load); });
-  // Its own claim of the plain strip, taken when Home appears: the screen it
+  // Its own claim of the glow strip (Home has no TopBar), taken when Home appears: the screen it
   // returns from may still be animating out with a claim of its own.
   let strip: ReturnType<typeof claimStatusBar> | undefined;
-  onMount(() => { strip = claimStatusBar(null); });
+  onMount(() => { strip = claimStatusBar({ lightIcons: false, glow: true }); });
   onDestroy(() => { unsub?.(); if (raf) cancelAnimationFrame(raf); strip?.release(); });
   // Coming back to the app the next morning shows the new day.
   function onVisible() { if (!document.hidden) { todayStr = localDateStr(new Date()); applyHeroShift(); load(); } }
@@ -221,7 +221,7 @@
   .appbar {
     position: absolute; top: 0; left: 0; right: 0; z-index: 6; height: 64px;
     display: flex; align-items: center; gap: 12px; padding: 0 8px 0 20px;
-    background: color-mix(in srgb, var(--bg) calc(var(--t) * 100%), transparent);
+    background: color-mix(in srgb, var(--top-tint) calc(var(--t) * 100%), transparent);
     color: var(--text);
     box-shadow: 0 1px 0 color-mix(in srgb, var(--border) calc(var(--t) * 100%), transparent);
   }
@@ -244,8 +244,9 @@
     position: relative; overflow-x: clip;
     margin: 0 -16px; padding: 64px 16px 14px;
     background:
-      radial-gradient(80% 90% at 15% 10%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 70%),
-      radial-gradient(60% 80% at 95% 0%, color-mix(in srgb, var(--hero) 8%, transparent), transparent 70%);
+      radial-gradient(80% 80% at 15% 45%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+      radial-gradient(60% 70% at 95% 40%, color-mix(in srgb, var(--hero) 7%, transparent), transparent 70%),
+      linear-gradient(var(--top-tint), var(--bg) 220px);
   }
   .hpanel { position: relative; border-radius: 22px; padding: 16px 18px 18px; }
   /* stretch is spelled out: older WebViews give buttons align-items:

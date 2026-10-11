@@ -489,6 +489,17 @@ rounded square; the Home hero shifts slightly by season and evening. Rejected
 there and not to be re-proposed without new evidence: dotted row lines, and
 showing a task's facts under its title instead of form rows.
 
+### Both shells share one look: Fluid, almost no colour
+After the phone shell shipped (v6.11.0), both shells were restyled together
+in v6.12.0, element by element with the owner approving each: glass chrome
+(`.glass`) that turns solid over a scrim, almost no colour, selection shown
+by a soft glow (`--sel-*`), neutral primary buttons, and one icon set
+(`shared/iconPaths.ts`) where no shape means two things. The desktop
+*layout* still stays as it was; only its look follows the phone. Rejected in
+that round and not to be re-proposed: a sticky-note card style, a narrower
+Board column, and a close × on Settings. Rules and tokens are in tech.md's
+Fluid paragraph and token table.
+
 ### Calendar sync (.ics), live-subscribe or one-shot export: declined
 A live-subscribe feed (OS calendar polls a local URL) doesn't work well
 enough: the desktop app can sit in the tray and start at login, but the

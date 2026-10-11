@@ -190,7 +190,8 @@ inside and import it back.
 - Brand (accent/hero) colour changes must also reach `capacitor.config.ts`'s
   `iconColor` and `android.backgroundColor`, `android/.../res/values/colors.xml` (`colorPrimary`,
   `colorAccent`, `splashBg` = `--hero-base`, the `colorWidget*` set) +
-  `values-night/colors.xml` (`splashBg` and `colorWidget*` only) and `resources/generate-icons.cjs`'s `BRAND` (then
+  `values-night/colors.xml` (`splashBg` and `colorWidget*` only), `index.html`'s launch cover
+  (`#launch`, light and dark = `splashBg`) and `resources/generate-icons.cjs`'s `BRAND` (then
   regenerate the launcher icons). `<meta theme-color>` is not a brand colour:
   it follows the background (`--statusbar-fill`), set in `index.html`,
   `public/theme-init.js` and `theme.ts`; change all three together.
