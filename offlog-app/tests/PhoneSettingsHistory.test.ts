@@ -43,6 +43,12 @@ describe('phone History', () => {
     expect(getRecentLogs).toHaveBeenCalledWith(150);
   });
 
+  it('an old entry with no device name reads Unknown device', async () => {
+    getRecentLogs.mockResolvedValue([logs[0], { ...logs[1], source: undefined }]);
+    const { getByText } = render(SettingsPage, { page: 'history' });
+    await waitFor(() => getByText('Unknown device'));
+  });
+
   it('one device only: no device chip', async () => {
     getRecentLogs.mockResolvedValue(logs.map(l => ({ ...l, source: 'Pixel' })));
     const { getByText, container } = render(SettingsPage, { page: 'history' });

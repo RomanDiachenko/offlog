@@ -57,7 +57,7 @@
   }
 
   // The device chip only tells devices apart, so it shows once there are two.
-  $: multiDevice = new Set(logs.map(l => l.source ?? 'pc')).size > 1;
+  $: multiDevice = new Set(logs.map(l => l.source ?? 'Unknown device')).size > 1;
 
   $: groups = (() => {
     const map = new Map<string, LogDoc[]>();
@@ -107,12 +107,12 @@
         {@const sub = (ACTION_LABEL[log.action] ?? log.action) + (log.project_name && entityLabel(log) !== 'project' ? ` · ${log.project_name}` : '')}
         {#if isTask}
           <button class="p-row entry" on:click={() => open(log)}>
-            <span class="p-k"><span class="desc">{describeLog(log)}</span><span class="p-sub">{sub}{#if multiDevice} · <span class="src">{log.source ?? 'pc'}</span>{/if}</span></span>
+            <span class="p-k"><span class="desc">{describeLog(log)}</span><span class="p-sub">{sub}{#if multiDevice} · <span class="src">{log.source ?? 'Unknown device'}</span>{/if}</span></span>
             <span class="p-v">{fmt(log.ts).split(' · ')[1] ?? ''}</span>
           </button>
         {:else}
           <div class="p-row entry static">
-            <span class="p-k"><span class="desc">{describeLog(log)}</span><span class="p-sub">{sub}{#if multiDevice} · <span class="src">{log.source ?? 'pc'}</span>{/if}</span></span>
+            <span class="p-k"><span class="desc">{describeLog(log)}</span><span class="p-sub">{sub}{#if multiDevice} · <span class="src">{log.source ?? 'Unknown device'}</span>{/if}</span></span>
             <span class="p-v">{fmt(log.ts).split(' · ')[1] ?? ''}</span>
           </div>
         {/if}
