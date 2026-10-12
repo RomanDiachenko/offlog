@@ -704,6 +704,26 @@ the 6-digit space instead of just reading it. Still bounded by that
 entropy against a resourced attacker — same honest framing as the PIN
 lock's throttle, not a claim of airtight security.
 
+### Sync contents are end-to-end encrypted; the connection stays HTTP
+Every document leaves a device sealed with AES-256-GCM under one key the PC
+creates and hands over only inside the encrypted pairing reply, so the
+server, its files and anyone on the Wi-Fi see no task data. Always on, no
+setting and nothing for the user to remember: a passphrase was rejected
+because a forgotten one is unrecoverable and the pairing code already
+proves physical access to both devices. Ids are encrypted deterministically
+so the replicator still matches revisions; each body is bound to its id,
+revision and deleted flag, which makes forged, altered, replayed and
+unsealed-delete documents fail to open. It lives in the remote's `fetch`
+(`db/encryptedFetch.ts`), so the local database, the replicator and every
+screen see plain documents; transform-pouch was rejected for not covering
+ids or attachments. Encrypted data goes to a new database (`offlog-e`)
+rather than rewriting `offlog` in place, and the key arrives with a
+rotated password, so a device that never got the key fails loudly with
+"pair it again" instead of mixing readable and sealed documents. Costs:
+one re-pair per phone after the update, and the server still sees sizes,
+timing and that an (unknown) item changed. The connection itself stays
+plain HTTP for the reasons above.
+
 ### CodeQL findings inside bundled Capacitor plugin source: dismiss manually
 `paths-ignore` only filters which files get *extracted*
 for interpreted languages. Under `build-mode: manual`, Gradle/javac

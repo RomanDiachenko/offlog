@@ -28,8 +28,8 @@ That design removes most of the ways an app leaks data — there's no
 database of ours to breach, because there is no database of ours.
 
 What's left to protect is: the handoff when two of your devices first
-meet, the password that lets them keep talking, and the app itself on a
-device someone else picks up.
+meet, the password that lets them keep talking, what the sync server
+holds, and the app itself on a device someone else picks up.
 
 ---
 
@@ -53,7 +53,9 @@ the network:
   sees a 32-byte value that doesn't tell them the code.
 - **The password is never sent in the clear either.** The PC encrypts
   its reply with AES-256-GCM, using a key derived from that same code.
-  Only a device that knew the code can unlock it.
+  Only a device that knew the code can unlock it. The same reply carries
+  the **sync key** (section 3), and that is the only way it ever leaves
+  the PC.
 - **Two different keys, from one code.** The value that proves "I know
   the code" and the key that decrypts the password are derived
   separately (by mixing in the words `auth` and `enc` respectively). So
@@ -116,8 +118,8 @@ the operating system's real mechanism rather than something invented:
   limitations section — this build is a development and testing surface,
   not how the app is meant to be used.
 - **The PC's own copy is plain text.** The desktop app's built-in sync
-  server keeps its admin password in `sync-host.json` in the app's data
-  folder, unencrypted. Anything running as your Windows user can read it.
+  server keeps its admin password, and the sync key (section 3), in
+  `sync-host.json` in the app's data folder, unencrypted. Anything running as your Windows user can read it.
   The DPAPI protection above covers the password the app *uses to
   connect*, not this server-side file.
 
@@ -138,7 +140,49 @@ Two related details:
 
 ---
 
-## 3. App Lock — the PIN on the app itself
+## 3. What the sync server can see
+
+**The problem.** Sync goes through a server: normally the Offlog PC app's
+built-in one, possibly one you run elsewhere. Whoever can read that
+server's files, or watch its traffic, would otherwise read every task.
+
+**What actually happens.** What your devices send to the server, and so
+what it stores, is encrypted end to end with **AES-256-GCM** under a key
+only your paired devices hold. Each device keeps its own copy readable;
+nothing changes in how the app looks or works.
+
+- **One key, made by your PC.** 32 random bytes, created once. It reaches
+  a phone only inside the encrypted pairing reply (section 1). You never
+  see it, type it or remember it.
+- **What the server sees:** scrambled ids, revision numbers, sizes, and
+  when things change. Not titles, notes, tags, dates, checklists,
+  attachment names, types or contents.
+- **What the server can't do:** add, change, delete or replay a task.
+  Each encrypted document is bound to its own id, revision and deleted
+  flag, so anything that wasn't written by a device holding the key fails
+  to open. Your devices drop it, never store it, and Settings → Sync
+  says how many items were refused.
+- **Ids are encrypted the same way every time**, so the server can still
+  match versions of one task without knowing which task it is. The cost:
+  it can tell that the same (unknown) item changed again.
+- **Where the key is kept on each device:** in the app's own storage,
+  beside your tasks. Anyone who can read those can read the tasks
+  directly, so locking the key away more tightly would protect nothing.
+
+**Upgrading.** A device from before this change syncs with nothing
+encrypted. On first start the updated PC creates the key, moves to a new
+encrypted database, copies anything only the old one held, and deletes
+the old one. It also changes the sync password, so an older phone stops
+syncing and asks to be paired again: one new pairing per phone, once.
+
+**Honest limit.** The connection itself is still plain HTTP (section 13).
+Someone watching your Wi-Fi sees the sync password and the encrypted
+traffic, so they could sync a device of their own. It would hold only
+ciphertext, and anything it wrote would be refused.
+
+---
+
+## 4. App Lock — the PIN on the app itself
 
 Optional. Off by default. Turn it on and Offlog asks for a PIN when you
 open it, and again after a time in the background that you choose (5
@@ -192,7 +236,7 @@ agreeing on how encrypted data replicates — a much bigger feature than
 
 ---
 
-## 4. The app can't load anything from the internet
+## 5. The app can't load anything from the internet
 
 Offlog ships a **Content Security Policy** — a rule set the browser
 engine enforces, independent of the app's own code. The practical
@@ -221,7 +265,7 @@ arrives as a real HTTP header, so as a page tag it would do nothing.
 
 ---
 
-## 5. Text from another device is treated as untrusted
+## 6. Text from another device is treated as untrusted
 
 When your phone syncs a task to your PC, that title is *text from
 somewhere else*. Offlog renders search results and update notes as HTML
@@ -254,7 +298,7 @@ two independent layers.
 
 ---
 
-## 6. Links from outside the app
+## 7. Links from outside the app
 
 Android widgets and shortcuts open the app with URLs like
 `com.offlog.app://focus`. The link is registered as BROWSABLE, so any
@@ -274,7 +318,7 @@ untrusted input:
 
 ---
 
-## 7. Attachments
+## 8. Attachments
 
 - **10 MB per file, 10 files per task**, both checked twice — once when
   you pick the file, once again as it's written. The second check runs
@@ -296,7 +340,7 @@ would be curation dressed up as protection.
 
 ---
 
-## 8. Nothing phones home
+## 9. Nothing phones home
 
 Verified in the code, not just claimed:
 
@@ -330,7 +374,7 @@ Verified in the code, not just claimed:
 
 ---
 
-## 9. Things that only matter if something goes wrong
+## 10. Things that only matter if something goes wrong
 
 - **Deleting is never really deleting, at first.** A deleted task is
   flagged, not destroyed, and goes to the Recycle bin. Beyond being
@@ -357,7 +401,7 @@ Verified in the code, not just claimed:
 
 ---
 
-## 10. The desktop app's own housekeeping
+## 11. The desktop app's own housekeeping
 
 - **The bundled sync server can't outlive the app.** On Windows it runs
   inside a Job Object, which means the operating system kills it the
@@ -403,7 +447,7 @@ Verified in the code, not just claimed:
 
 ---
 
-## 11. How the project itself is kept honest
+## 12. How the project itself is kept honest
 
 Security isn't only what's in the app; it's also what stops a bad change
 from reaching you.
@@ -443,17 +487,17 @@ from reaching you.
 
 ---
 
-## 12. What Offlog does *not* protect against
+## 13. What Offlog does *not* protect against
 
 The honest list. None of these are bugs — they're recorded decisions,
 and knowing them is what lets you judge whether Offlog fits your
 situation.
 
-- **Sync traffic is unencrypted.** After pairing, your devices talk over
-  plain HTTP on your local network, with the password sent as standard
-  HTTP Basic authentication. Anyone able to monitor traffic *on your own
-  Wi-Fi* can read your task data as it syncs. Real encryption was
-  scoped and turned down: a certificate for a home IP address that
+- **The sync connection is plain HTTP.** Your tasks travel encrypted
+  (section 3), but the connection around them doesn't, and the password
+  goes as standard HTTP Basic authentication. Anyone able to monitor
+  traffic *on your own Wi-Fi* sees that password, and which items change
+  when. TLS for the connection was scoped and turned down: a certificate for a home IP address that
   changes whenever your router feels like it can only be self-signed,
   and shipping that means shipping an exception to your device's trust
   settings — more risk than the problem it solves, for a connection that
@@ -475,7 +519,8 @@ situation.
 - **The sync server is reachable from your whole local network** — it
   must be, for your phone to reach it — protected by that random
   24-character password, which the PC itself stores in plain text
-  (section 2).
+  (section 2). With it, someone can store junk on the server, or delete
+  what's there; your devices refuse it, and their own copies stay intact.
 - **The Android credential store uses a fixed IV** (section 2), a
   weakness inherited from the plugin, not a choice Offlog made.
 - **Offlog has never had a third-party security audit.** It's a personal

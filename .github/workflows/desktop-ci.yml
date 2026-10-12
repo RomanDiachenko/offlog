@@ -26,10 +26,10 @@ name: Desktop CI
 on:
   push:
     branches: [main]
-    paths: ['offlog-desktop/src-tauri/**', '!offlog-desktop/src-tauri/tauri.conf.json', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', 'offlog-desktop/scripts/phase0-repro/**', '.github/workflows/desktop-ci.yml']
+    paths: ['offlog-desktop/src-tauri/**', '!offlog-desktop/src-tauri/tauri.conf.json', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', 'offlog-desktop/scripts/phase0-repro/**', 'offlog-app/src/lib/syncCrypto.ts', 'offlog-app/src/lib/db/encryptedFetch.ts', 'offlog-app/tests/encryptedSync.e2e.test.ts', '.github/workflows/desktop-ci.yml']
   pull_request:
     branches: [main]
-    paths: ['offlog-desktop/src-tauri/**', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', 'offlog-desktop/scripts/phase0-repro/**', '.github/workflows/desktop-ci.yml']
+    paths: ['offlog-desktop/src-tauri/**', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', 'offlog-desktop/scripts/phase0-repro/**', 'offlog-app/src/lib/syncCrypto.ts', 'offlog-app/src/lib/db/encryptedFetch.ts', 'offlog-app/tests/encryptedSync.e2e.test.ts', '.github/workflows/desktop-ci.yml']
 
 # Least-privilege default -- this workflow only checks out code and runs
 # a cargo build, it never needs to write anything back to the repo.
@@ -98,6 +98,16 @@ jobs:
       - name: NyxDB edit replication (HTTP)
         working-directory: offlog-desktop
         run: node scripts/phase0-repro/edit-replication.js
+
+      # Encrypted sync against the same binary: two devices stay in step, the
+      # server's raw copy holds nothing readable, forged docs are refused.
+      - name: Encrypted sync end to end (HTTP)
+        working-directory: offlog-app
+        env:
+          NYXDB_BIN: ${{ github.workspace }}offlog-desktopendor
+yxdb-win
+yxdb.exe
+        run: npx vitest run tests/encryptedSync.e2e.test.ts
 
       - name: Cargo build (release profile, matches release.yml)
         working-directory: offlog-desktop/src-tauri

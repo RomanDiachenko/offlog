@@ -708,6 +708,32 @@ counted after each sync and shown as a badge; resolution is available in
 Settings. The screen passes the revisions it displayed to `resolveConflict()`,
 which refuses (`ConflictChangedError`) if sync changed them in the meantime.
 
+**End-to-end encryption.** With a sync key (`offlog_sync_key`, 32 bytes,
+base64, from the PC), the remote PouchDB gets `fetch: encryptedFetch(...)`
+(`db/encryptedFetch.ts`) and the database is `offlog-e`; without one it is
+the readable `offlog` (an older PC, or a server set up by hand). The fetch
+rewrites `_bulk_docs`, `_revs_diff`, `_bulk_get`, `_changes`, `_all_docs`
+and single-document and attachment requests; `_local/` checkpoints and
+`_design/` pass through. `syncCrypto.ts` derives four keys by HKDF:
+
+- **ids**: `x:` + base64url(iv ‖ AES-GCM(id)), iv = HMAC(id)[0..12].
+  Deterministic, so revisions still match and any device can reverse a
+  server id without the document.
+- **documents**: `{_id, _rev, _deleted?, _revisions?, _attachments?, e}`,
+  `e` sealing `{i: id, d: body, a: {name: {content_type, digest}}}`;
+  the AAD binds server id, rev and deleted flag.
+- **attachments**: bytes sealed under their own key, AAD = server id + name,
+  stored as `application/octet-stream`.
+
+What doesn't open is dropped before the replicator sees it and counted in
+`syncState.rejected` (shown in Settings → Sync). On the desktop,
+`initTauriSyncDefaults()` takes the key from `get_sync_info`; switching
+from `/offlog` sets `offlog_plain_server_to_retire`, and
+`retirePlainServer()` (before the first sync in `initApp`) pulls that
+database once, destroys it and clears the flag. A phone gets the key in the
+pairing reply. `tests/encryptedSync.e2e.test.ts` runs two devices through a
+real NyxDB and reads the server raw (Desktop CI; skips without the binary).
+
 **Phantom conflicts.** NyxDB before v0.1.7 never sent a doc's revision
 history, so each pulled edit was stored as a new root beside the copy a
 device had: a "conflict" per edit whose losers are only older steps of the
@@ -729,6 +755,7 @@ it to retry on the next settle.
 - `describeSyncError()` turns raw 401/403/404/network errors into short,
   actionable text.
 - `retryCount` surfaces how many consecutive attempts have failed.
+- `rejected` counts server items that didn't open under the sync key.
 
 ---
 
@@ -975,7 +1002,7 @@ npm run build && npx cap sync android
 the browser and Android use. The only new code is Rust.
 
 **Embedded sync host** (`sync_host.rs`). On first launch it generates a
-random port and admin password, saves them to
+random port, admin password and 32-byte sync key, saves them to
 `app_data_dir()/sync-host.json`, and spawns
 [NyxDB](https://github.com/hrach-gevorgyan/nyxdb) as a child process
 configured entirely by environment variables — no config file. A Windows Job
@@ -987,7 +1014,10 @@ lifetime on every exit path, including a crash. The binary is built by
 paired phone. It is written via temp file + rename. A file that won't
 parse is renamed to `sync-host.json.bad-<unix-secs>` (with a log warning)
 before a new identity is generated; one that can't be read at all gets a
-session-only identity and is left on disk. Database creation, the pairing
+session-only identity and is left on disk. A file from before the sync key
+gains one once, together with a new password, so phones that never got the
+key stop syncing instead of writing readable documents. Database creation
+(`offlog` and `offlog-e`), the pairing
 server and mDNS run once NyxDB accepts connections: after the first 20 s
 the background thread keeps re-checking with a 1 s → 30 s capped backoff
 for as long as the sidecar process is alive, so a slow start delays
@@ -1037,8 +1067,8 @@ The PC advertises `_offlog._tcp` over mDNS carrying a uuid and pairing port
 — deliberately no credentials over the air. Pairing is a separate
 single-endpoint HTTP server: the PC shows a 6-digit code, single-use, valid
 5 minutes; the phone posts a PBKDF2-derived proof of it (never the code
-itself) and gets the real credentials back AES-256-GCM-encrypted under a
-key derived the same way — see [security.md §1](security.md#1-connecting-a-phone-to-your-pc-pairing)
+itself) and gets the real credentials and the sync key back
+AES-256-GCM-encrypted under a key derived the same way — see [security.md §1](security.md#1-connecting-a-phone-to-your-pc-pairing)
 for the full protocol and its honest limits. There are no fixed username/password
 constants, because nothing could match a per-install random password.
 The pairing server logs only outcomes — "succeeded" and a running count of

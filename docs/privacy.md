@@ -44,7 +44,10 @@ stored, and the limits of each — see
   you give it. With the desktop app that is your own local network
   (Wi-Fi). No Offlog-operated server exists, is involved, or ever sees your
   data — there is nothing for the developer to collect even if they
-  wanted to.
+  wanted to. What your devices send to that server is end-to-end
+  encrypted, so the server stores only scrambled data plus sizes and
+  timing; a server you set up by hand, or an older PC app, receives it
+  readable.
 - **Automatic backups** (on by default; can be turned off) are written
   about once a day, keeping the last seven, only to the app's own
   private storage on your device — never uploaded anywhere. Android's

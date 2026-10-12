@@ -21,7 +21,7 @@ export const PRIVATE: PrivacyPoint[] = [
 ];
 
 export const LIMITS: PrivacyPoint[] = [
-  { icon: 'wifi', title: 'Sync is made for your home Wi-Fi', text: 'Sync isn’t encrypted, the pairing code is short, and the sync server is open to your Wi-Fi behind one password, which the PC stores as plain text. Pair and sync only on a network you trust.' },
+  { icon: 'wifi', title: 'Sync is made for your home Wi-Fi', text: 'Your tasks travel encrypted, but the connection isn’t encrypted, the pairing code is short, and the sync server is open to your Wi-Fi behind one password, which the PC stores as plain text. Pair and sync only on a network you trust.' },
   { icon: 'lock', title: 'Tasks aren’t encrypted on the device', text: 'App lock hides the app; it doesn’t encrypt it. Your phone’s or PC’s own disk encryption protects the data.' },
   { icon: 'backup', title: 'Backups are up to you', text: 'There is no cloud copy, and an exported backup is a plain file. Export now and then, and keep the file private.' },
   { icon: 'globe', title: 'The Windows app checks for updates', text: 'It asks GitHub whether a newer version exists, which shows GitHub your IP address. You can turn it off in Settings → Advanced.' },

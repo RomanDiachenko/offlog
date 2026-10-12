@@ -15,6 +15,10 @@
 // Reads the host's port and credentials from the desktop app's own
 // sync-host.json, the same file sync_host.rs writes, so there is nothing to
 // configure on the machine running the app.
+//
+// Reads the readable /offlog database only. A host with a sync key holds
+// end-to-end encrypted documents in /offlog-e instead (syncCrypto.ts), which
+// this script cannot measure; point --url at a server without encryption.
 
 const fs = require('node:fs');
 const path = require('node:path');

@@ -55,8 +55,9 @@ testing surface, not a distribution target, and is documented as such.
 
 **Already known, deliberate tradeoffs, not vulnerabilities to report:**
 
-- Sync traffic is plain HTTP on the local network by design. No TLS on
-  LAN sync; see [docs/decisions.md](docs/decisions.md).
+- The sync connection is plain HTTP on the local network by design (the
+  synced tasks themselves are end-to-end encrypted). No TLS on LAN sync;
+  see [docs/decisions.md](docs/decisions.md).
 - The pairing endpoint accepts requests from any web origin; the code
   is the secret, not the origin.
 - The desktop's built-in sync server keeps its own admin password in
@@ -70,7 +71,7 @@ testing surface, not a distribution target, and is documented as such.
   LAN-only, no-account app, and has **not** had a third-party audit.
 
 The full list, with reasons, is in
-[docs/security.md §12](docs/security.md#12-what-offlog-does-not-protect-against).
+[docs/security.md §13](docs/security.md#13-what-offlog-does-not-protect-against).
 Please check it before reporting any of the above.
 
 ## What is protected

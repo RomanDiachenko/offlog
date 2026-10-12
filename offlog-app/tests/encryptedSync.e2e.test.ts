@@ -11,6 +11,8 @@ import { encryptedFetch } from '../src/lib/db/encryptedFetch';
 
 const PouchDB = (globalThis as { PouchDB?: PouchDB.Static }).PouchDB!;
 const BIN = process.env.NYXDB_BIN || path.resolve(__dirname, '../../offlog-desktop/vendor/nyxdb-win/nyxdb.exe');
+// Named explicitly (CI does), a missing binary is a failure, never a skip.
+if (process.env.NYXDB_BIN && !fs.existsSync(BIN)) throw new Error('NYXDB_BIN does not exist: ' + BIN);
 const USER = 'e2e', PASS = 'e2e-pass-' + process.pid;
 const AUTH = 'Basic ' + Buffer.from(`${USER}:${PASS}`).toString('base64');
 const KEY = Buffer.from(Array.from({ length: 32 }, (_, i) => i * 7 % 256)).toString('base64');
