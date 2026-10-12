@@ -144,6 +144,8 @@ struct PairResponse<'a> {
     user: &'a str,
     password: &'a str,
     uuid: &'a str,
+    /// The sync key (sync_host.rs). Only ever sent inside this encrypted reply.
+    key: &'a str,
 }
 
 #[derive(Serialize)]
@@ -312,6 +314,7 @@ fn handle_pair_request(mut request: tiny_http::Request, state: &PairingState, uu
         user: &state.info.user,
         password: &state.info.password,
         uuid,
+        key: &state.info.key,
     };
     let Some(envelope) = encrypt_response(&code, &nonce, &payload) else {
         let _ = request.respond(Response::empty(500).with_header(cors_header()));
@@ -393,7 +396,7 @@ mod tests {
     fn encrypt_response_round_trips_under_the_matching_key_only() {
         let code = "482913";
         let nonce = [1u8; 16];
-        let payload = PairResponse { port: 25984, user: "offlog", password: "s3cr3t-pw", uuid: "test-uuid" };
+        let payload = PairResponse { port: 25984, user: "offlog", password: "s3cr3t-pw", uuid: "test-uuid", key: "c3luYy1rZXk=" };
         let envelope = encrypt_response(code, &nonce, &payload).unwrap();
 
         let key_bytes = derive_key(code, &nonce, b"enc");
@@ -406,6 +409,7 @@ mod tests {
         assert_eq!(decoded["port"], 25984);
         assert_eq!(decoded["user"], "offlog");
         assert_eq!(decoded["password"], "s3cr3t-pw");
+        assert_eq!(decoded["key"], "c3luYy1rZXk=");
 
         let wrong_key = derive_key("000000", &nonce, b"enc");
         let wrong_cipher = Aes256Gcm::new(&Key::<Aes256Gcm>::from(wrong_key));
@@ -414,7 +418,7 @@ mod tests {
 
     #[test]
     fn try_consume_locks_out_after_max_attempts_and_is_single_use() {
-        let state = PairingState::new(SyncHostInfo { port: 1, user: "u".into(), password: "p".into() });
+        let state = PairingState::new(SyncHostInfo { port: 1, user: "u".into(), password: "p".into(), key: "k".into() });
         let code = state.generate_code();
         let nonce = [3u8; 16];
         let wrong_proof = derive_key("000000", &nonce, b"auth");

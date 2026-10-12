@@ -12,6 +12,8 @@
 // copy instead of ever running NyxDB live out of the shared
 // `vendor/nyxdb-win` source dir — see that function's own comment.
 
+use base64::engine::general_purpose::STANDARD as BASE64;
+use base64::Engine;
 use rand::RngExt;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -25,6 +27,18 @@ pub struct SyncHostInfo {
     pub port: u16,
     pub user: String,
     pub password: String,
+    /// 32 random bytes, base64: the key devices encrypt synced documents
+    /// with (offlog-app syncCrypto.ts). Handed to a phone only inside the
+    /// encrypted pairing reply. Empty in a file from before encryption,
+    /// which load_or_create_info() upgrades once.
+    #[serde(default)]
+    pub key: String,
+}
+
+fn random_key() -> String {
+    let mut bytes = [0u8; 32];
+    rand::fill(&mut bytes);
+    BASE64.encode(bytes)
 }
 
 fn random_string(len: usize) -> String {
@@ -55,7 +69,18 @@ fn pick_free_port() -> u16 {
 pub fn load_or_create_info(config_path: &Path) -> SyncHostInfo {
     match fs::read(config_path) {
         Ok(bytes) => match serde_json::from_slice::<SyncHostInfo>(&bytes) {
-            Ok(info) => return info,
+            Ok(info) if !info.key.is_empty() => return info,
+            // From before encryption: gains a key, and a new password so a
+            // device that hasn't updated gets a clear sync error instead of
+            // syncing readable data that nothing reads any more.
+            Ok(mut info) => {
+                info.key = random_key();
+                info.password = random_string(24);
+                if let Err(e) = write_atomically(config_path, &serde_json::to_vec_pretty(&info).unwrap()) {
+                    log::error!("sync_host: couldn't save the new sync key to {} ({e})", config_path.display());
+                }
+                return info;
+            }
             Err(e) => {
                 let bad = quarantine_path(config_path);
                 if let Err(re) = fs::rename(config_path, &bad) {
@@ -106,6 +131,7 @@ fn new_info() -> SyncHostInfo {
         port: pick_free_port(),
         user: "offlog".to_string(),
         password: random_string(24),
+        key: random_key(),
     }
 }
 
@@ -418,6 +444,28 @@ mod tests {
         assert_eq!((first.port, first.user, first.password), (second.port, second.user, second.password));
         assert_eq!(fs::read(&path).unwrap(), bytes);
         assert_eq!(entries(&dir), vec!["sync-host.json"]);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_new_install_has_a_256_bit_sync_key() {
+        let dir = temp_dir("newkey");
+        let info = load_or_create_info(&dir.join("sync-host.json"));
+        assert_eq!(BASE64.decode(&info.key).unwrap().len(), 32);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn an_install_from_before_encryption_gains_a_key_and_a_new_password_once() {
+        let dir = temp_dir("upgrade");
+        let path = dir.join("sync-host.json");
+        fs::write(&path, br#"{"port": 41234, "user": "offlog", "password": "old-password-123"}"#).unwrap();
+        let upgraded = load_or_create_info(&path);
+        assert_eq!(upgraded.port, 41234, "the port stays");
+        assert_ne!(upgraded.password, "old-password-123", "the password changes, so unupdated devices stop syncing");
+        assert_eq!(BASE64.decode(&upgraded.key).unwrap().len(), 32);
+        let again = load_or_create_info(&path);
+        assert_eq!((again.password, again.key), (upgraded.password, upgraded.key), "saved, never re-keyed");
         let _ = fs::remove_dir_all(&dir);
     }
 
