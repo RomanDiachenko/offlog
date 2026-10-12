@@ -349,10 +349,13 @@ pub fn restart_delay(prior_crashes: usize) -> Duration {
     Duration::from_secs(2u64 << prior_crashes.min(5)).min(Duration::from_secs(60))
 }
 
-/// Creates the `offlog` database the app's PouchDB sync target expects —
-/// idempotent (a 412 "already exists" is treated the same as 201 created).
+/// Creates `offlog-e`, the database devices sync to, end-to-end encrypted
+/// (offlog-app config.ts ENCRYPTED_DB) — idempotent (a 412 "already exists"
+/// is treated the same as 201 created). The readable `offlog` database of
+/// an install from before encryption is emptied into the app and deleted
+/// by the app itself (retirePlainServer), never created again here.
 pub fn ensure_database(info: &SyncHostInfo) {
-    let url = format!("http://127.0.0.1:{}/offlog", info.port);
+    let url = format!("http://127.0.0.1:{}/offlog-e", info.port);
     let result = ureq::put(&url)
         .header(
             "Authorization",
@@ -363,9 +366,9 @@ pub fn ensure_database(info: &SyncHostInfo) {
         )
         .send_empty();
     match result {
-        Ok(_) => log::info!("sync_host: offlog database ready"),
-        Err(ureq::Error::StatusCode(412)) => log::info!("sync_host: offlog database already exists"),
-        Err(e) => log::warn!("sync_host: failed to create offlog database: {e}"),
+        Ok(_) => log::info!("sync_host: offlog-e database ready"),
+        Err(ureq::Error::StatusCode(412)) => log::info!("sync_host: offlog-e database already exists"),
+        Err(e) => log::warn!("sync_host: failed to create offlog-e database: {e}"),
     }
 }
 

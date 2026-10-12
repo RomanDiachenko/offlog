@@ -687,6 +687,7 @@
   let syncError = syncState.error;
   let lastErrorAt = syncState.lastErrorAt;
   let conflictCount = syncState.conflictCount;
+  let syncRejected = syncState.rejected;
 
   function onSyncChange() {
     syncStatus = syncState.status;
@@ -694,6 +695,7 @@
     syncError = syncState.error;
     lastErrorAt = syncState.lastErrorAt;
     conflictCount = syncState.conflictCount;
+    syncRejected = syncState.rejected;
   }
   syncState.listeners.add(onSyncChange);
   onDestroy(() => syncState.listeners.delete(onSyncChange));
@@ -1176,7 +1178,7 @@
               <SyncSettings
                 {isAndroid} {isTauri} {syncEnabled} {toggleSyncEnabled} {connectionStatus}
                 bind:showConnectModal bind:showConflictsModal
-                bind:deviceName {saveDeviceName} {deviceLastSeen} {conflictCount} {conflictList}
+                bind:deviceName {saveDeviceName} {deviceLastSeen} {conflictCount} {conflictList} rejected={syncRejected}
               />
 
             {:else if activeCategory === 'organize'}

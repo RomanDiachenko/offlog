@@ -4,6 +4,7 @@ import {
   getSpaces, getProjects, getTasksForProject,
   seedIfEmpty, startSync, subscribe, initIndexes, maybePruneOldLogs, maybePruneOldDeletedTasks,
   scanConflicts,
+  retirePlainServer,
 } from './db';
 import { rescheduleAll, initNotificationListeners, checkPermission } from './notifications';
 import { initTauriSyncDefaults, checkForOtherHosts, initDeviceName, isNativePlatform } from '../config';
@@ -109,6 +110,7 @@ export async function init() {
   await initTauriSyncDefaults();
   // Before sync starts, so the first synced edits carry the real name.
   await initDeviceName();
+  await retirePlainServer().catch(() => {});
   await reload();
   startSync().catch(() => {});
   // Not just after the next sync settles (markSynced()/resolveConflict()

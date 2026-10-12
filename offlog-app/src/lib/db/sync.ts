@@ -1,7 +1,9 @@
 // Sync (replication to a CouchDB-protocol remote) and conflict resolution.
 /// <reference types="pouchdb" />
 /// <reference types="pouchdb-find" />
-import { getSyncUrl, getSyncCredentials, isSyncEnabled } from '../../config';
+import { getSyncUrl, getSyncCredentials, isSyncEnabled, getSyncKey, PLAIN_SERVER_TO_RETIRE_KEY } from '../../config';
+import { importSyncKey } from '../syncCrypto';
+import { encryptedFetch } from './encryptedFetch';
 import { db, invalidateTaskCache, now } from './core';
 import { PRISTINE_DEFAULTS, type PristineDoc } from './entities';
 import type { Source } from '../types';
@@ -27,13 +29,47 @@ interface SyncEmitter {
 // holds every instance it creates until close(), so a fresh one per restart
 // (every phone resume) piles up for the life of the process. A replaced
 // instance is not closed: a replication being cancelled may still be using it.
+// With a sync key, everything to and from the server goes through
+// encryptedFetch (end-to-end encryption, lib/syncCrypto.ts).
 let _remote: { key: string; db: PouchDB.Database } | null = null;
 async function remote() {
   const { user, pass } = await getSyncCredentials();
   const url = getSyncUrl();
-  const key = JSON.stringify([url, user, pass]);
-  if (_remote?.key !== key) _remote = { key, db: new PouchDB(url, { auth: { username: user, password: pass } }) };
+  const syncKey = getSyncKey();
+  const key = JSON.stringify([url, user, pass, syncKey]);
+  if (_remote?.key !== key) {
+    const auth = { username: user, password: pass };
+    const options = syncKey
+      ? { auth, fetch: encryptedFetch(url, await importSyncKey(syncKey), reportRejected) }
+      : { auth };
+    _remote = { key, db: new PouchDB(url, options as PouchDB.Configuration.RemoteDatabaseConfiguration) };
+  }
   return _remote.db;
+}
+
+// Items from the server this device refused: not written with its key, or
+// altered on the way. Never stored; counted so Settings can say so.
+function reportRejected(count: number) {
+  syncState.rejected += count;
+  notify();
+}
+
+// Once, on a PC moving to encrypted sync: anything only the old readable
+// database held comes into this device first, then that database is deleted
+// so no readable copy stays on the server. Retried next launch until done.
+export async function retirePlainServer(): Promise<void> {
+  const url = localStorage.getItem(PLAIN_SERVER_TO_RETIRE_KEY);
+  if (!url || !getSyncKey()) return;
+  const { user, pass } = await getSyncCredentials();
+  const plain = new PouchDB(url, { auth: { username: user, password: pass }, skip_setup: true } as PouchDB.Configuration.RemoteDatabaseConfiguration);
+  try {
+    await db.replicate.from(plain);
+    invalidateTaskCache();
+  } catch (e) {
+    if ((e as SyncError).status !== 404) return;
+  }
+  try { await plain.destroy(); } catch (e) { if ((e as SyncError).status !== 404) return; }
+  localStorage.removeItem(PLAIN_SERVER_TO_RETIRE_KEY);
 }
 
 
@@ -55,7 +91,9 @@ function stopReplication(): number {
 export function describeSyncError(err?: SyncError | null): string {
   if (!err) return 'Unknown sync error';
   const status = err.status ?? err.statusCode;
-  if (status === 401 || status === 403) return 'Authentication failed — check sync credentials';
+  // The PC changes its sync password when it moves to encrypted sync, so a
+  // device paired before then lands here until it pairs again.
+  if (status === 401 || status === 403) return 'Your PC no longer accepts this device. Pair it again in Settings → Sync.';
   if (status === 404) return 'Sync database not found on server';
   if (status === 0 || err.name === 'TypeError' || /network|failed to fetch/i.test(err.message ?? '')) {
     // The sync URL is a self-hosted LAN address, so "cannot reach it" has two
@@ -80,6 +118,7 @@ export const syncState = {
   lastErrorAt: null as string | null,
   retryCount: 0,
   conflictCount: 0,
+  rejected: 0,
   listeners: new Set<() => void>(),
 };
 

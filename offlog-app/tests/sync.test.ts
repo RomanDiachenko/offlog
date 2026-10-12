@@ -25,8 +25,8 @@ describe('describeSyncError', () => {
   });
 
   it('classifies 401/403 as an auth failure', () => {
-    expect(describeSyncError({ status: 401 })).toMatch(/credentials/i);
-    expect(describeSyncError({ status: 403 })).toMatch(/credentials/i);
+    expect(describeSyncError({ status: 401 })).toMatch(/pair it again/i);
+    expect(describeSyncError({ status: 403 })).toMatch(/pair it again/i);
   });
 
   it('classifies 404 as the sync database missing', () => {

@@ -71,11 +71,15 @@ export async function initTauriSyncDefaults(): Promise<void> {
   const saved = localStorage.getItem('offlog_sync_url');
   const lastSidecar = localStorage.getItem(SIDECAR_URL_KEY);
   const followsSidecar = !saved || saved === 'http://127.0.0.1:5984/offlog' || saved === lastSidecar
-    || (lastSidecar === null && /^http:\/\/127\.0\.0\.1:\d+\/offlog$/.test(saved));
+    || (lastSidecar === null && /^http:\/\/127\.0\.0\.1:\d+\/offlog(-e)?$/.test(saved));
   if (!followsSidecar) return;
   try {
-    const info = await invokeTauri<{ port: number; user: string; password: string }>('get_sync_info');
-    const url = `http://127.0.0.1:${info.port}/offlog`;
+    const info = await invokeTauri<{ port: number; user: string; password: string; key?: string }>('get_sync_info');
+    // With a key, the sidecar's encrypted database; the readable one it used
+    // before is pulled from once and deleted (retirePlainServer in db/sync.ts).
+    const url = `http://127.0.0.1:${info.port}/${info.key ? ENCRYPTED_DB : PLAIN_DB}`;
+    if (info.key && saved && /\/offlog$/.test(saved)) localStorage.setItem(PLAIN_SERVER_TO_RETIRE_KEY, `http://127.0.0.1:${info.port}/${PLAIN_DB}`);
+    setSyncKey(info.key ?? '');
     setSyncUrl(url);
     localStorage.setItem(SIDECAR_URL_KEY, url);
     await setSyncCredentials(info.user, info.password);
@@ -104,6 +108,20 @@ export async function checkForOtherHosts(): Promise<void> {
     // command unavailable (older build) or invoke failed -- non-critical,
     // just skip the warning this launch.
   }
+}
+
+// The end-to-end sync key (lib/syncCrypto.ts), base64; '' syncs without
+// encryption (a manually set up server, or a PC from before encryption). Kept
+// in app storage beside this device's own readable data: whoever can read
+// one can read the other, so a separate secure store would protect nothing
+// more.
+const SYNC_KEY_KEY = 'offlog_sync_key';
+export const PLAIN_DB = 'offlog';
+export const ENCRYPTED_DB = 'offlog-e';
+export const PLAIN_SERVER_TO_RETIRE_KEY = 'offlog_plain_server_to_retire';
+export function getSyncKey(): string { return localStorage.getItem(SYNC_KEY_KEY) ?? ''; }
+export function setSyncKey(key: string) {
+  if (key) localStorage.setItem(SYNC_KEY_KEY, key); else localStorage.removeItem(SYNC_KEY_KEY);
 }
 
 export function getSyncUrl(): string {

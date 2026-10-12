@@ -14,6 +14,7 @@
   export let saveDeviceName: () => void;
   export let deviceLastSeen: { device: string; lastSeen: string }[];
   export let conflictCount: number;
+  export let rejected = 0;
   export let conflictList: ConflictInfo[];
 </script>
 
@@ -25,6 +26,7 @@
                   </button>
                 </div>
                 <p class="setting-hint" class:setting-hint-warn={connectionStatus.tone === 'warn'} class:success-hint={connectionStatus.tone === 'ok'}>{connectionStatus.text}</p>
+                {#if rejected > 0}<p class="setting-hint setting-hint-warn">Refused {rejected} item{rejected === 1 ? '' : 's'} from the sync server that none of your devices wrote. Nothing was changed.</p>{/if}
                 {#if syncEnabled && isTauri && $otherHostsDetected.length}
                   <p class="setting-hint setting-hint-warn">
                     Another Offlog host ("{$otherHostsDetected[0].name}") was found on this

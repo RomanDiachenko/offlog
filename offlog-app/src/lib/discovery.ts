@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { setSyncUrl, getSyncUrl, setSyncCredentials, getPairedHostUuid, setPairedHostUuid, setPairedHostName } from '../config';
+import { setSyncUrl, getSyncUrl, setSyncCredentials, getPairedHostUuid, setPairedHostUuid, setPairedHostName, setSyncKey, getSyncKey, PLAIN_DB, ENCRYPTED_DB } from '../config';
 import { startSync, clearLocalSeedBeforeFirstPair, syncState } from './db';
 import { showError } from './store';
 
@@ -96,6 +96,9 @@ interface PairResponse {
   user: string;
   password: string;
   uuid: string;
+  // The end-to-end sync key; absent from a PC from before encryption, which
+  // then syncs readable data as before.
+  key?: string;
 }
 
 // Mirrors pairing.rs exactly -- same tag strings, round count, and key
@@ -193,7 +196,8 @@ export async function pairWithHost(host: DiscoveredHost, code: string): Promise<
   // clearLocalSeedBeforeFirstPair() in db.ts.
   await clearLocalSeedBeforeFirstPair();
   await setSyncCredentials(data.user, data.password);
-  setSyncUrl(`http://${host.address}:${data.port}/offlog`);
+  setSyncKey(data.key ?? '');
+  setSyncUrl(`http://${host.address}:${data.port}/${data.key ? ENCRYPTED_DB : PLAIN_DB}`);
   setPairedHostUuid(data.uuid);
   setPairedHostName(host.name);
   startSync().catch(() => {});
@@ -243,7 +247,7 @@ async function findPairedHostAddress(uuid: string): Promise<HostResolveResult> {
       }
       const address = service.ipv4Addresses?.[0];
       if (!address) return;
-      finish(`http://${address}:${service.port}/offlog`);
+      finish(`http://${address}:${service.port}/${getSyncKey() ? ENCRYPTED_DB : PLAIN_DB}`);
     }).then((watchId) => { id = watchId; }).catch(() => finish(null));
     setTimeout(() => finish(null), 10_000);
   });

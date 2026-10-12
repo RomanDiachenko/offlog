@@ -30,11 +30,13 @@
   let lastSynced = syncState.lastSynced;
   let syncError = syncState.error;
   let conflictCount = syncState.conflictCount;
+  let rejected = syncState.rejected;
   function onSyncChange() {
     syncStatus = syncState.status;
     lastSynced = syncState.lastSynced;
     syncError = syncState.error;
     conflictCount = syncState.conflictCount;
+    rejected = syncState.rejected;
   }
   syncState.listeners.add(onSyncChange);
   onDestroy(() => syncState.listeners.delete(onSyncChange));
@@ -264,6 +266,7 @@
   </div>
   <h2 id="sync-title">{card.title}</h2>
   <p role="status">{card.text}</p>
+  {#if rejected > 0}<p class="refused">Refused {rejected} item{rejected === 1 ? '' : 's'} from the sync server that none of your devices wrote. Nothing was changed.</p>{/if}
   {#if card.act === 'sync'}
     <button class="cbtn" on:click={runSyncNow} disabled={$syncing || syncStatus === 'syncing'}>{@html I.sync}Sync now</button>
   {:else if card.act === 'retry'}
@@ -475,6 +478,7 @@
   .idle .link i { display: none; }
   .card h2 { margin: 0; font-size: 19px; font-weight: 700; }
   .card p { margin: 4px 0 16px; font-size: var(--p-fs-m); color: var(--muted); line-height: 1.45; }
+  .card p.refused { margin-top: -8px; color: var(--due-soon-ink); }
   .cbtn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; border: 0; border-radius: 12px; cursor: pointer;
     font: inherit; font-size: var(--p-fs-l); font-weight: 700; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
   .cbtn.solid { color: var(--bg); background: var(--text); }

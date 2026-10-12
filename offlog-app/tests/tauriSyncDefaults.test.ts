@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { initTauriSyncDefaults, getSyncUrl } from '../src/config';
+import { initTauriSyncDefaults, getSyncUrl, getSyncKey } from '../src/config';
 
 // The Windows app keeps following its own sync host (which can move port or
 // change identity) but never overrides a server the user set up by hand.
@@ -46,5 +46,24 @@ describe('initTauriSyncDefaults', () => {
     await initTauriSyncDefaults();
     expect(getSyncUrl()).toBe('http://192.168.1.20:5984/offlog');
     expect(stored()).toEqual([]);
+  });
+
+  it('a host with a sync key moves this device to the encrypted database and retires the readable one', async () => {
+    await initTauriSyncDefaults();
+    expect(getSyncKey()).toBe('');
+    invoke.mockImplementation(async (cmd: string) =>
+      cmd === 'get_sync_info' ? { port: 51234, user: 'offlog', password: 'new', key: 'a2V5' } : undefined);
+    await initTauriSyncDefaults();
+    expect(getSyncUrl()).toBe('http://127.0.0.1:51234/offlog-e');
+    expect(getSyncKey()).toBe('a2V5');
+    expect(localStorage.getItem('offlog_plain_server_to_retire')).toBe('http://127.0.0.1:51234/offlog');
+  });
+
+  it('a fresh install with a key has nothing readable to retire', async () => {
+    invoke.mockImplementation(async (cmd: string) =>
+      cmd === 'get_sync_info' ? { port: 51234, user: 'offlog', password: 'new', key: 'a2V5' } : undefined);
+    await initTauriSyncDefaults();
+    expect(getSyncUrl()).toBe('http://127.0.0.1:51234/offlog-e');
+    expect(localStorage.getItem('offlog_plain_server_to_retire')).toBeNull();
   });
 });

@@ -16,26 +16,28 @@
 
 export interface SyncKeys { doc: CryptoKey; id: CryptoKey; idIv: CryptoKey; att: CryptoKey }
 
+// Web Crypto takes only ArrayBuffer-backed bytes.
+type Bytes = Uint8Array<ArrayBuffer>;
 const subtle = () => globalThis.crypto.subtle;
 const utf8 = new TextEncoder(), fromUtf8 = new TextDecoder();
 const ID_PREFIX = 'x:';
 
 export const passesThrough = (id: string) => id.startsWith('_local/') || id.startsWith('_design/');
 
-function b64(bytes: Uint8Array): string {
+function b64(bytes: Bytes): string {
   let s = '';
   for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   return btoa(s);
 }
-function unb64(s: string): Uint8Array {
+function unb64(s: string): Bytes {
   const bin = atob(s);
   const out = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
 }
-const b64url = (bytes: Uint8Array) => b64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const b64url = (bytes: Bytes) => b64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64url = (s: string) => unb64(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (s.length % 4)) % 4));
-const join = (a: Uint8Array, b: Uint8Array) => { const o = new Uint8Array(a.length + b.length); o.set(a); o.set(b, a.length); return o; };
+const join = (a: Bytes, b: Bytes) => { const o = new Uint8Array(a.length + b.length); o.set(a); o.set(b, a.length); return o; };
 
 export async function importSyncKey(base64Key: string): Promise<SyncKeys> {
   const raw = unb64(base64Key);
@@ -52,10 +54,10 @@ export async function importSyncKey(base64Key: string): Promise<SyncKeys> {
   };
 }
 
-async function seal(key: CryptoKey, iv: Uint8Array, data: Uint8Array, aad: string): Promise<Uint8Array> {
+async function seal(key: CryptoKey, iv: Bytes, data: Bytes, aad: string): Promise<Bytes> {
   return join(iv, new Uint8Array(await subtle().encrypt({ name: 'AES-GCM', iv, additionalData: utf8.encode(aad) }, key, data)));
 }
-async function open(key: CryptoKey, sealed: Uint8Array, aad: string): Promise<Uint8Array | null> {
+async function open(key: CryptoKey, sealed: Bytes, aad: string): Promise<Bytes | null> {
   if (sealed.length < 28) return null;
   try {
     return new Uint8Array(await subtle().decrypt({ name: 'AES-GCM', iv: sealed.subarray(0, 12), additionalData: utf8.encode(aad) }, key, sealed.subarray(12)));
@@ -72,7 +74,7 @@ export async function encryptId(k: SyncKeys, id: string): Promise<string> {
 export async function decryptId(k: SyncKeys, serverId: string): Promise<string | null> {
   if (passesThrough(serverId)) return serverId;
   if (!serverId.startsWith(ID_PREFIX)) return null;
-  let sealed: Uint8Array;
+  let sealed: Bytes;
   try { sealed = unb64url(serverId.slice(ID_PREFIX.length)); } catch { return null; }
   const id = await open(k.id, sealed, 'offlog-id-v1');
   return id && fromUtf8.decode(id);
@@ -85,10 +87,10 @@ const docAad = (serverId: string, rev: string | undefined, deleted: boolean | un
   `offlog-doc-v1\n${serverId}\n${rev ?? ''}\n${deleted ? 1 : 0}`;
 const attAad = (serverId: string, name: string) => `offlog-att-v1\n${serverId}\n${name}`;
 
-export async function encryptAttachment(k: SyncKeys, serverId: string, name: string, bytes: Uint8Array): Promise<Uint8Array> {
+export async function encryptAttachment(k: SyncKeys, serverId: string, name: string, bytes: Bytes): Promise<Bytes> {
   return seal(k.att, randomIv(), bytes, attAad(serverId, name));
 }
-export async function decryptAttachment(k: SyncKeys, serverId: string, name: string, sealed: Uint8Array): Promise<Uint8Array | null> {
+export async function decryptAttachment(k: SyncKeys, serverId: string, name: string, sealed: Bytes): Promise<Bytes | null> {
   return open(k.att, sealed, attAad(serverId, name));
 }
 
@@ -124,7 +126,7 @@ export async function decryptDoc(k: SyncKeys, serverDoc: AnyDoc): Promise<AnyDoc
   if (typeof serverDoc.e !== 'string') return null;
   const id = await decryptId(k, serverDoc._id);
   if (id === null) return null;
-  let sealed: Uint8Array;
+  let sealed: Bytes;
   try { sealed = unb64(serverDoc.e); } catch { return null; }
   const inner = await open(k.doc, sealed, docAad(serverDoc._id, serverDoc._rev, serverDoc._deleted));
   if (!inner) return null;
