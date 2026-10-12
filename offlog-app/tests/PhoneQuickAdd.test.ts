@@ -175,7 +175,8 @@ describe('phone Quick add', () => {
     const { getByLabelText, getByRole, findByLabelText } = render(QuickAddSheet, { props: { dueDate: '2026-10-05' } });
     await type(getByLabelText, 'Pay rent tomorrow');
     await fireEvent.click(getByLabelText('Due: Tomorrow'));
-    await fireEvent.click(getByRole('button', { name: /^In a week/ }));
+    // On a Monday "In a week" is next Monday, listed once under that name.
+    await fireEvent.click(getByRole('button', { name: new Date().getDay() === 1 ? /^Next Monday/ : /^In a week/ }));
     await findByLabelText(`Due: ${shortDate(dateFromToday(7))}`);
     await fireEvent.click(getByLabelText('Add'));
     await waitFor(() => expect(createTask).toHaveBeenCalledWith('project:q', 'space:w', 'col:q1', 'Pay rent', {

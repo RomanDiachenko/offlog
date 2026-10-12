@@ -129,6 +129,18 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); vi.useRealTimers(); });
 
+describe('TimeTravelView device', () => {
+  it('names the device each change came from', async () => {
+    const { container } = await renderTT([
+      mkLog('log:1', { source: "Hrach's S24 Ultra" }),
+      mkLog('log:2', { source: 'HRACH-PC' }),
+      mkLog('log:3', { source: undefined }),
+    ]);
+    expect([...container.querySelectorAll('.entry-source')].map(e => e.textContent))
+      .toEqual(["Hrach's S24 Ultra", 'HRACH-PC', 'Unknown device']);
+  });
+});
+
 describe('TimeTravelView day grouping', () => {
   it('groups entries by local calendar day, newest group first', async () => {
     const { container } = await renderTT([

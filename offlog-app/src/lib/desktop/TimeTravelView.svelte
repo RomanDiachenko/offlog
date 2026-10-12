@@ -220,7 +220,7 @@
                 <span class="action-ic {log.action}" title={ACTION_LABEL[log.action] ?? log.action} aria-hidden="true">{@html ACTION_ICON[log.action] ?? ACTION_ICON.update}</span>
                 <span class="entry-desc">{describeLog(log)}</span>
                 <span class="entry-meta">
-                  <span class="entry-source">{log.source === 'mobile' ? 'Phone' : 'PC'}</span>
+                  <span class="entry-source">{log.source ?? 'Unknown device'}</span>
                   <span class="entry-time">{fmt(log.ts).split(' · ')[1]}</span>
                 </span>
                 {#if log.project_name && entityLabel(log) !== 'project'}
@@ -235,7 +235,7 @@
                 <span class="action-ic {log.action}" title={ACTION_LABEL[log.action] ?? log.action} aria-hidden="true">{@html ACTION_ICON[log.action] ?? ACTION_ICON.update}</span>
                 <span class="entry-desc">{describeLog(log)}</span>
                 <span class="entry-meta">
-                  <span class="entry-source">{log.source === 'mobile' ? 'Phone' : 'PC'}</span>
+                  <span class="entry-source">{log.source ?? 'Unknown device'}</span>
                   <span class="entry-time">{fmt(log.ts).split(' · ')[1]}</span>
                 </span>
                 <!-- Skipped for a project's own create/delete entry — its
@@ -345,7 +345,7 @@
     grid-column: 2; font-size: var(--fs-xs); color: var(--faint);
   }
 
-  .entry-source { font-size: var(--fs-2xs); color: var(--faint); }
+  .entry-source { font-size: var(--fs-2xs); color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 14rem; }
 
   /* nowrap, and the column must stay wide enough: a wrapped "09:53 AM"
      inflates the whole row's height (grid rows size to their tallest cell)
