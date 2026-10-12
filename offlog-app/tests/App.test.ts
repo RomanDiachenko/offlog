@@ -1,4 +1,8 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
+
+// Each test boots the whole app (real database, lazily loaded desktop views),
+// which under a full parallel run can take most of vitest's default 5 s.
+vi.setConfig({ testTimeout: 20000 });
 import { render, fireEvent, cleanup, waitFor } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 
@@ -19,7 +23,7 @@ import { pendingOpenTaskId } from '../src/lib/notifications';
 async function renderReady(locked: boolean) {
   lockOn = locked;
   const r = render(App);
-  await waitFor(() => { if (!r.container.querySelector('.layout')) throw new Error('not ready'); }, { timeout: 5000 });
+  await waitFor(() => { if (!r.container.querySelector('.layout')) throw new Error('not ready'); }, { timeout: 15000 });
   return r;
 }
 

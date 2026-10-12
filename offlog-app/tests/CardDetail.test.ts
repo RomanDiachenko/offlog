@@ -442,6 +442,20 @@ describe('CardDetail closing keeps edits & delete', () => {
     await waitFor(() => expect(updateTask).toHaveBeenCalledWith('task:1', expect.objectContaining({ title: 'Kept on close' })));
   });
 
+  it('a back gesture while × is still saving does not save a second time', async () => {
+    let release!: () => void;
+    updateTask.mockImplementationOnce(() => new Promise<void>(r => { release = r; }));
+    const utils = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    await fireEvent.input(utils.getByPlaceholderText('Task title'), { target: { value: 'Saved once' } });
+    await fireEvent.click(utils.getByLabelText('Close'));
+    await waitFor(() => expect(updateTask).toHaveBeenCalledTimes(1));
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    await new Promise(r => setTimeout(r, 20));
+    release();
+    await new Promise(r => setTimeout(r, 50));
+    expect(updateTask).toHaveBeenCalledTimes(1);
+  });
+
   it('deleting does not save the edits made before it', async () => {
     confirmAction.mockResolvedValue(true);
     const utils = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });

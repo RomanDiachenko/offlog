@@ -59,10 +59,12 @@
   // Every way out keeps what was typed, as on the phone. Done, ×, Escape and
   // the scrim go through finish(), which stays open if a write fails; a back
   // gesture closes straight away, so the close itself saves. Delete, archive,
-  // duplicate and skip set `leaving` first: their edits are not wanted.
+  // duplicate and skip set `leaving` first: their edits are not wanted. A back
+  // gesture while finish() is still saving leaves that save to finish (`saving`),
+  // or the edit is written twice.
   let leaving = false;
   const requestClose = closeOnBack(() => {
-    if (!leaving) persist().then(reportErrors, () => reportErrors(['Could not save the task. Please try again.']));
+    if (!leaving && !saving) persist().then(reportErrors, () => reportErrors(['Could not save the task. Please try again.']));
     __introReady = false;
     setTimeout(() => dispatch('close'), exitMs.medium);
   });
