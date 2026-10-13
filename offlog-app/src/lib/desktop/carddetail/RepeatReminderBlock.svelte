@@ -66,7 +66,7 @@
                       <!-- The unit must be visible, not only in the input's
                            aria-label: sighted users otherwise see "Weekly [2]"
                            with nothing confirming "2" means weeks. -->
-                      <span class="repeat-unit-text">{UNIT_WORD[recurrenceStr]}</span>
+                      <span class="repeat-unit-text">{recurrenceIntervalStr === '1' ? UNIT_WORD_SINGULAR[recurrenceStr] : UNIT_WORD[recurrenceStr]}</span>
                     {/if}
                     {#if recurrenceStr}
                       {#if recurrenceStr === 'daily'}

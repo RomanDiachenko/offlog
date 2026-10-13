@@ -57,7 +57,7 @@ function balanceIntoTwoLines(parts: string[], sep: string): [string, string] {
   return [join(parts.slice(0, bestSplit)), join(parts.slice(bestSplit))];
 }
 
-const EXTRAS_EMPTY_PARTS = ['Repeat', 'reminder', 'checklist', 'fields', 'related tasks', 'attachments', 'notes'];
+const EXTRAS_EMPTY_PARTS = ['Repeat', 'reminder', 'steps', 'fields', 'related tasks', 'attachments'];
 
 export function formatExtrasSummary(
   reminder: string, repeat: string | null, interval: number, weekdaysOnly: boolean,
@@ -68,9 +68,9 @@ export function formatExtrasSummary(
   else if (repeat && interval > 1) parts.push(`Repeats every ${interval} ${repeat === 'daily' ? 'days' : repeat === 'weekly' ? 'weeks' : 'months'}`);
   else if (repeat) parts.push(RECURRENCE_LABEL[repeat]);
   if (reminder) parts.push(`${fmtTime(new Date(reminder))} reminder`);
-  if (cl.length) parts.push(`${cl.filter(i => i.done).length}/${cl.length} checklist`);
+  if (cl.length) parts.push(`${cl.filter(i => i.done).length}/${cl.length} steps`);
   if (related.length) parts.push(`${related.length} related`);
-  if (blocking.length) parts.push(unresolvedCount ? `blocked by ${unresolvedCount}` : `${blocking.length} blocked by (done)`);
+  if (blocking.length) parts.push(unresolvedCount ? `blocked by ${unresolvedCount}` : `${blocking.length === 1 ? 'blocker' : `${blocking.length} blockers`} done`);
   if (atts.length) parts.push(`${atts.length} attachment${atts.length > 1 ? 's' : ''}`);
   if (notes.trim()) parts.push('notes');
   return parts.length ? balanceIntoTwoLines(parts, ' · ') : balanceIntoTwoLines(EXTRAS_EMPTY_PARTS, ', ');
