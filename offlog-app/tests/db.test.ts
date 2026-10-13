@@ -251,6 +251,19 @@ describe('project + task CRUD', () => {
 });
 
 describe('createProjectFromTemplate', () => {
+  it('a copied task links to nothing in the template project', async () => {
+    await seedSpace();
+    const template = await createProject('space:unsorted', 'Template Project');
+    const a = await createTask(template._id, 'space:unsorted', template.columns[0].id, 'Blocker');
+    const t = await createTask(template._id, 'space:unsorted', template.columns[0].id, 'Blocked');
+    await linkBlockedBy(t._id!, a._id!);
+    await linkRelatedTask(t._id!, a._id!);
+    const copy = await createProjectFromTemplate('space:unsorted', 'New Project', template._id, true);
+    const copied = (await getTasksForProject(copy._id)).find(x => x.title === 'Blocked')!;
+    expect(copied.blocked_by ?? []).toEqual([]);
+    expect(copied.related ?? []).toEqual([]);
+  });
+
   it('copies the template\'s status structure with fresh column ids', async () => {
     await seedSpace();
     const template = await createProject('space:unsorted', 'Template Project');

@@ -150,6 +150,9 @@ describe('FocusView picker', () => {
     expect(notes(container).map(n => n.querySelector('.note-title')!.textContent))
       .toEqual(['High', 'Mid', 'Low']);
     expect(chipOf(noteFor(container, 'High'))).toBe('High priority');
+    // Suggested for want of anything better, not for being high priority.
+    expect(chipOf(noteFor(container, 'Mid'))).toBeNull();
+    expect(chipOf(noteFor(container, 'Low'))).toBeNull();
   });
 
   it('ranks a more-overdue task above a less-overdue one', async () => {

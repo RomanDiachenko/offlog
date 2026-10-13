@@ -321,6 +321,9 @@ export async function createProjectFromTemplate(
         deleted: false,
         archived: false,
         pinned: false,
+        // Links point at the template project's own tasks, not the copies.
+        related: undefined,
+        blocked_by: undefined,
         checklist: t.checklist?.map(item => ({ ...item, done: false })),
         created_at: ts,
         updated_at: ts,

@@ -300,7 +300,7 @@
       {/if}
     {/if}
     {#if picking}
-      <p class="picker-hint">Suggested notes carry a Pinned, Overdue or Due soon label. Click up to three, then Let's focus.</p>
+      <p class="picker-hint">Suggested tasks carry a Pinned, Overdue, Due soon or High priority label. Click up to three, then Let's focus.</p>
       {#if pickable.length === 0}
         <div class="empty">No open tasks to pick from.</div>
       {:else}
@@ -320,7 +320,9 @@
               <span class="note-title">{t.title}</span>
               <div class="note-foot">
                 <span class="proj-badge">{t.project_name ?? '—'}</span>
-                {#if suggestedReasons.has(t._id!)}
+                <!-- The priority bucket holds every undated task, so it is labelled
+                     only when the task really is high priority. -->
+                {#if suggestedReasons.has(t._id!) && (suggestedReasons.get(t._id!) !== 'priority' || (t.priority ?? 1) >= 3)}
                   <span class="suggest-chip {suggestedReasons.get(t._id!)}">{SUGGEST_LABEL[suggestedReasons.get(t._id!)!]}</span>
                 {/if}
               </div>
