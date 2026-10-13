@@ -80,11 +80,16 @@ function onPopState(e: PopStateEvent) {
   let landedId = (e.state as { offlogId?: number } | null)?.offlogId;
   while (landedId !== undefined && dropped.has(landedId)) landedId = dropped.get(landedId);
   const idx = landedId === undefined ? -1 : stack.findIndex((entry) => entry.id === landedId);
-  while (stack.length > idx + 1) {
-    const entry = stack.pop();
-    entry?.close();
-  }
+  closeFrom(idx + 1);
+}
+
+// Takes the layers off the stack before closing any: a close callback may
+// open the next layer (Welcome's Connect opens Sync), and a pop-until-short
+// loop would close that new layer too.
+function closeFrom(i: number) {
+  const gone = stack.splice(i);
   sync();
+  for (let k = gone.length - 1; k >= 0; k--) gone[k].close();
 }
 
 function ensureListening() {
@@ -135,12 +140,7 @@ export function closeOnBack(close: CloseFn): CloseFn {
     // already removed the entry, so stack.indexOf finds nothing here.
     setTimeout(() => {
       const idx = stack.indexOf(entry);
-      if (idx === -1) return;
-      while (stack.length > idx) {
-        const e = stack.pop();
-        e?.close();
-      }
-      sync();
+      if (idx !== -1) closeFrom(idx);
     }, 400);
   };
   return entry.request;
@@ -159,9 +159,7 @@ export function closeThrough(request: CloseFn): boolean {
   // directly so nothing stays stuck open.
   setTimeout(() => {
     const i = stack.indexOf(target);
-    if (i === -1) return;
-    while (stack.length > i) stack.pop()?.close();
-    sync();
+    if (i !== -1) closeFrom(i);
   }, 400);
   return true;
 }

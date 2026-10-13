@@ -39,6 +39,18 @@ describe('modalStack', () => {
     expect(get(openLayers)).toBe(0);
   });
 
+  it('a layer opened by a closing layer stays open (Welcome → Connect opening Sync)', () => {
+    closeAll();
+    const base = history.state;
+    let next: (() => void) | null = null;
+    closeOnBack(() => { next = closeOnBack(vi.fn()); });
+    window.dispatchEvent(new PopStateEvent('popstate', { state: base }));
+    expect(next).not.toBeNull();
+    expect(isTopLayer(next)).toBe(true);
+    expect(get(openLayers)).toBe(1);
+    closeAll();
+  });
+
   it('closes the top layer (LIFO) on back, leaving lower layers untouched', () => {
     const closeA = vi.fn();
     const closeB = vi.fn();
