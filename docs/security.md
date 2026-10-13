@@ -161,7 +161,12 @@ nothing changes in how the app looks or works.
   Each encrypted document is bound to its own id, revision and deleted
   flag, so anything that wasn't written by a device holding the key fails
   to open. Your devices drop it, never store it, and Settings → Sync
-  says how many items were refused.
+  says how many items were refused. A task's edit history travels sealed
+  too, so the server can't make one version look older than another and
+  hide a conflict.
+- **It fails closed.** If anything ever asked the encryption layer to send
+  a request elsewhere, or to write in a way it can't seal, it refuses
+  rather than sending it readable.
 - **Ids are encrypted the same way every time**, so the server can still
   match versions of one task without knowing which task it is. The cost:
   it can tell that the same (unknown) item changed again.

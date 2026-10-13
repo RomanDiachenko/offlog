@@ -59,11 +59,20 @@ describe('initTauriSyncDefaults', () => {
     expect(localStorage.getItem('offlog_plain_server_to_retire')).toBe('http://127.0.0.1:51234/offlog');
   });
 
-  it('a fresh install with a key has nothing readable to retire', async () => {
+  it('a fresh install with a key still checks for a readable database at every start', async () => {
     invoke.mockImplementation(async (cmd: string) =>
       cmd === 'get_sync_info' ? { port: 51234, user: 'offlog', password: 'new', key: 'a2V5' } : undefined);
     await initTauriSyncDefaults();
     expect(getSyncUrl()).toBe('http://127.0.0.1:51234/offlog-e');
-    expect(localStorage.getItem('offlog_plain_server_to_retire')).toBeNull();
+    expect(localStorage.getItem('offlog_plain_server_to_retire')).toBe('http://127.0.0.1:51234/offlog');
+  });
+});
+
+describe('clearPairedHost', () => {
+  it('drops the sync key with the paired PC, so a hand-set server syncs readable', async () => {
+    const { clearPairedHost, setSyncKey } = await import('../src/config');
+    setSyncKey('a2V5');
+    clearPairedHost();
+    expect(getSyncKey()).toBe('');
   });
 });

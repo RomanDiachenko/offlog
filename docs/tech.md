@@ -720,18 +720,23 @@ and single-document and attachment requests; `_local/` checkpoints and
   Deterministic, so revisions still match and any device can reverse a
   server id without the document.
 - **documents**: `{_id, _rev, _deleted?, _revisions?, _attachments?, e}`,
-  `e` sealing `{i: id, d: body, a: {name: {content_type, digest}}}`;
-  the AAD binds server id, rev and deleted flag.
+  `e` sealing `{i: id, d: body, a: {name: {content_type, digest}}, r: _revisions}`;
+  the AAD binds server id, rev and deleted flag, and the sealed history
+  replaces the server's on the way in.
 - **attachments**: bytes sealed under their own key, AAD = server id + name,
   stored as `application/octet-stream`.
 
 What doesn't open is dropped before the replicator sees it and counted in
-`syncState.rejected` (shown in Settings → Sync). On the desktop,
-`initTauriSyncDefaults()` takes the key from `get_sync_info`; switching
-from `/offlog` sets `offlog_plain_server_to_retire`, and
-`retirePlainServer()` (before the first sync in `initApp`) pulls that
-database once, destroys it and clears the flag. A phone gets the key in the
-pairing reply. `tests/encryptedSync.e2e.test.ts` runs two devices through a
+`syncState.rejected` (shown in Settings → Sync). It fails closed: a
+request outside its database, or any write other than `_bulk_docs` with
+`new_edits: false`, is refused instead of sent. On the desktop,
+`initTauriSyncDefaults()` takes the key from `get_sync_info` and, every
+start, sets `offlog_plain_server_to_retire`; `retirePlainServer()`
+(before the first sync in `initApp`) pulls the readable `/offlog` if it
+exists (left from before the update, or recreated by a phone on an older
+app), destroys it and clears the flag. A phone gets the key in the pairing
+reply; `clearPairedHost()` and a hand-typed server URL drop it, so a
+server set up by hand syncs readable. `tests/encryptedSync.e2e.test.ts` runs two devices through a
 real NyxDB and reads the server raw (Desktop CI; skips without the binary).
 
 **Phantom conflicts.** NyxDB before v0.1.7 never sent a doc's revision
@@ -1016,8 +1021,11 @@ parse is renamed to `sync-host.json.bad-<unix-secs>` (with a log warning)
 before a new identity is generated; one that can't be read at all gets a
 session-only identity and is left on disk. A file from before the sync key
 gains one once, together with a new password, so phones that never got the
-key stop syncing instead of writing readable documents. Database creation
-(`offlog` and `offlog-e`), the pairing
+key stop syncing instead of writing readable documents. `ensure_database`
+creates `offlog-e` and keeps a SHA-256 fingerprint of the key in its
+`_local/offlog-key`; a different key empties the database, since nothing
+sealed under the old one can be opened, and the app re-uploads. Database
+creation, the pairing
 server and mDNS run once NyxDB accepts connections: after the first 20 s
 the background thread keeps re-checking with a 1 s → 30 s capped backoff
 for as long as the sidecar process is alive, so a slow start delays

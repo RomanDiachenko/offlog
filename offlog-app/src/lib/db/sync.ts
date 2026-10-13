@@ -54,8 +54,9 @@ function reportRejected(count: number) {
   notify();
 }
 
-// Once, on a PC moving to encrypted sync: anything only the old readable
-// database held comes into this device first, then that database is deleted
+// On a PC syncing encrypted: anything the readable database holds (from
+// before the update, or a phone still on an older app) comes into this
+// device first, then that database is deleted
 // so no readable copy stays on the server. Retried next launch until done.
 export async function retirePlainServer(): Promise<void> {
   const url = localStorage.getItem(PLAIN_SERVER_TO_RETIRE_KEY);

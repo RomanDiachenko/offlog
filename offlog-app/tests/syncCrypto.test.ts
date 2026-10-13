@@ -28,6 +28,11 @@ describe('sync ids', () => {
 });
 
 describe('sync documents', () => {
+  it('carry the history their device sealed, not one the server swaps in', async () => {
+    const sealed = await encryptDoc(k, { ...task, _revisions: { start: 2, ids: ['aaa', 'root'] } });
+    const forged = { ...sealed, _revisions: { start: 2, ids: ['aaa', 'mine-in-conflict'] } };
+    expect((await decryptDoc(k, forged))!._revisions).toEqual({ start: 2, ids: ['aaa', 'root'] });
+  });
   it('round-trip, and the server copy holds none of the content', async () => {
     const sealed = await encryptDoc(k, task);
     const json = JSON.stringify(sealed);

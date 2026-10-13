@@ -7,9 +7,15 @@
 // altered, replayed, or written by a device without the key) is dropped and
 // counted through onRejected; the replicator never sees it, so it is never
 // stored. _local/ checkpoints and endpoints without user data pass through.
+//
+// Fails closed: a request for any other address, and any write that is not
+// the replicator's own (_bulk_docs with new_edits:false), is refused rather
+// than sent. Such a write would leave the server a readable document, or one
+// sealed under a revision the server then replaces, which no device can open.
 import { encryptId, decryptId, encryptDoc, decryptDoc, decryptAttachment, passesThrough, type SyncKeys } from '../syncCrypto';
 
 type FetchFn = (url: string, init?: RequestInit) => Promise<Response>;
+const refuse = (what: string) => Promise.reject(new TypeError(`Encrypted sync refuses ${what}.`));
 type Json = Record<string, unknown>;
 type Doc = Json & { _id: string };
 
@@ -22,7 +28,8 @@ function rebuild(res: Response, body: BodyInit): Response {
 const asJson = (res: Response, value: unknown) => rebuild(res, JSON.stringify(value));
 
 export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count: number) => void, inner: FetchFn = (u, i) => fetch(u, i)): FetchFn {
-  const base = dbUrl.replace(/\/+$/, '');
+  const baseUrl = new URL(dbUrl.replace(/\/+$/, ''));
+  const base = baseUrl.origin + baseUrl.pathname;
 
   async function openDoc(doc: Doc): Promise<Doc | null> {
     const opened = await decryptDoc(keys, doc);
@@ -31,11 +38,14 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
   }
 
   return async function (url: string, init: RequestInit = {}): Promise<Response> {
-    if (!url.startsWith(base + '/')) return inner(url, init);
-    const [rawPath, query = ''] = url.slice(base.length + 1).split(/\?(.*)/s);
-    const qs = query ? '?' + query : '';
+    const target = new URL(url);
+    const at = target.origin + target.pathname;
+    if (at !== base && !at.startsWith(base + '/')) return refuse('a request outside its database');
+    const rawPath = at.slice(base.length + 1);
+    const qs = target.search;
     const method = (init.method ?? 'GET').toUpperCase();
-    const body = typeof init.body === 'string' && init.body ? JSON.parse(init.body) : undefined;
+    let body: any;
+    try { body = typeof init.body === 'string' && init.body ? JSON.parse(init.body) : undefined; } catch { body = undefined; }
     const send = (path: string, newBody?: unknown) =>
       inner(`${base}/${path}${qs}`, newBody === undefined ? init : { ...init, body: JSON.stringify(newBody) });
 
@@ -43,6 +53,7 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
 
     switch (rawPath) {
       case '_bulk_docs': {
+        if (body?.new_edits !== false) return refuse('a write that is not a replication');
         const docs = await Promise.all((body.docs as Doc[]).map(d => encryptDoc(keys, d)));
         const res = await send(rawPath, { ...body, docs });
         if (!res.ok) return res;
@@ -116,6 +127,8 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
     const attachment = slash < 0 ? null : rawPath.slice(slash + 1);
     const path = encodeURIComponent(sid) + (attachment === null ? '' : '/' + attachment);
 
+    if (method !== 'GET' && method !== 'HEAD') return refuse('a write that is not a replication');
+
     if (attachment !== null) {
       const res = await send(path);
       if (!res.ok || method !== 'GET') return res;
@@ -132,7 +145,7 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
       return opened;
     }
 
-    const res = await send(path, method === 'PUT' && body ? await encryptDoc(keys, { ...body, _id: id }) : undefined);
+    const res = await send(path);
     if (!res.ok || method !== 'GET') return res;
     const out = await res.json() as Doc | Json[];
     if (Array.isArray(out)) {

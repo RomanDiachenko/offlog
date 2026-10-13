@@ -114,7 +114,7 @@ export async function encryptDoc(k: SyncKeys, doc: AnyDoc): Promise<AnyDoc> {
       out._attachments[name] = { content_type: 'application/octet-stream', data: b64(await encryptAttachment(k, serverId, name, unb64(att.data))) };
     }
   }
-  const inner = utf8.encode(JSON.stringify({ i: _id, d: body, a: meta }));
+  const inner = utf8.encode(JSON.stringify({ i: _id, d: body, a: meta, ...(_revisions !== undefined && { r: _revisions }) }));
   out.e = b64(await seal(k.doc, randomIv(), inner, docAad(serverId, _rev, _deleted)));
   return out;
 }
@@ -130,13 +130,17 @@ export async function decryptDoc(k: SyncKeys, serverDoc: AnyDoc): Promise<AnyDoc
   try { sealed = unb64(serverDoc.e); } catch { return null; }
   const inner = await open(k.doc, sealed, docAad(serverDoc._id, serverDoc._rev, serverDoc._deleted));
   if (!inner) return null;
-  let parsed: { i: string; d: Record<string, unknown>; a: Record<string, { content_type?: string; digest?: string }> };
+  let parsed: { i: string; d: Record<string, unknown>; a: Record<string, { content_type?: string; digest?: string }>; r?: unknown };
   try { parsed = JSON.parse(fromUtf8.decode(inner)); } catch { return null; }
   if (parsed.i !== id) return null;
   const out: AnyDoc = { ...parsed.d, _id: id };
   if (serverDoc._rev !== undefined) out._rev = serverDoc._rev;
   if (serverDoc._deleted) out._deleted = true;
-  if (serverDoc._revisions !== undefined) out._revisions = serverDoc._revisions;
+  // The history the writing device sealed, not the server's: a forged one
+  // could make a device's own conflicting version look like an ancestor of
+  // the incoming one, and so hide it.
+  if (parsed.r !== undefined) out._revisions = parsed.r;
+  else if (serverDoc._revisions !== undefined) out._revisions = serverDoc._revisions;
   if (serverDoc._attachments) {
     out._attachments = {};
     for (const [name, att] of Object.entries(serverDoc._attachments)) {

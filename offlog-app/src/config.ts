@@ -75,10 +75,12 @@ export async function initTauriSyncDefaults(): Promise<void> {
   if (!followsSidecar) return;
   try {
     const info = await invokeTauri<{ port: number; user: string; password: string; key?: string }>('get_sync_info');
-    // With a key, the sidecar's encrypted database; the readable one it used
-    // before is pulled from once and deleted (retirePlainServer in db/sync.ts).
+    // With a key, the sidecar's encrypted database; whatever its readable one
+    // holds is pulled in and that database deleted (retirePlainServer in db/sync.ts).
     const url = `http://127.0.0.1:${info.port}/${info.key ? ENCRYPTED_DB : PLAIN_DB}`;
-    if (info.key && saved && /\/offlog$/.test(saved)) localStorage.setItem(PLAIN_SERVER_TO_RETIRE_KEY, `http://127.0.0.1:${info.port}/${PLAIN_DB}`);
+    // Every start, not only the first: a phone still on an app from before
+    // encryption recreates the readable database when it pairs again.
+    if (info.key) localStorage.setItem(PLAIN_SERVER_TO_RETIRE_KEY, `http://127.0.0.1:${info.port}/${PLAIN_DB}`);
     setSyncKey(info.key ?? '');
     setSyncUrl(url);
     localStorage.setItem(SIDECAR_URL_KEY, url);
@@ -728,9 +730,12 @@ export function setPairedHostName(name: string) {
 // A server typed in by hand replaces the paired computer. Forgetting the
 // computer's uuid also stops discovery.ts from "re-resolving" the address
 // back to that computer when the typed server is unreachable.
+// The sync key belongs to the paired PC: a server set up by hand gets
+// readable documents, never ones sealed for a PC it isn't.
 export function clearPairedHost() {
   localStorage.removeItem(PAIRED_HOST_UUID_KEY);
   localStorage.removeItem(PAIRED_HOST_NAME_KEY);
+  setSyncKey('');
 }
 
 export function setPairedHostUuid(uuid: string) {

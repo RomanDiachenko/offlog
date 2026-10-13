@@ -354,21 +354,63 @@ pub fn restart_delay(prior_crashes: usize) -> Duration {
 /// is treated the same as 201 created). The readable `offlog` database of
 /// an install from before encryption is emptied into the app and deleted
 /// by the app itself (retirePlainServer), never created again here.
+///
+/// The database belongs to one sync key: a fingerprint of it is kept in
+/// `_local/offlog-key`. A new key (a rebuilt sync-host.json) starts the
+/// database empty, since documents sealed under the old one can never be
+/// opened again and would keep newly paired devices from receiving them;
+/// the app's own copy re-uploads everything on its next sync.
 pub fn ensure_database(info: &SyncHostInfo) {
     let url = format!("http://127.0.0.1:{}/offlog-e", info.port);
-    let result = ureq::put(&url)
-        .header(
-            "Authorization",
-            &format!(
-                "Basic {}",
-                base64_encode(&format!("{}:{}", info.user, info.password))
-            ),
-        )
-        .send_empty();
-    match result {
+    let auth = format!("Basic {}", base64_encode(&format!("{}:{}", info.user, info.password)));
+    let create = || ureq::put(&url).header("Authorization", &auth).send_empty();
+    match create() {
         Ok(_) => log::info!("sync_host: offlog-e database ready"),
         Err(ureq::Error::StatusCode(412)) => log::info!("sync_host: offlog-e database already exists"),
-        Err(e) => log::warn!("sync_host: failed to create offlog-e database: {e}"),
+        Err(e) => { log::warn!("sync_host: failed to create offlog-e database: {e}"); return; }
+    }
+    let marker = format!("{url}/_local/offlog-key");
+    let stored = match ureq::get(&marker).header("Authorization", &auth).call() {
+        Ok(mut r) => r.body_mut().read_to_string().ok()
+            .and_then(|t| serde_json::from_str::<serde_json::Value>(&t).ok())
+            .and_then(|v| v.get("fingerprint")?.as_str().map(str::to_string)),
+        Err(ureq::Error::StatusCode(404)) => None,
+        Err(e) => { log::warn!("sync_host: could not read offlog-e key marker: {e}"); return; }
+    };
+    let fingerprint = key_fingerprint(&info.key);
+    match key_check(stored.as_deref(), &fingerprint) {
+        KeyCheck::Matches => return,
+        KeyCheck::Record => {}
+        KeyCheck::Reset => {
+            log::warn!("sync_host: sync key changed; starting offlog-e empty");
+            if let Err(e) = ureq::delete(&url).header("Authorization", &auth).call() {
+                log::warn!("sync_host: failed to reset offlog-e: {e}");
+                return;
+            }
+            if let Err(e) = create() { log::warn!("sync_host: failed to recreate offlog-e: {e}"); return; }
+        }
+    }
+    let body = serde_json::json!({ "fingerprint": fingerprint }).to_string();
+    if let Err(e) = ureq::put(&marker).header("Authorization", &auth).header("Content-Type", "application/json").send(body.as_str()) {
+        log::warn!("sync_host: failed to write offlog-e key marker: {e}");
+    }
+}
+
+#[derive(Debug, PartialEq)]
+enum KeyCheck { Matches, Record, Reset }
+
+/// Never the key itself: the server only ever holds this one-way hash.
+fn key_fingerprint(key: &str) -> String {
+    use sha2::{Digest, Sha256};
+    Sha256::digest(format!("offlog-db-key-v1
+{key}").as_bytes()).iter().map(|b| format!("{b:02x}")).collect()
+}
+
+fn key_check(stored: Option<&str>, current: &str) -> KeyCheck {
+    match stored {
+        None => KeyCheck::Record,
+        Some(s) if s == current => KeyCheck::Matches,
+        Some(_) => KeyCheck::Reset,
     }
 }
 
@@ -560,5 +602,16 @@ mod tests {
         assert!(REST_AFTER_CRASH_BURST > CRASH_WINDOW);
         let after_rest = t0 + Duration::from_secs(4) + REST_AFTER_CRASH_BURST;
         assert_eq!(p.record_crash(after_rest), Some(Duration::from_secs(2)));
+    }
+
+    #[test]
+    fn the_encrypted_database_starts_empty_only_when_the_key_changes() {
+        let a = key_fingerprint("a2V5LWE=");
+        assert_eq!(a.len(), 64);
+        assert_ne!(a, key_fingerprint("a2V5LWI="));
+        assert!(!a.contains("a2V5"));
+        assert_eq!(key_check(None, &a), KeyCheck::Record);
+        assert_eq!(key_check(Some(&a), &a), KeyCheck::Matches);
+        assert_eq!(key_check(Some(&key_fingerprint("a2V5LWI=")), &a), KeyCheck::Reset);
     }
 }
