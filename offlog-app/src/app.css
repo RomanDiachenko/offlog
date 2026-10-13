@@ -75,6 +75,9 @@
      either. Used by AgendaView.svelte's success-colored badge. */
   --ink-fixed-dark: #181a20;
   --danger: #bd4138;
+  /* Priority marks double as small text ("Medium", "High"), so they need 4.5:1 on white. */
+  --prio-medium: #9a6412;
+  --prio-high: #c93445;
   --success: #5abe73;
   /* Green as text or an icon: --success alone is too light to read on white. */
   --success-ink: color-mix(in srgb, var(--success) 50%, var(--text));
@@ -209,6 +212,8 @@ body.dark {
   --inverse-accent: #a9b0f0;
   --on-accent: #181a20; /* dark accent is light, so its text is dark: white on it reads only 2.98:1 */
   --danger: #e77f7c;
+  --prio-medium: #f0c25f;
+  --prio-high: #e35868;
   --success: #74d791;
   --success-ink: color-mix(in srgb, var(--success) 50%, var(--text));
   --switch-off: color-mix(in srgb, var(--border-strong) 60%, var(--text));

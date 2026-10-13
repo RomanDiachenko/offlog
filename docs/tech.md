@@ -827,6 +827,8 @@ low has no hue of its own (`--border-strong`), so green keeps meaning done. Deri
 | `--hero-base` / `--hero` | `#575FCA` | `#373D81` | the phone's loading screen (continuing the splash) and a faint light behind Home's hero panel; dark deepens it instead of using the lighter dark accent. `--hero` is the base shifted by `--hero-dh` / `--hero-dl` on `<html>` (season and evening, `phone/livingHero.ts`) where relative colour is supported |
 | `--ink-fixed-dark` | `#181A20` | `#181A20` | ink on `--success`, which is bright in both themes |
 | `--danger` | `#BD4138` | `#E77F7C` | destructive actions |
+| `--prio-medium` | `#9A6412` | `#F0C25F` | Medium priority dot, bar and label (4.5:1 on white in Light) |
+| `--prio-high` | `#C93445` | `#E35868` | High priority dot, bar and label |
 | `--success` | `#5ABE73` | `#74D791` | done, sync ok (dots, fills) |
 | `--switch-off` | `--border-strong` 60% + `--text` | same mix | an off switch's track (3:1 or more against the card) |
 | `--success-ink` | `--success` 50% + `--text` | same mix | green as text or an icon (`--success` alone is 2.3:1 on white) |
