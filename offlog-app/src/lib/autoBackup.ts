@@ -6,7 +6,17 @@
 //
 // Native (Capacitor) and Tauri only -- deliberately a no-op on plain web,
 // which has no reliable silent local-file API and is a dev/test surface.
-import { isTauri, isNativePlatform } from '../config';
+import { isTauri, isNativePlatform, invokeTauri } from '../config';
+
+// The Windows app's copies, in its app-data folder. A debug build shares that
+// folder with the installed app (same identifier), and the newest-7 rotation
+// would push the user's real copies out, so it keeps its own.
+let tauriFolder: Promise<string> | null = null;
+async function tauriBackupDir(): Promise<string> {
+  tauriFolder ??= invokeTauri<boolean>('is_debug_build').then(d => (d ? 'auto-backups-dev' : 'auto-backups'), () => 'auto-backups');
+  const { appDataDir, join } = await import('@tauri-apps/api/path');
+  return join(await appDataDir(), await tauriFolder);
+}
 
 const ENABLED_KEY = 'offlog_auto_backup_enabled';
 const LAST_RUN_KEY = 'offlog_auto_backup_last_run';
@@ -92,8 +102,8 @@ async function runNative(json: string, now: Date): Promise<void> {
 
 async function runTauri(json: string, now: Date): Promise<void> {
   const { writeTextFile, mkdir, readDir, remove, exists } = await import('@tauri-apps/plugin-fs');
-  const { appDataDir, join } = await import('@tauri-apps/api/path');
-  const base = await join(await appDataDir(), 'auto-backups');
+  const { join } = await import('@tauri-apps/api/path');
+  const base = await tauriBackupDir();
   if (!(await exists(base))) await mkdir(base, { recursive: true });
   await writeTextFile(await join(base, backupFilename(now)), json);
   const entries = await readDir(base);
@@ -142,8 +152,8 @@ export async function getAutoBackupUsage(): Promise<{ count: number; bytes: numb
     }
     if (isTauri()) {
       const { readDir, stat, exists } = await import('@tauri-apps/plugin-fs');
-      const { appDataDir, join } = await import('@tauri-apps/api/path');
-      const base = await join(await appDataDir(), 'auto-backups');
+      const { join } = await import('@tauri-apps/api/path');
+      const base = await tauriBackupDir();
       if (!(await exists(base))) return null;
       const entries = await readDir(base);
       let bytes = 0, count = 0;
@@ -181,8 +191,8 @@ export async function listAutoBackups(): Promise<AutoBackupFile[]> {
       }
     } else if (isTauri()) {
       const { readDir, stat, exists } = await import('@tauri-apps/plugin-fs');
-      const { appDataDir, join } = await import('@tauri-apps/api/path');
-      const base = await join(await appDataDir(), 'auto-backups');
+      const { join } = await import('@tauri-apps/api/path');
+      const base = await tauriBackupDir();
       if (!(await exists(base))) return [];
       for (const e of await readDir(base)) {
         const at = e.name ? autoBackupTime(e.name) : null;
@@ -205,6 +215,6 @@ export async function readAutoBackup(name: string): Promise<string> {
     return typeof r.data === 'string' ? r.data : await r.data.text();
   }
   const { readTextFile } = await import('@tauri-apps/plugin-fs');
-  const { appDataDir, join } = await import('@tauri-apps/api/path');
-  return readTextFile(await join(await appDataDir(), 'auto-backups', name));
+  const { join } = await import('@tauri-apps/api/path');
+  return readTextFile(await join(await tauriBackupDir(), name));
 }

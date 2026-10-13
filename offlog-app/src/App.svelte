@@ -594,7 +594,7 @@
        keyboard user can't Tab past the lock screen into the app behind
        it, and so screen readers don't expose it either — display:contents
        keeps this wrapper out of the flex/layout tree it sits inside. -->
-  <div inert={locked} style="display:contents">
+  <div class="lock-gate" inert={locked}>
   <div class="status-bar-fill"></div>
   <div class="layout">
     {#if Desktop}
@@ -1096,4 +1096,5 @@
     .view-btn { padding: 0 9px; }
   }
   .lock-cover { position: fixed; inset: 0; z-index: 10001; background: var(--bg); }
+  .lock-gate { display: contents; }
 </style>

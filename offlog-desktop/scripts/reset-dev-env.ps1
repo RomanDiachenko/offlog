@@ -55,6 +55,7 @@ $local = Join-Path $env:LOCALAPPDATA "com.offlog.app"
 Remove-Path (Join-Path $roaming "sync-host.dev.json") "debug sync-host config"
 Remove-Path (Join-Path $roaming "sync-secret.dev.enc") "debug stored sync credential"
 Remove-Path (Join-Path $roaming "nyxdb-data-dev") "debug NyxDB data"
+Remove-Path (Join-Path $roaming "auto-backups-dev") "debug daily safety copies"
 # Stale pre-swap CouchDB data dirs, if any -- distinct names from
 # NyxDB's own ("nyxdb-data[-dev]" above), never reused (sled can't read
 # CouchDB's on-disk format).

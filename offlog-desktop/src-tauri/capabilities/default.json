@@ -12,40 +12,103 @@
     "dialog:default",
     {
       "identifier": "fs:allow-exists",
-      "allow": [{ "path": "$APPDATA/auto-backups" }, { "path": "$APPDATA/auto-backups/**" }]
+      "allow": [
+        {
+          "path": "$APPDATA/auto-backups"
+        },
+        {
+          "path": "$APPDATA/auto-backups/**"
+        },
+        {
+          "path": "$APPDATA/auto-backups-dev"
+        },
+        {
+          "path": "$APPDATA/auto-backups-dev/**"
+        }
+      ]
     },
     {
       "identifier": "fs:allow-mkdir",
-      "allow": [{ "path": "$APPDATA/auto-backups" }]
+      "allow": [
+        {
+          "path": "$APPDATA/auto-backups"
+        },
+        {
+          "path": "$APPDATA/auto-backups-dev"
+        }
+      ]
     },
     {
       "identifier": "fs:allow-read-dir",
-      "allow": [{ "path": "$APPDATA/auto-backups" }]
+      "allow": [
+        {
+          "path": "$APPDATA/auto-backups"
+        },
+        {
+          "path": "$APPDATA/auto-backups-dev"
+        }
+      ]
     },
     {
       "identifier": "fs:allow-stat",
-      "allow": [{ "path": "$APPDATA/auto-backups/**" }]
+      "allow": [
+        {
+          "path": "$APPDATA/auto-backups/**"
+        },
+        {
+          "path": "$APPDATA/auto-backups-dev/**"
+        }
+      ]
     },
     {
       "identifier": "fs:allow-remove",
-      "allow": [{ "path": "$APPDATA/auto-backups/**" }]
+      "allow": [
+        {
+          "path": "$APPDATA/auto-backups/**"
+        },
+        {
+          "path": "$APPDATA/auto-backups-dev/**"
+        }
+      ]
     },
     {
       "identifier": "fs:allow-write-text-file",
-      "allow": [{ "path": "$APPDATA/auto-backups/**" }]
+      "allow": [
+        {
+          "path": "$APPDATA/auto-backups/**"
+        },
+        {
+          "path": "$APPDATA/auto-backups-dev/**"
+        }
+      ]
     },
     {
       "identifier": "fs:allow-read-text-file",
-      "allow": [{ "path": "$APPDATA/auto-backups/**" }]
+      "allow": [
+        {
+          "path": "$APPDATA/auto-backups/**"
+        },
+        {
+          "path": "$APPDATA/auto-backups-dev/**"
+        }
+      ]
     },
     "fs:allow-write-file",
     {
       "identifier": "fs:scope",
       "deny": [
-        { "path": "$APPDATA/sync-host*.json" },
-        { "path": "$APPDATA/sync-secret*" },
-        { "path": "$APPDATA/nyxdb-data*/**" },
-        { "path": "$APPLOCALDATA/EBWebView/**" }
+        {
+          "path": "$APPDATA/sync-host*.json"
+        },
+        {
+          "path": "$APPDATA/sync-secret*"
+        },
+        {
+          "path": "$APPDATA/nyxdb-data*/**"
+        },
+        {
+          "path": "$APPLOCALDATA/EBWebView/**"
+        }
       ]
     },
     "updater:default",

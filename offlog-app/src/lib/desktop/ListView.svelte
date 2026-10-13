@@ -724,11 +724,11 @@
           </div>
         </div>
       {:else}
-        <div class="empty" style="padding: 1rem 0">No archived tasks match the current filters.</div>
+        <div class="empty archived-empty">No archived tasks match the current filters.</div>
       {/if}
     </div>
   {:else if showArchived}
-    <div class="empty" style="padding: 1rem 0">No archived tasks in this project.</div>
+    <div class="empty archived-empty">No archived tasks in this project.</div>
   {/if}
 </div>
 
@@ -1045,4 +1045,5 @@
        desktop and mobile: still the same single row. */
     .action-label { display: none; }
   }
+  .archived-empty { padding: 1rem 0; }
 </style>

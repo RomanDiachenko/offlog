@@ -52,7 +52,7 @@
                      the OS picker show everything and relies on the JS check. -->
                 <input
                   bind:this={attachFileInputEl}
-                  type="file" multiple style="display:none"
+                  type="file" multiple class="file-pick"
                   on:change={onFilesPicked}
                 />
                 {#if attachmentError}<p class="dup-name-hint">{attachmentError}</p>{/if}
@@ -70,4 +70,5 @@
     border: 1px solid var(--border-strong); cursor: pointer;
     background: var(--surface); color: var(--text); font-size: var(--fs-m); font-weight: 500;
   }
+  .file-pick { display: none; }
 </style>

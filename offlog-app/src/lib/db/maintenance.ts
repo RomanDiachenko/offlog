@@ -559,7 +559,7 @@ export async function runMaintenanceSteps(
 
   onStep({ key: 'check', status: 'running', note: '' });
   const { issues, checked } = await checkIntegrity();
-  onStep({ key: 'check', status: 'done', note: issues.length === 0 ? `No problems found (${checked} items checked)` : `${issues.length} issue${issues.length === 1 ? '' : 's'} found` });
+  onStep({ key: 'check', status: 'done', note: issues.length === 0 ? `No problems found (${checked} spaces, projects and tasks checked)` : `${issues.length} issue${issues.length === 1 ? '' : 's'} found` });
 
   if (cancelled()) return stop('repair', 'history', 'trash', 'compact');
 

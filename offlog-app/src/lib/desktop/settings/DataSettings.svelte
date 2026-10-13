@@ -91,7 +91,7 @@
                 {#each autoBackups as b (b.name)}
                   <div class="setting-row">
                     <span class="setting-label">{fmtDay(new Date(b.at), { weekday: true })}, {fmtTime(new Date(b.at))}</span>
-                    <span class="storage-info" style="color: var(--muted)">{formatAttachmentSize(b.bytes)}</span>
+                    <span class="storage-info">{formatAttachmentSize(b.bytes)}</span>
                     <button class="export-btn" on:click={() => openAutoBackup(b)} disabled={importBusy} aria-label="Restore the copy from {fmtDay(new Date(b.at), { weekday: true })}, {fmtTime(new Date(b.at))}">Restore…</button>
                   </div>
                 {/each}
@@ -108,7 +108,7 @@
                   <button class="export-btn" on:click={doBackup}>Back up</button>
                 </div>
                 <div class="setting-row">
-                  <span class="storage-info" style="color: var(--muted)">Every task, one row, for a spreadsheet (one-way, can't be restored)</span>
+                  <span class="storage-info">Every task, one row, for a spreadsheet (one-way, can't be restored)</span>
                   <button class="export-btn" on:click={doExportCSV}>Export CSV</button>
                 </div>
               </div>
@@ -116,7 +116,7 @@
               <div class="setting-group">
                 <div class="setting-section-title">Restore</div>
                 <div class="setting-row">
-                  <span class="storage-info" style="color: var(--muted)">{importStatus || 'Restore from a backup file'}</span>
+                  <span class="storage-info">{importStatus || 'Restore from a backup file'}</span>
                   <button class="export-btn" on:click={handleImport} disabled={importBusy}>Choose backup file</button>
                 </div>
               </div>

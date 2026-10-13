@@ -511,7 +511,9 @@ Backup settings list the kept copies (`listAutoBackups()`, newest first) and
 open one in the same preview and restore as a picked file. `readAutoBackup()`
 takes only a name matching the copies' own pattern, never a path; the
 Windows app may read text files only inside `$APPDATA/auto-backups`
-(`fs:allow-read-text-file` in its capabilities).
+(`fs:allow-read-text-file` in its capabilities). A debug build keeps its copies in `auto-backups-dev`:
+it shares the installed app's app-data folder, and the newest-7 rotation
+would otherwise push out the user's real copies.
 
 **Restore** (`importJSON()`) updates docs in place. A one-project export
 inlines attachments like the full backup; for an older file that carries

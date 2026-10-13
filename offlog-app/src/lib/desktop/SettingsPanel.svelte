@@ -1310,7 +1310,7 @@
             <p class="setting-hint setting-hint-warn">This code has expired. Generate a new one below.</p>
           {:else if pcPairingCode}
             <p class="setting-hint">Enter this code on your phone (Settings → Sync → Find my computer):</p>
-            <p class="storage-info" style="font-size: 1.5rem; letter-spacing: 0.2em; text-align: center;">{pcPairingCode}</p>
+            <p class="storage-info pairing-code">{pcPairingCode}</p>
             <p class="setting-hint">Valid for 5 minutes, one-time use — this updates automatically once your phone connects.</p>
             {#if pcOldAppRefused}<p class="setting-hint setting-hint-warn">A phone with an older Offlog tried this code. Update Offlog on the phone, then enter the code again.</p>{/if}
           {:else}
@@ -1363,7 +1363,7 @@
       </div>
       <div class="mini-modal-body">
         <div class="setting-row">
-          <span class="storage-info" style="color: var(--muted)">
+          <span class="storage-info">
             {#if loadingConflicts}Loading…
             {:else if conflictList.length}{conflictList.length} item{conflictList.length === 1 ? '' : 's'} edited on two devices
             {:else if conflictCount}{conflictCount} conflict{conflictCount === 1 ? '' : 's'}
@@ -1931,4 +1931,5 @@
     font-family: 'Hanken Grotesk', sans-serif; cursor: pointer;
   }
   .recovery-ack-row input[type=checkbox] { accent-color: var(--accent); cursor: pointer; width: 15px; height: 15px; margin: 0; }
+  .pairing-code { font-size: 1.5rem; letter-spacing: 0.2em; text-align: center; }
 </style>
