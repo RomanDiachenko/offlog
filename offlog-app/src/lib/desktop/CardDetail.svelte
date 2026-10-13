@@ -709,7 +709,13 @@
     offerUndo(`archive:${id}`, `Archived "${shortTitle(title)}"`, async () => { await unarchiveTask(id); await reloadTasks(); });
   }
 
+  // Saves the edits first, so the copy is what the editor shows.
   async function duplicate() {
+    if (saving || leaving) return;
+    saving = true;
+    const errors = await persist();
+    saving = false;
+    if (errors.length) { reportErrors(errors); return; }
     try {
       await duplicateTask(task._id!);
       await reloadTasks();

@@ -428,7 +428,8 @@ describe('CardDetail Escape with a popover open', () => {
 });
 
 // Closing never throws an edit away, whichever way the editor is left, as on
-// the phone. Delete, archive, duplicate and skip are the exceptions.
+// the phone. Delete, archive and skip are the exceptions; duplicate saves
+// first, so the copy is what the editor shows.
 describe('CardDetail closing keeps edits & delete', () => {
   it.each([
     ['×', (u: ReturnType<typeof render>) => fireEvent.click(u.getByLabelText('Close'))],
@@ -454,6 +455,19 @@ describe('CardDetail closing keeps edits & delete', () => {
     release();
     await new Promise(r => setTimeout(r, 50));
     expect(updateTask).toHaveBeenCalledTimes(1);
+  });
+
+  it('duplicating saves the edits first, then copies', async () => {
+    const order: string[] = [];
+    updateTask.mockImplementationOnce(async () => { order.push('save'); });
+    duplicateTask.mockImplementationOnce(async () => { order.push('copy'); });
+    const utils = render(CardDetail, { props: { task: mkTask(), project: mkProject() } });
+    await fireEvent.input(utils.getByPlaceholderText('Task title'), { target: { value: 'Edited then copied' } });
+    await fireEvent.click(utils.getByLabelText('More actions'));
+    await fireEvent.click(utils.getByText('Duplicate'));
+    await waitFor(() => expect(duplicateTask).toHaveBeenCalledWith('task:1'));
+    expect(updateTask).toHaveBeenCalledWith('task:1', expect.objectContaining({ title: 'Edited then copied' }));
+    expect(order).toEqual(['save', 'copy']);
   });
 
   it('deleting does not save the edits made before it', async () => {

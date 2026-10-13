@@ -656,7 +656,7 @@
               <svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9.5 10,3"/></svg>
             {/if}
           </button>
-          <span class="cell-title">
+          <span class="cell-title" title={task.title}>
             {#if task.pinned}<span class="pin-mark" title="Pinned" role="img" aria-label="Pinned"><PinStar size={11} filled={false} stroked /></span>{/if}
             {task.title}
             {#if task.recurrence}
@@ -857,8 +857,8 @@
      and this wrapper scrolls once that's wider than the actual available
      space. Don't add a max-width here — it forces a scrollbar even when
      there's empty space to the right, since no track stretches to fill it.
-     Nothing in the grid ever ellipsizes — see .cell-title/.cell-status
-     below, both plain `white-space: nowrap` with no text-overflow. */
+     Only a title longer than its capped track (titleColWidth, 480px)
+     ellipsizes, with the full title on hover; nothing else in the grid does. */
   .grid-scroll {
     overflow-x: auto;
     /* Scroll-shadow affordance (CSS-only) — see KanbanBoard.svelte's .board
@@ -981,7 +981,7 @@
   /* No truncation, anywhere in the grid — plain nowrap, never
      text-overflow: ellipsis. Long content makes the row (and the whole
      grid, via .grid-scroll) wider instead of hiding characters. */
-  .cell-title { font-size: var(--fs-m); font-weight: 500; color: var(--text); white-space: nowrap; }
+  .cell-title { font-size: var(--fs-m); font-weight: 500; color: var(--text); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .recur-mark { display: inline-flex; align-items: center; color: var(--muted); opacity: .75; vertical-align: middle; margin-left: 4px; }
 
   .cell-status { color: var(--muted); font-size: var(--fs-s); white-space: nowrap; }
