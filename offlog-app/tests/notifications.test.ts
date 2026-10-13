@@ -37,7 +37,7 @@ async function seedSpace(): Promise<SpaceDoc> {
 }
 
 describe('catchUpWeb', () => {
-  it('fires and clears a reminder still within the 1-hour catch-up window', async () => {
+  it('fires a reminder within the catch-up window once, and leaves it on the task for other devices', async () => {
     await seedSpace();
     const project = await createProject('space:unsorted', 'Test');
     const task = await createTask(project._id, 'space:unsorted', project.columns[0].id, 'Within window');
@@ -45,10 +45,22 @@ describe('catchUpWeb', () => {
     await updateTask(task._id!, { reminder_at: thirtyMinAgo });
     const withReminder = { ...task, reminder_at: thirtyMinAgo };
 
+    const NotificationSpy = vi.fn();
+    (globalThis as any).Notification = class {
+      static permission = 'granted';
+      onclick: (() => void) | null = null;
+      constructor(...args: any[]) { NotificationSpy(...args); }
+      close() {}
+    };
+
+    await catchUpWeb([withReminder]);
     await catchUpWeb([withReminder]);
 
+    expect(NotificationSpy).toHaveBeenCalledTimes(1);
     const after = await db.get(task._id!) as any;
-    expect(after.reminder_at).toBeNull();
+    // A synced clear here cancelled the phone's alarm before it rang.
+    expect(after.reminder_at).toBe(thirtyMinAgo);
+    expect(JSON.parse(localStorage.getItem('offlog_fired_reminders')!)).toContain(`${task._id}:${thirtyMinAgo}`);
   });
 
   it('clears (without firing) a reminder far past the catch-up window instead of leaving it dangling forever', async () => {

@@ -933,7 +933,7 @@ reads Windows' per-app switch (`check_desktop_notification_setting`): while it
 is off the reminder keeps its `reminder_at` and the permission reads denied.
 The toast comes from the Rust command `send_task_notification`
 (tauri-winrt-notification), with the Reminder scenario so it stays on screen
-until acted on, and the reminder is cleared only after that command resolved.
+until acted on; a toast that could not be sent is retried by the next re-arm.
 Done, Snooze 1h and a plain click come back as the `notification-action`
 event; a click restores and focuses the window. The press only reaches a
 running app: no COM activator is registered, so a toast acted on after Quit
@@ -943,7 +943,14 @@ installer's Start-menu shortcut registers.
 **Web** is best-effort: there is no push backend by design, so notifications
 use `setTimeout` while the tab is open, plus a catch-up on load that fires
 anything that came due in the last 24 hours (`CATCH_UP_WINDOW_MS`); an
-older missed reminder is cleared from its task. Permission is requested lazily,
+older missed reminder is cleared from its task.
+
+**Firing never writes to the task.** Desktop and web remember what they
+already showed in a per-device list (`offlog_fired_reminders` in
+localStorage, keyed `id:reminder_at`, last 500). Clearing `reminder_at` on
+fire synced to the phone and cancelled its alarm before it rang, and two
+devices clearing offline came back as a conflict. A fired reminder stays on
+its task until it is 24 hours old, when the catch-up pass clears it. Permission is requested lazily,
 never on load.
 
 ---

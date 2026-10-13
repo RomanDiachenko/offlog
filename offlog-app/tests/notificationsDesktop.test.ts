@@ -37,12 +37,15 @@ async function dueReminder(title: string) {
 const sends = () => invoke.mock.calls.filter(c => c[0] === 'send_task_notification');
 
 describe('desktop reminders', () => {
-  it('fires a toast with the app-style date and then clears the reminder', async () => {
+  it('fires a toast with the app-style date once, keeping the reminder for the phone', async () => {
     invoke.mockImplementation(async (cmd: string) => cmd === 'check_desktop_notification_setting' ? true : undefined);
-    const { id } = await dueReminder('Call plumber');
+    const { id, at } = await dueReminder('Call plumber');
     await rescheduleAll();
-    await vi.waitFor(async () => expect((await getTaskById(id))!.reminder_at).toBeFalsy());
+    await vi.waitFor(() => expect(sends()).toHaveLength(1));
+    await rescheduleAll();
+    await new Promise(r => setTimeout(r, 50));
     expect(sends()).toHaveLength(1);
+    expect((await getTaskById(id))!.reminder_at).toBe(at);
     expect(sends()[0][1]).toMatchObject({ title: 'Call plumber', taskId: id });
     expect(sends()[0][1].body).toMatch(/^Due Wed 7 Oct( \d{4})?$/);
   });

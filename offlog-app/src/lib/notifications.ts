@@ -192,42 +192,41 @@ export function checkPermission(): void {
 const _webTimers = new Map<string, ReturnType<typeof setTimeout>>();
 const MAX_TIMEOUT = 2_147_483_647; // setTimeout's 32-bit signed int limit (~24.8 days)
 
-// Guards against firing the same reminder twice within one app session.
-// rescheduleAll() can be triggered by overlapping/rapid-fire reload()
-// calls (several doc writes in quick succession each trigger their own
-// live-sync change event) — without this, catchUpWeb() and a live
-// setTimeout can both fire for the same task before the DB write that
-// clears reminder_at has round-tripped back through the reactive
-// reload chain, producing 2-3 duplicate notifications for one reminder.
-//
-// Must be keyed by `${id}:${reminder_at}`, not by task id alone: a task id
-// on its own means that once ANY reminder on a task fires, this set (never
-// cleared) silently blocks every future reminder on that task for the rest of
-// the session. Keying by the exact instant still blocks the race above (both
-// paths compute the identical key for the same pending reminder_at) while
-// treating a later, different reminder_at on the same task as fireable.
-const _firedIds = new Set<string>();
-function firedKey(task: TaskDoc): string { return `${task._id}:${task.reminder_at}`; }
-
-// The set is only a short-lived duplicate-suppression guard -- once a
-// reminder has fired and its write has settled, the key has no further job.
-// Left unbounded it grows by one string per fired reminder for the life of
-// the process, which for the tray-resident desktop app can be weeks. Trim
-// oldest-first, well above any plausible same-session backlog, so the dedupe
-// behaviour is unchanged in practice.
+// Which reminders this device has already shown, keyed by
+// `${id}:${reminder_at}` so a later reminder on the same task still fires.
+// Kept per device, never written to the task: clearing reminder_at on fire
+// synced to the phone and cancelled its alarm before it rang, and two devices
+// clearing the same reminder offline came back as a sync conflict. A fired
+// reminder stays on its task until the catch-up window passes; only then is
+// it cleared, long after every device has had its turn.
+// The set is claimed before any await, so overlapping rescheduleAll() passes
+// (catch-up and a live timer for the same instant) show one notification.
+const FIRED_KEY = 'offlog_fired_reminders';
 const FIRED_IDS_MAX = 500;
+const _firedIds = new Set<string>(readFired());
+function readFired(): string[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(FIRED_KEY) ?? '[]');
+    return Array.isArray(v) ? v.filter((k): k is string => typeof k === 'string') : [];
+  } catch { return []; }
+}
+function saveFired() {
+  try { localStorage.setItem(FIRED_KEY, JSON.stringify([..._firedIds])); } catch {}
+}
+function firedKey(task: TaskDoc): string { return `${task._id}:${task.reminder_at}`; }
 function rememberFired(key: string) {
   _firedIds.add(key);
-  if (_firedIds.size > FIRED_IDS_MAX) {
+  while (_firedIds.size > FIRED_IDS_MAX) {
     const oldest = _firedIds.values().next().value as string | undefined;
-    if (oldest !== undefined) _firedIds.delete(oldest);
+    if (oldest === undefined) break;
+    _firedIds.delete(oldest);
   }
+  saveFired();
+}
+function forgetFired(key: string) {
+  if (_firedIds.delete(key)) saveFired();
 }
 
-// Returns the clearing write's promise (rather than firing it detached) so
-// catchUpWeb() can wait for it to land. Production callers may ignore the
-// returned promise; tests must await it rather than padding with an arbitrary
-// setTimeout, which isn't reliably long enough under parallel load.
 function fireWebNotification(task: TaskDoc): Promise<void> {
   const id = task._id!;
   const key = firedKey(task);
@@ -243,13 +242,7 @@ function fireWebNotification(task: TaskDoc): Promise<void> {
     pendingOpenTaskId.set(id);
     n.close();
   };
-  // Reminders are one-shot, not recurring — clear it once shown so an
-  // unrelated later save/reload doesn't re-trigger the same notification
-  // via the catch-up check (it would otherwise keep re-firing for as
-  // long as reminder_at stays inside the catch-up window). A failed clear
-  // isn't user-initiated and isn't worth a toast — the notification already
-  // fired, and the next catch-up pass retries the same clear.
-  return clearReminderIfUnchanged(id, task.reminder_at!).then(() => {}, () => {});
+  return Promise.resolve();
 }
 
 function scheduleWeb(task: TaskDoc, staggerIndex = 0) {
@@ -296,6 +289,13 @@ function cancelWeb(taskId: string) {
 // overnight). 24h covers a normal overnight or workday gap.
 const CATCH_UP_WINDOW_MS = 24 * 60 * 60 * 1000;
 
+// A failed clear isn't user-initiated and isn't worth a toast: the next
+// catch-up pass retries it.
+function clearStale(t: TaskDoc): Promise<void> {
+  const key = firedKey(t);
+  return clearReminderIfUnchanged(t._id!, t.reminder_at!).then(() => forgetFired(key), () => {});
+}
+
 export function catchUpWeb(tasks: TaskDoc[]): Promise<void> {
   const now = Date.now();
   const pending: Promise<void>[] = [];
@@ -321,7 +321,7 @@ export function catchUpWeb(tasks: TaskDoc[]): Promise<void> {
         pending.push(fireWebNotification(t));
       }
     }
-    else pending.push(clearReminderIfUnchanged(t._id!, t.reminder_at).then(() => {}, () => {}));
+    else pending.push(clearStale(t));
   }
   return Promise.all(pending).then(() => {});
 }
@@ -420,7 +420,7 @@ async function scheduleNative(tasks: TaskDoc[]) {
 // switched off -- and that switch can change while the app sits in the tray.
 // So the setting is read at fire time: while it's off the reminder keeps its
 // reminder_at, as on Android, and the hourly re-arm fires it once allowed.
-// The reminder is cleared only after the toast was actually handed over.
+// A toast that could not be sent is retried by the next re-arm.
 async function fireTauriNotification(task: TaskDoc): Promise<void> {
   const id = task._id!;
   const key = firedKey(task);
@@ -430,13 +430,12 @@ async function fireTauriNotification(task: TaskDoc): Promise<void> {
   rememberFired(key);
   const allowed = await invokeTauri<boolean>('check_desktop_notification_setting').catch(() => true);
   permissionState.set(allowed ? 'granted' : 'denied');
-  if (!allowed) { _firedIds.delete(key); return; }
+  if (!allowed) { forgetFired(key); return; }
   try {
     await invokeTauri('send_task_notification', { title: task.title, body: reminderBody(task), taskId: id });
   } catch {
-    return;
+    forgetFired(key);
   }
-  await clearReminderIfUnchanged(id, task.reminder_at!).then(() => {}, () => {});
 }
 
 function scheduleTauriTimer(task: TaskDoc, staggerIndex = 0) {
@@ -474,7 +473,7 @@ function catchUpTauri(tasks: TaskDoc[]) {
         fireTauriNotification(t);
       }
     }
-    else clearReminderIfUnchanged(t._id!, t.reminder_at).then(() => {}, () => {}); // see fireWebNotification()'s comment on this pattern
+    else clearStale(t);
   }
 }
 
