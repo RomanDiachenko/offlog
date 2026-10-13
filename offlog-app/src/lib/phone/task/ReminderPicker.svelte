@@ -13,6 +13,9 @@
 
   // An ISO instant, or null for none.
   export let value: string | null;
+  // Quick add's picked due day ('YYYY-MM-DD'): a new reminder starts on it,
+  // and "On the due date" leads the shortcuts.
+  export let dueDate: string | null = null;
 
   // `set`: an ISO instant, or '' to remove the reminder.
   const dispatch = createEventDispatcher<{ set: string }>();
@@ -22,10 +25,15 @@
   const todayStr = localDateStr(new Date());
   const tomorrowStr = dateFromToday(1);
   // Presets in the past are left out; "now" is read once per open.
-  const PRESETS = reminderPresets();
+  const onDue = dueDate && `${dueDate}T${defTime}` > nowLocal ? `${dueDate}T${defTime}` : null;
+  const PRESETS = [
+    ...(onDue ? [{ at: onDue, label: 'On the due date' }] : []),
+    ...reminderPresets().filter(p => p.at !== onDue),
+  ];
 
-  // A new reminder starts at the default time, today if that is still ahead.
-  const start = value ? isoToLocalInput(value) : `${`${todayStr}T${defTime}` > nowLocal ? todayStr : tomorrowStr}T${defTime}`;
+  // A new reminder starts at the default time: on the due day when there is
+  // one ahead, else today if that is still ahead.
+  const start = value ? isoToLocalInput(value) : onDue ?? `${`${todayStr}T${defTime}` > nowLocal ? todayStr : tomorrowStr}T${defTime}`;
   let date = start.slice(0, 10);
   let time = start.slice(11, 16);
   let wheels = false, wheelsKey = 0;

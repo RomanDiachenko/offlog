@@ -370,7 +370,7 @@
             {:else if panel === 'tags'}
               <TagsPanel selected={tags} on:toggle={e => toggleTag(e.detail)} on:add={e => toggleTag(e.detail)} />
             {:else}
-              <ReminderPanel value={reminder} on:pick={e => pickReminder(e.detail)} />
+              <ReminderPanel value={reminder} dueDate={due ?? null} on:pick={e => pickReminder(e.detail)} />
             {/if}
           </Panel>
         {/key}

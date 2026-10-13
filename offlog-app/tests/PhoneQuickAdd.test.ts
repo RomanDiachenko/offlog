@@ -270,6 +270,21 @@ describe('phone Quick add', () => {
     }));
   });
 
+  it('with a due date picked, the reminder starts on that day and offers "On the due date"', async () => {
+    const due = dateFromToday(7);
+    const { getByLabelText, getByRole, findByLabelText } = render(QuickAddSheet);
+    await type(getByLabelText, 'Renew passport in 7 days');
+    await fireEvent.click(getByLabelText('Reminder: none'));
+    expect(getByRole('group', { name: 'Shortcuts' }).querySelector('.p-chip')!.textContent).toBe('On the due date');
+    // Untouched, the picker already sits on the due day at the default time.
+    expect(getByRole('button', { name: /^Remind me / }).textContent).not.toMatch(/today|tomorrow/);
+    await fireEvent.click(getByRole('button', { name: 'On the due date' }));
+    await fireEvent.click(getByRole('button', { name: /^Remind me / }));
+    await findByLabelText(/^Reminder: /);
+    await fireEvent.click(getByLabelText('Add'));
+    await waitFor(() => expect(createTask.mock.calls[0][4]).toMatchObject({ due_date: due, reminder_at: new Date(`${due}T10:00`).toISOString() }));
+  });
+
   it('"No reminder" beats a typed time', async () => {
     const { getByLabelText, getByRole, findByLabelText } = render(QuickAddSheet);
     await type(getByLabelText, 'Call mum tomorrow at 6pm');

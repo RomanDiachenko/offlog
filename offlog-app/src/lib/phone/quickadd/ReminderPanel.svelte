@@ -5,9 +5,10 @@
 
   // An ISO instant, or null for none.
   export let value: string | null;
+  export let dueDate: string | null = null;
 
   // '' means no reminder.
   const dispatch = createEventDispatcher<{ pick: string }>();
 </script>
 
-<ReminderPicker {value} on:set={(e) => dispatch('pick', e.detail)} />
+<ReminderPicker {value} {dueDate} on:set={(e) => dispatch('pick', e.detail)} />
