@@ -348,6 +348,30 @@ describe('phone settings pages', () => {
     } finally { spy.mockRestore(); }
   });
 
+  it('Backup: a restore says how it went, by toast or by showError', async () => {
+    let picker: HTMLInputElement | null = null;
+    const make = document.createElement.bind(document);
+    const spy = vi.spyOn(document, 'createElement').mockImplementation(((tag: string) => {
+      const el = make(tag);
+      if (tag === 'input') { picker = el as HTMLInputElement; picker.click = () => {}; }
+      return el;
+    }) as typeof document.createElement);
+    vi.mocked(db.analyzeImport).mockReturnValue({ toCreate: 2, toSkip: 0, byType: { space: 0, project: 0, task: 2 } } as never);
+    try {
+      const { getByRole, findByText } = render(SettingsPage, { page: 'data' });
+      for (const outcome of ['ok', 'fail'] as const) {
+        if (outcome === 'ok') vi.mocked(db.importJSON).mockResolvedValueOnce({ ok: 2, skipped: 0 });
+        else vi.mocked(db.importJSON).mockRejectedValueOnce(new Error('quota'));
+        await fireEvent.click(getByRole('button', { name: /^Restore from a file/ }));
+        Object.defineProperty(picker!, 'files', { value: [new File(['[{"_id":"task:1","type":"task","project_id":"p"}]'], 'b.json')], configurable: true });
+        await picker!.onchange!(new Event('change'));
+        await fireEvent.click(await findByText('Import 2 items'));
+        if (outcome === 'ok') await waitFor(() => expect(get(nav.toast)?.text).toBe('Restored 2 items'));
+        else await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not import. Please try again.'));
+      }
+    } finally { spy.mockRestore(); }
+  });
+
   it('Backup on the phone: the daily safety copy switch says when the last one was made', async () => {
     (window as { Capacitor?: unknown }).Capacitor = { isNativePlatform: () => true, getPlatform: () => 'android' };
     m.native = true;

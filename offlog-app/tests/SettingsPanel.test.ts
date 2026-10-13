@@ -368,6 +368,35 @@ describe('SettingsPanel restore failure', () => {
 
     expect(showError).toHaveBeenCalledWith('Could not import. Please try again.');
   });
+
+  it('a finished restore says how much it restored, and the line stays', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.mocked(importJSON).mockResolvedValueOnce({ ok: 3, skipped: 1 });
+    const real = document.createElement.bind(document);
+    let picked: HTMLInputElement | null = null;
+    const spy = vi.spyOn(document, 'createElement').mockImplementation(((tag: string) => {
+      const el = real(tag) as HTMLElement;
+      if (tag === 'input') { picked = el as HTMLInputElement; (el as HTMLInputElement).click = () => {}; }
+      return el;
+    }) as never);
+    try {
+      const { container, findByText, getByText } = render(SettingsPanel, { initialCategory: 'data' });
+      const nav = [...container.querySelectorAll('.nav-item')]
+        .find(b => /Backup/i.test((b as HTMLElement).textContent!)) as HTMLButtonElement;
+      await fireEvent.click(nav);
+      const choose = [...container.querySelectorAll('button')]
+        .find(b => /Choose backup file/i.test(b.textContent!)) as HTMLButtonElement;
+      await fireEvent.click(choose);
+      const { analyzeImport } = await import('../src/lib/db');
+      vi.mocked(analyzeImport).mockReturnValue({ toCreate: 4, toSkip: 0, byType: { space: 0, project: 0, task: 4 } } as never);
+      Object.defineProperty(picked!, 'files', { value: [new File(['[{"_id":"task:1","type":"task"}]'], 'ok.json')], configurable: true });
+      await (picked!.onchange as () => Promise<void>)();
+      await fireEvent.click(await findByText(/^Import 4 items$/));
+      await findByText('Restored 3 items, 1 skipped');
+      await vi.advanceTimersByTimeAsync(10000);
+      expect(getByText('Restored 3 items, 1 skipped')).toBeTruthy();
+    } finally { spy.mockRestore(); vi.useRealTimers(); }
+  });
 });
 
 describe('SettingsPanel restore file errors', () => {

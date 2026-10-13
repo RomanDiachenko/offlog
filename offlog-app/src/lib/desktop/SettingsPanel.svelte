@@ -964,13 +964,13 @@
     try {
       importStatus = 'Importing…';
       const { ok, skipped } = await importJSON(docs);
-      importStatus = `Done — ${ok} imported, ${skipped} skipped`;
+      importStatus = `Restored ${ok} item${ok === 1 ? '' : 's'}${skipped ? `, ${skipped} skipped` : ''}`;
     } catch {
       importStatus = 'Could not import. Please try again.';
       showError('Could not import. Please try again.');
     }
+    // The outcome stays until the next restore: a timed-out line was easy to miss.
     importBusy = false;
-    setTimeout(() => { importStatus = ''; }, 4000);
   }
 
   // Two groups: "Back up" (scope — everything vs one project — is a

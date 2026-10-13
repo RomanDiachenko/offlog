@@ -30,7 +30,7 @@
   import Pick from '../task/Pick.svelte';
   import LockPage from './LockPage.svelte';
   import RemindersPage from './RemindersPage.svelte';
-  import { push, stack } from '../nav';
+  import { push, stack, showToast } from '../nav';
   import { openLink, REPO_URL } from '../openLink';
   import { get } from 'svelte/store';
   import { closeOnBack } from '../../modalStack';
@@ -341,12 +341,14 @@
     try {
       importStatus = 'Importing…';
       const { ok, skipped } = await importJSON(docs);
-      importStatus = `Done — ${ok} imported, ${skipped} skipped`;
+      importStatus = `Restored ${ok} item${ok === 1 ? '' : 's'}${skipped ? `, ${skipped} skipped` : ''}`;
+      showToast(importStatus);
     } catch {
       importStatus = 'Could not import. Please try again.';
+      showError(importStatus);
     }
+    // The outcome stays until the next restore: a timed-out line was easy to miss.
     importBusy = false;
-    setTimeout(() => { importStatus = ''; }, 4000);
   }
 
   let autoBackupEnabled = isAutoBackupEnabled();
