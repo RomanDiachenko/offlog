@@ -1,6 +1,6 @@
 # Offlog — What Protects Your Data
 
-*Last updated: 2026-10-03*
+*Last updated: 2026-10-13*
 
 This page explains, in plain language, everything Offlog actually does to
 keep your data safe — and, just as importantly, the things it
@@ -30,6 +30,28 @@ database of ours to breach, because there is no database of ours.
 What's left to protect is: the handoff when two of your devices first
 meet, the password that lets them keep talking, what the sync server
 holds, and the app itself on a device someone else picks up.
+
+---
+
+## At a glance
+
+Every protection on this page, grouped. The sections after this one
+explain each in plain language; the last one lists what is *not*
+protected.
+
+| Area | What protects you | Section |
+|---|---|---|
+| Pairing a phone with your PC | The 6-digit code never crosses the network; the reply is encrypted; the code expires in 5 minutes, works once and dies after 8 wrong guesses; every failure looks the same; requests are small and capped; the check takes constant time; an app too old for encrypted sync is turned away | 1 |
+| The stored sync password | Encrypted by Windows (DPAPI) and the Android Keystore; random per install; no built-in fallback | 2 |
+| What the sync server holds | Tasks, files and checkpoints are end-to-end encrypted (AES-256-GCM) under a key only your devices hold; the server can't read, forge or alter them; the encryption layer refuses anything it can't seal | 3 |
+| Someone picking up your device | App Lock: only a hash of the PIN is stored, no way around the lock screen, slowed-down guessing, fingerprint as an extra, a one-time recovery code, an optional hint, an optional privacy screen | 4 |
+| Hostile text or code | The app can't load anything from the internet; text from other devices is treated as untrusted; links from outside are checked | 5–7 |
+| Attachments | Size limits; unknown types kept as plain data; images re-saved; problem formats refused | 8 |
+| Nothing phones home | No analytics, crash reports or ads; no third-party servers; bundled font; on-device text parsing; Android cloud backup off; minimal permissions | 9 |
+| When something goes wrong | Recycle bin before deleting; conflicts never resolved silently; automatic backups; a database check and repair | 10 |
+| The Windows app | Its sync server can't outlive it; one copy at a time; test and real installs kept apart; a damaged settings file is kept, not replaced; logs hold no secrets; signed updates; no admin rights; narrow file access | 11 |
+| How the project is built | Build tools pinned to exact versions; least-privilege automation; nothing ships without passing tests; code scanning; monthly dependency review; a recurring manual audit | 12 |
+| What isn't protected | Stated plainly, with the reason for each | 13 |
 
 ---
 
