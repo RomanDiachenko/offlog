@@ -29,10 +29,14 @@ const refuse = (what: string) => Promise.reject(new EncryptedSyncError('Could no
 type Json = Record<string, unknown>;
 type Doc = Json & { _id: string };
 
-function rebuild(res: Response, body: BodyInit): Response {
+// Content-Type must be right when the Response is built: Chromium fixes a
+// response's blob() type then, and a header changed afterwards is ignored
+// (a pulled photo would be stored as a typeless blob).
+function rebuild(res: Response, body: BodyInit, contentType?: string): Response {
   const headers = new Headers(res.headers);
   headers.delete('content-length');
   headers.delete('content-encoding');
+  if (contentType !== undefined) headers.set('Content-Type', contentType);
   return new Response(body, { status: res.status, statusText: res.statusText, headers });
 }
 const asJson = (res: Response, value: unknown) => rebuild(res, JSON.stringify(value));
@@ -178,8 +182,8 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
         reject(`${sid}/${attachment}`, [target.searchParams.get('rev') ?? '']);
         return notFound('Attachment could not be read.');
       }
-      const opened = rebuild(res, new Blob([plain.bytes as BlobPart], { type: plain.type }));
-      if (plain.type) opened.headers.set('Content-Type', plain.type);
+      const type = plain.type || 'application/octet-stream';
+      const opened = rebuild(res, new Blob([plain.bytes as BlobPart], { type }), type);
       // PouchDB's Node build reads attachments through response.buffer()
       // (node-fetch); browsers and WebViews read the Blob.
       const NodeBuffer = (globalThis as { Buffer?: { from(b: Uint8Array): unknown } }).Buffer;

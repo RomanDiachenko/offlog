@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, vi } from 'vitest';
-import { importSyncKey, encryptId, encryptDoc, decryptDoc, type SyncKeys } from '../src/lib/syncCrypto';
+import { importSyncKey, encryptId, encryptDoc, decryptDoc, encryptAttachment, type SyncKeys } from '../src/lib/syncCrypto';
 import { encryptedFetch } from '../src/lib/db/encryptedFetch';
 
 // The translator against a scripted server: what leaves is sealed, what comes
@@ -39,6 +39,22 @@ describe('encryptedFetch', () => {
     expect(out.results[0].id).toBe('task:1');
     expect(out.results[0].docs).toEqual([{ ok: { _id: 'task:1', _rev: '2-b', title: 'ok' } }]);
     expect(onRejected).toHaveBeenCalledTimes(1);
+  });
+
+  // Chromium takes a Response's blob() type from its headers at construction;
+  // Node reads them later, so the type is checked where it is set.
+  it('a pulled attachment is built with its real type from the start', async () => {
+    const sid = await encryptId(k, 'task:1');
+    const sealed = await encryptAttachment(k, sid, 'att:1', new Uint8Array([1, 2, 3]), 'image/svg+xml');
+    const f = encryptedFetch(DB, k, () => {}, async () => new Response(sealed, { status: 200, headers: { 'Content-Type': 'application/octet-stream' } }));
+    const Real = globalThis.Response;
+    const built: (string | null)[] = [];
+    vi.stubGlobal('Response', class extends Real {
+      constructor(body?: BodyInit | null, init?: ResponseInit) { super(body, init); built.push(new Headers(init?.headers).get('content-type')); }
+    });
+    await f(DB + '/task%3A1/att%3A1');
+    vi.unstubAllGlobals();
+    expect(built.at(-1)).toBe('image/svg+xml');
   });
 
   it('checkpoints are sealed on the way out, and a forged one reads as missing', async () => {
