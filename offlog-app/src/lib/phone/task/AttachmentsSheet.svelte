@@ -137,6 +137,9 @@
   .file + .file { background-image: linear-gradient(var(--line), var(--line)); background-size: calc(100% - 16px) 1px; background-position: 16px 0; background-repeat: no-repeat; }
   .open { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; font: inherit; font-size: var(--p-fs-m); color: var(--text); background: none; border: 0; padding: 4px 0; text-align: left; cursor: pointer; border-radius: 8px; }
   .open:active { background: var(--col-bg); }
+  /* Not a .p-row, so the shared name-over-size layout is set here. */
+  .open .p-k { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .open .p-k > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .th { width: 40px; height: 40px; border-radius: 8px; background: var(--col-bg); display: flex; align-items: center; justify-content: center; color: var(--faint); font-size: var(--p-fs-xs); font-weight: 700; flex-shrink: 0; object-fit: cover; }
   .p-ib :global(svg.i) { width: 18px; height: 18px; }
   .err { color: var(--danger); margin-top: 10px; }
