@@ -23,6 +23,7 @@
   import BlockedByBlock from './carddetail/BlockedByBlock.svelte';
   import AttachmentsBlock from './carddetail/AttachmentsBlock.svelte';
   import MarkdownEditor from '../shared/MarkdownEditor.svelte';
+  import { openWebLink } from './openWebLink';
   import { isoToLocalInput, dateFromToday, dueDateToReminderInput, formatExtrasSummary, blobToBase64, base64ToBlob, downscaleImage, openAttachmentFile } from '../shared/taskHelpers';
   import { today } from '../today';
   import { offerUndo, shortTitle } from '../undoToast';
@@ -864,7 +865,7 @@
 
     <div class="notes-field">
       <span class="sr">Notes</span>
-      <MarkdownEditor bind:value={body} placeholderText="Add notes…  **bold**, - list, # heading" />
+      <MarkdownEditor bind:value={body} placeholderText="Add notes…  **bold**, - list, # heading" onLink={openWebLink} />
       {#if body.length > NOTES_SOFT_LIMIT}<div class="notes-counter">{body.length} characters</div>{/if}
       {#if similarNotesHint}<p class="dup-name-hint">{similarNotesHint}</p>{/if}
     </div>

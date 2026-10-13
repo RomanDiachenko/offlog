@@ -354,6 +354,15 @@ search term highlighted. It does not run. And if it somehow did get
 through, the Content Security Policy above would refuse to execute it —
 two independent layers.
 
+**Links inside notes open only as web addresses.** A `[text](address)`
+link in a note opens when tapped (Ctrl+click while you are typing in the
+note), and only if the address is a plain `http://` or `https://` one.
+The phone hands it to the browser; on Windows the native command
+`open_web_link` checks the address again on its own (no spaces, quotes or
+control characters, at most 2048 characters) before Windows opens it, so a
+synced note can never ask your PC to open a file, a `file:` path or another
+app's custom link.
+
 ---
 
 ## 7. Links from outside the app

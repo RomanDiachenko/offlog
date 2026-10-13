@@ -203,7 +203,7 @@ src/
 
     shared/                     Screen pieces both shells use
       MarkdownEditor.svelte       CodeMirror 6 wrapper, one live-rendering pane (the phone loads it lazily, phone/noteEditor.ts)
-      markdownLiveView.ts         CodeMirror decorations: bold/italic/heading/etc render inline as you type; linkUrlAt() for the editor's onLink (http(s) only; phone only, desktop has no outside-link opener)
+      markdownLiveView.ts         CodeMirror decorations: bold/italic/heading/etc render inline as you type; linkUrlAt() for the editor's onLink (http(s) only; phone: openLink, Windows: desktop/openWebLink.ts → the open_web_link command)
       TaskHistoryPanel.svelte     Lazy-loaded history for one task
       AppearanceSettings.svelte   Appearance (desktop settings and the phone's Appearance page)
       privacyPoints.ts            The short privacy page both shells show, and the repo/policy URLs; change with docs/privacy.md

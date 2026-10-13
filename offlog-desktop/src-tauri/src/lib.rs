@@ -165,6 +165,34 @@ fn check_desktop_notification_setting(app: tauri::AppHandle) -> bool {
     .unwrap_or(true)
 }
 
+// Notes arrive by sync, so only a plain http(s) address may reach
+// ShellExecute: anything else (a path, file:, a custom scheme) could open a
+// file or start a program.
+fn is_web_link(url: &str) -> bool {
+    let lower = url.to_ascii_lowercase();
+    let rest = lower.strip_prefix("https://").or_else(|| lower.strip_prefix("http://"));
+    matches!(rest, Some(r) if !r.is_empty())
+        && url.len() <= 2048
+        && !url.chars().any(|c| c.is_whitespace() || c.is_control() || c == '"')
+}
+
+// Opens a link from a task's notes in the default browser.
+#[tauri::command]
+fn open_web_link(url: String) -> Result<(), String> {
+    use windows::core::{w, HSTRING, PCWSTR};
+    use windows::Win32::UI::Shell::ShellExecuteW;
+    use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
+    if !is_web_link(&url) {
+        return Err("not a web address".into());
+    }
+    let r = unsafe { ShellExecuteW(None, w!("open"), &HSTRING::from(url), PCWSTR::null(), PCWSTR::null(), SW_SHOWNORMAL) };
+    // ShellExecute reports success as a value above 32.
+    if (r.0 as isize) <= 32 {
+        return Err(format!("could not open the link ({})", r.0 as isize));
+    }
+    Ok(())
+}
+
 // The main window starts hidden (tauri.conf.json's `visible: false`) so
 // there's no blank-white-then-content-pops-in flash while the frontend's
 // own onMount does its thing (theme, init(), view restore) -- App.svelte
@@ -791,7 +819,7 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_sync_info, get_device_name,is_debug_build, generate_pairing_code, reset_sync_data, show_main_window, show_main_window_at_start, save_window_state, get_global_shortcut_enabled, set_global_shortcut_enabled, send_task_notification, check_desktop_notification_setting, get_detected_other_hosts, get_sync_data_set_aside, store_sync_secret, get_sync_secret])
+        .invoke_handler(tauri::generate_handler![get_sync_info, get_device_name,is_debug_build, generate_pairing_code, reset_sync_data, show_main_window, show_main_window_at_start, save_window_state, get_global_shortcut_enabled, set_global_shortcut_enabled, send_task_notification, check_desktop_notification_setting, open_web_link, get_detected_other_hosts, get_sync_data_set_aside, store_sync_secret, get_sync_secret])
         .build(context)
         .expect("error while building tauri application")
         .run(|app_handle, event| {
@@ -803,4 +831,20 @@ pub fn run() {
                 terminate_nyxdb(app_handle);
             }
         });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_web_link;
+
+    #[test]
+    fn only_plain_web_addresses_pass() {
+        assert!(is_web_link("https://offlog.io"));
+        assert!(is_web_link("HTTP://example.com/a?b=c#d"));
+        for bad in ["", "https://", "file:///C:/Windows/System32/calc.exe", r"C:\Windows\notepad.exe",
+                    "javascript:alert(1)", "ms-settings:privacy", "https://a b", "https://a\"b", "https://a\nb", "mailto:x@y.z"] {
+            assert!(!is_web_link(bad), "{bad:?} must be refused");
+        }
+        assert!(!is_web_link(&format!("https://{}", "a".repeat(2050))));
+    }
 }
