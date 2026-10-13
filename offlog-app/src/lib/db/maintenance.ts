@@ -377,7 +377,7 @@ export async function checkIntegrity(): Promise<{ issues: IntegrityIssue[]; chec
     // ignore unresolvable ids, so this is cleanup, not a visible break.
     const dangling = [...(t.related ?? []), ...(t.blocked_by ?? [])].filter(id => !taskIds.has(id));
     if (dangling.length) {
-      issues.push({ type: 'dangling_link', docId: t._id!, description: `Task "${t.title}" links to ${dangling.length} task(s) that no longer exist` });
+      issues.push({ type: 'dangling_link', docId: t._id!, description: `Task "${t.title}" links to ${dangling.length} task${dangling.length === 1 ? '' : 's'} that no longer exist` });
     }
 
     // archiveProject() cascades archived onto its tasks, but an import or a

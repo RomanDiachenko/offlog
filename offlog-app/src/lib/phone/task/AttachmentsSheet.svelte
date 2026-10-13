@@ -99,7 +99,7 @@
 
   async function open(key: string, filename: string) {
     try { await openAttachmentFile(await getAttachmentBlob(task._id, key), filename); }
-    catch { showError('Could not open that attachment.'); }
+    catch { showError('Could not open that attachment. Please try again.'); }
   }
 </script>
 

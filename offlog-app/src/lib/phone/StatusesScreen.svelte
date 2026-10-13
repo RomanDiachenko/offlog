@@ -69,7 +69,7 @@
     }
     if (oldLast.id !== newLast.id) {
       const prevOrder = prev.map(c => c.id);
-      showToast(`“${newLast.name}” is last now, so its ${count(newLast.id)} task(s) count as done`, async () => {
+      showToast(`“${newLast.name}” is last now, so its ${count(newLast.id)} task${count(newLast.id) === 1 ? ' counts' : 's count'} as done`, async () => {
         try {
           const now = (await getProjects()).find(p => p._id === pid);
           if (now) adopt(await reorderColumns(pid, restoreOrder(now.columns, prevOrder)));
@@ -96,10 +96,10 @@
   function removeWarning(c: Column): string {
     if (!project) return '';
     const n = count(c.id);
-    let msg = n ? `Its ${n} task(s) move to “${project.columns.find(x => x.id !== c.id)?.name}”.` : 'It has no tasks.';
+    let msg = n ? `Its ${n} task${n === 1 ? ' moves' : 's move'} to “${project.columns.find(x => x.id !== c.id)?.name}”.` : 'It has no tasks.';
     if (project.columns.at(-1)?.id === c.id && project.columns.length > 1) {
       const promoted = project.columns.at(-2)!;
-      msg += ` “${promoted.name}” then becomes the last status, so its ${count(promoted.id)} task(s) will count as done.`;
+      msg += ` “${promoted.name}” then becomes the last status, so its ${count(promoted.id)} task${count(promoted.id) === 1 ? '' : 's'} will count as done.`;
     }
     return msg;
   }

@@ -85,7 +85,7 @@
 
   async function emptyAll() {
     if (!items.length) return;
-    if (!(await confirmAction(`Permanently delete all ${items.length} item${items.length === 1 ? '' : 's'} in the Recycle bin? This can't be undone.`, { danger: true, confirmLabel: 'Empty' }))) return;
+    if (!(await confirmAction(`Permanently delete ${items.length === 1 ? 'the 1 item' : `all ${items.length} items`} in the Recycle bin? This can't be undone.`, { danger: true, confirmLabel: 'Empty' }))) return;
     busy = true;
     try {
       await emptyTrash();

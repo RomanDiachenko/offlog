@@ -679,7 +679,10 @@ export async function verifyAppLockRecoveryCode(code: string): Promise<boolean> 
   const salt = localStorage.getItem(APP_LOCK_RECOVERY_SALT_KEY);
   const storedHash = localStorage.getItem(APP_LOCK_RECOVERY_HASH_KEY);
   if (!salt || !storedHash) return false;
-  return (await hashWithSalt(salt, code.trim().toUpperCase())) === storedHash;
+  // Shown as XXXXX-XXXXX; typed without the dash it is the same code.
+  let typed = code.trim().toUpperCase().replace(/\s+/g, '');
+  if (/^[A-Z0-9]{10}$/.test(typed)) typed = `${typed.slice(0, 5)}-${typed.slice(5)}`;
+  return (await hashWithSalt(salt, typed)) === storedHash;
 }
 
 // Idle/background timeout before the lock screen reappears — launch

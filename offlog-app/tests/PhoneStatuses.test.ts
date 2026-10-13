@@ -130,7 +130,7 @@ describe('phone Statuses screen', () => {
     await menu(r, 'Doing');
     await fireEvent.click(r.getByText('Move down'));
     await waitFor(() => expect(reorderColumns).toHaveBeenCalledWith('project:p', [cols[0], cols[2], cols[1]]));
-    await waitFor(() => expect(get(toast)?.text).toBe('“Doing” is last now, so its 2 task(s) count as done'));
+    await waitFor(() => expect(get(toast)?.text).toBe('“Doing” is last now, so its 2 tasks count as done'));
     await get(toast)!.undo!();
     expect(reorderColumns).toHaveBeenLastCalledWith('project:p', cols);
   });
@@ -213,7 +213,7 @@ describe('phone Statuses screen', () => {
     await menu(r, 'Done');
     await fireEvent.click(r.getByText('Remove status'));
     expect(removeColumn).not.toHaveBeenCalled();
-    expect(r.getByText('It has no tasks. “Doing” then becomes the last status, so its 2 task(s) will count as done.')).toBeTruthy();
+    expect(r.getByText('It has no tasks. “Doing” then becomes the last status, so its 2 tasks will count as done.')).toBeTruthy();
     await fireEvent.click(r.getByText('Remove status', { selector: '.p-go' }));
     await waitFor(() => expect(removeColumn).toHaveBeenCalledWith('project:p', 'col:done'));
     await waitFor(() => expect(names(r.container)).toEqual(['To do', 'Doing']));
@@ -224,7 +224,7 @@ describe('phone Statuses screen', () => {
     const r = setup();
     await menu(r, 'To do');
     await fireEvent.click(r.getByText('Remove status'));
-    expect(r.getByText('Its 1 task(s) move to “Doing”.')).toBeTruthy();
+    expect(r.getByText('Its 1 task moves to “Doing”.')).toBeTruthy();
     await fireEvent.click(r.getByText('Remove status', { selector: '.p-go' }));
     await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not remove this status. Please try again.'));
   });

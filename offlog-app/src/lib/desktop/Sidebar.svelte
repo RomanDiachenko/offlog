@@ -712,7 +712,7 @@
       <button class="icon-btn" on:click={() => { openTimeTravel(); dispatch('navigate'); }} title="History" aria-label="History">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.history}</svg>
       </button>
-      <button class="icon-btn" on:click={() => { openTrash(); dispatch('navigate'); }} title="Recycle bin{breakdown && breakdown.deletedTasks > 0 ? ` (${breakdown.deletedTasks})` : ''}" aria-label="Recycle bin{breakdown && breakdown.deletedTasks > 0 ? `, ${breakdown.deletedTasks} items` : ''}">
+      <button class="icon-btn" on:click={() => { openTrash(); dispatch('navigate'); }} title="Recycle bin{breakdown && breakdown.deletedTasks > 0 ? ` (${breakdown.deletedTasks})` : ''}" aria-label="Recycle bin{breakdown && breakdown.deletedTasks > 0 ? `, ${breakdown.deletedTasks} item${breakdown.deletedTasks === 1 ? '' : 's'}` : ''}">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.trash}</svg>
       </button>
       <button class="icon-btn" on:click={() => { openSettings(); dispatch('navigate'); }} title="Settings" aria-label="Settings">

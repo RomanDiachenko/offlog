@@ -23,7 +23,7 @@ export function freshMaintSteps(): MaintStep[] {
 
 export function formatStorageEstimate(usage: number, quota: number): { info: string; percent: number } {
   return {
-    info: `${(usage / 1048576).toFixed(1)} MB used / ${(quota / 1048576).toFixed(0)} MB quota`,
+    info: `${(usage / 1048576).toFixed(1)} MB used / ${quota >= 1073741824 ? `${(quota / 1073741824).toFixed(1)} GB` : `${(quota / 1048576).toFixed(0)} MB`} quota`,
     percent: quota > 0 ? usage / quota : 0,
   };
 }

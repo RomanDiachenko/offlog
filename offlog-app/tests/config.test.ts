@@ -160,6 +160,9 @@ describe('App lock recovery code', () => {
   it('the generated code verifies correctly', async () => {
     const { recoveryCode } = await setAppLockPin('1234');
     expect(await verifyAppLockRecoveryCode(recoveryCode!)).toBe(true);
+    // Typed without the dash, in lower case, with stray spaces: the same code.
+    expect(await verifyAppLockRecoveryCode(' ' + recoveryCode!.replace('-', '').toLowerCase() + ' ')).toBe(true);
+    expect(await verifyAppLockRecoveryCode(recoveryCode!.replace('-', '').slice(1) + 'Z')).toBe(false);
   });
 
   it('rejects an incorrect recovery code', async () => {

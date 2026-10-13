@@ -595,7 +595,7 @@
       const blob = await getAttachmentBlob(task._id!, key);
       await openAttachmentFile(blob as Blob, filename);
     } catch {
-      showError('Could not open that attachment.');
+      showError('Could not open that attachment. Please try again.');
     }
   }
 
@@ -684,7 +684,7 @@
   }
 
   async function softDelete() {
-    if (!(await confirmAction('Delete this task?', { danger: true, confirmLabel: 'Delete' }))) return;
+    if (!(await confirmAction('Move this task to the Recycle bin?', { danger: true, confirmLabel: 'Delete' }))) return;
     try {
       await deleteTask(task._id!);
       await reloadTasks();

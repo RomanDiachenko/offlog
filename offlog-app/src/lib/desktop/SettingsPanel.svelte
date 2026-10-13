@@ -394,6 +394,7 @@
   }
 
   async function savePin() {
+    if (!/^\d*$/.test(newPin)) { pinError = 'A PIN is digits only.'; return; }
     if (newPin.length < 4) { pinError = 'PIN must be at least 4 digits.'; return; }
     if (!/^\d+$/.test(newPin)) { pinError = 'PIN can only contain digits.'; return; }
     if (newPin !== confirmPin) { pinError = "PINs don't match."; return; }
@@ -1481,8 +1482,7 @@
         <p class="setting-hint">
           Will create <strong>{importPreview.byType.space}</strong> space{importPreview.byType.space === 1 ? '' : 's'},
           <strong>{importPreview.byType.project}</strong> project{importPreview.byType.project === 1 ? '' : 's'},
-          <strong>{importPreview.byType.task}</strong> task{importPreview.byType.task === 1 ? '' : 's'}
-          {#if importPreview.toSkip > 0}— <strong>{importPreview.toSkip}</strong> unrecognized entr{importPreview.toSkip === 1 ? 'y' : 'ies'} will be skipped{/if}.
+          <strong>{importPreview.byType.task}</strong> task{importPreview.byType.task === 1 ? '' : 's'}{#if importPreview.toSkip > 0}— <strong>{importPreview.toSkip}</strong> unrecognized entr{importPreview.toSkip === 1 ? 'y' : 'ies'} will be skipped{/if}.
           Anything matching something you already have will be updated in place, not duplicated.
           This isn't a full revert — anything you've created, changed or deleted since this backup was taken stays exactly as it is now.
         </p>

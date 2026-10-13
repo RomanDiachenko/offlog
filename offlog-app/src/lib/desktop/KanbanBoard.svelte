@@ -244,7 +244,7 @@
     }
   }
   async function cardDelete(task: TaskDoc) {
-    if (!(await confirmAction('Delete this task?', { danger: true, confirmLabel: 'Delete' }))) return;
+    if (!(await confirmAction('Move this task to the Recycle bin?', { danger: true, confirmLabel: 'Delete' }))) return;
     try {
       await deleteTask(task._id!);
       await reloadTasks();
@@ -290,7 +290,7 @@
       const nowUndone = tasksByCol[oldLast.id]?.length ?? 0;
       const ok = await confirmAction(
         `"${newLast.name}" would become the last status, which is what counts as done. ` +
-        `${nowDone} task(s) in it will be treated as complete, and ${nowUndone} in "${oldLast.name}" will go back to not-done.`,
+        `${nowDone} task${nowDone === 1 ? '' : 's'} in it will be treated as complete, and ${nowUndone} in "${oldLast.name}" will go back to not-done.`,
         { confirmLabel: 'Reorder' },
       );
       if (!ok) { dragCol = null; dragOverCol = null; return; }
@@ -344,7 +344,7 @@
   async function doRemoveCol(colId: string) {
     const colTasks = tasksByCol[colId] ?? [];
     let msg = colTasks.length
-      ? `Remove status? ${colTasks.length} card(s) will move to the first status.`
+      ? `Remove status? ${colTasks.length} task${colTasks.length === 1 ? '' : 's'} will move to the first status.`
       : 'Remove this status?';
     // Removing the *last* status promotes the one before it, and "done"
     // is positional — so every task sitting in that now-last status
@@ -354,7 +354,7 @@
     if (project.columns.at(-1)?.id === colId && project.columns.length > 1) {
       const promoted = project.columns.at(-2)!;
       const affected = tasksByCol[promoted.id]?.length ?? 0;
-      msg += ` "${promoted.name}" then becomes the last status, so its ${affected} task(s) will count as done.`;
+      msg += ` "${promoted.name}" then becomes the last status, so its ${affected} task${affected === 1 ? '' : 's'} will count as done.`;
     }
     if (!(await confirmAction(msg, { danger: true, confirmLabel: 'Remove' }))) return;
     try {
