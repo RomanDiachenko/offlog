@@ -282,6 +282,7 @@ describe('phone Sync page', () => {
     await fireEvent.click(getAllByText('Keep this')[1]);
     await waitFor(() => expect(confirmAction).toHaveBeenCalledTimes(1));
     expect(resolveConflict).not.toHaveBeenCalled();
+    expect(confirmAction.mock.calls[0][0]).toContain('from PC, "Buy paint now"');
     confirmAction.mockResolvedValueOnce(true);
     await fireEvent.click(getAllByText('Keep this')[1]);
     await waitFor(() => expect(resolveConflict).toHaveBeenCalledWith('task:a', 'other', '3-b', ['3-a', '3-b']));

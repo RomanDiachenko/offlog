@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { keepVersionPrompt } from '../../shared/conflictPrompt';
   // Settings → Sync on the phone: SyncSettings' behaviour (toggle, status,
   // pairing on Android and PC, device name, devices seen, conflicts) with
   // phone chrome. The server address itself lives in Advanced.
@@ -240,9 +241,8 @@
   $: conflictsShown = conflictList.length || conflictCount;
 
   async function resolve(c: ConflictInfo, v: ConflictVersion) {
-    const losing = c.versions.length - 1;
     const ok = await confirmAction(
-      `Keep this version of "${c.label}"? The other ${losing === 1 ? 'version' : `${losing} versions`} will be discarded permanently.`,
+      keepVersionPrompt(c, v),
       { confirmLabel: 'Keep this one', danger: true },
     );
     if (!ok) return;

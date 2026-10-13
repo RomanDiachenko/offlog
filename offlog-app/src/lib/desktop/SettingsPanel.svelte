@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { keepVersionPrompt } from '../shared/conflictPrompt';
   import { ICON } from '../shared/iconPaths';
   import { createEventDispatcher, onMount, onDestroy, tick } from 'svelte';
   import AppearanceSettings from '../shared/AppearanceSettings.svelte';
@@ -729,12 +730,8 @@
     } finally { loadingConflicts = false; }
   }
   async function resolve(c: ConflictInfo, v: ConflictVersion) {
-    // Every other version is discarded, including any this screen is not
-    // showing side by side -- so the confirm names the count rather than
-    // letting one click silently drop them.
-    const losing = c.versions.length - 1;
     const ok = await confirmAction(
-      `Keep this version of "${c.label}"? The other ${losing === 1 ? 'version' : `${losing} versions`} will be discarded permanently.`,
+      keepVersionPrompt(c, v),
       { confirmLabel: 'Keep this one', danger: true },
     );
     if (!ok) return;
