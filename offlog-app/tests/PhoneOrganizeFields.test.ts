@@ -95,6 +95,18 @@ describe('phone Organize → Fields', () => {
     await waitFor(() => expect(addCustomFieldDef).toHaveBeenCalledWith('Mood', 'select', ['good', 'bad', 'ok']));
   });
 
+  it('a select field with no options cannot be added', async () => {
+    const r = await setup();
+    await openNew(r);
+    await fireEvent.input(r.getByLabelText('Field name'), { target: { value: 'Mood' } });
+    await fireEvent.click(r.getByRole('radio', { name: 'Select' }));
+    await fireEvent.input(r.getByLabelText('Options'), { target: { value: ' , ' } });
+    expect((r.getByText('Add field') as HTMLButtonElement).disabled).toBe(true);
+    await fireEvent.keyDown(r.getByLabelText('Options'), { key: 'Enter' });
+    await new Promise(res => setTimeout(res, 20));
+    expect(addCustomFieldDef).not.toHaveBeenCalled();
+  });
+
   it('a failed add surfaces showError', async () => {
     addCustomFieldDef.mockRejectedValueOnce(new Error('x'));
     const r = await setup();

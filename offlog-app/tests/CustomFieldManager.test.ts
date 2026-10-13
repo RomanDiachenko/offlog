@@ -126,6 +126,17 @@ describe('CustomFieldManager rename', () => {
     });
   });
 
+  it('a select field cannot be saved with its options emptied', async () => {
+    const { container } = await open();
+    await startEdit(container, 'Client');
+    const optionsInput = container.querySelectorAll('.row-editing .name-input')[1] as HTMLInputElement;
+    await fireEvent.input(optionsInput, { target: { value: ' ,, ' } });
+    const save = container.querySelector('.edit-save-btn') as HTMLButtonElement;
+    expect(save.disabled).toBe(true);
+    await fireEvent.keyDown(container.querySelector('.row-editing .name-input')!, { key: 'Enter' });
+    expect(updateCustomFieldDef).not.toHaveBeenCalled();
+  });
+
   it('writes nothing when the name is emptied', async () => {
     const { container } = await open();
 

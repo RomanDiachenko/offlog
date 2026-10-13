@@ -28,6 +28,8 @@
     const n = name.trim();
     if (!n || busy) return;
     const opts = type === 'select' ? parse(options) : undefined;
+    // A Select field with no options offers nothing to pick.
+    if (opts && !opts.length) return;
     busy = true;
     try {
       if (field) await updateCustomFieldDef(field.id, { name: n, type, options: opts });
@@ -86,7 +88,7 @@
       on:keydown={e => e.key === 'Enter' && save()} />
   {/if}
 
-  <button class="p-go" disabled={!name.trim() || busy} on:click={save}>{editing ? 'Save' : 'Add field'}</button>
+  <button class="p-go" disabled={!name.trim() || busy || (type === 'select' && !parse(options).length)} on:click={save}>{editing ? 'Save' : 'Add field'}</button>
 
   {#if editing}
     <div class="p-group rm"><button class="p-row danger" disabled={busy} on:click={remove}>Remove field</button></div>

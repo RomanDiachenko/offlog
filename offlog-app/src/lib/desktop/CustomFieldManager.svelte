@@ -39,6 +39,10 @@
   let newName = '';
   let newType: CustomFieldDef['type'] = 'text';
   let newOptions = '';
+  // A Select field with no options offers nothing to pick.
+  const hasOptions = (s: string) => s.split(',').some(o => o.trim());
+  const typeLabel = (t: CustomFieldDef['type']) => typeOptions.find(o => o.value === t)?.label ?? t;
+
   const typeOptions = [
     { value: 'text', label: 'Text' },
     { value: 'number', label: 'Number' },
@@ -55,7 +59,7 @@
 
   async function add() {
     const name = newName.trim();
-    if (!name) return;
+    if (!name || (newType === 'select' && !hasOptions(newOptions))) return;
     const options = newType === 'select' ? newOptions.split(',').map(o => o.trim()).filter(Boolean) : undefined;
     try {
       fields = await addCustomFieldDef(name, newType, options);
@@ -94,7 +98,7 @@
 
   async function saveEdit(field: CustomFieldDef) {
     const name = editName.trim();
-    if (!name) return;
+    if (!name || (editType === 'select' && !hasOptions(editOptions))) return;
     const options = editType === 'select' ? editOptions.split(',').map(o => o.trim()).filter(Boolean) : undefined;
     try {
       fields = await updateCustomFieldDef(field.id, { name, type: editType, options });
@@ -136,14 +140,14 @@
               {/if}
               <div class="row-edit-actions">
                 <button class="edit-cancel-btn" on:click={cancelEdit}>Cancel</button>
-                <button class="edit-save-btn" on:click={() => saveEdit(field)} disabled={!editName.trim()}>Save</button>
+                <button class="edit-save-btn" on:click={() => saveEdit(field)} disabled={!editName.trim() || (editType === 'select' && !hasOptions(editOptions))}>Save</button>
               </div>
             </div>
           {:else}
             <div class="row">
               <button class="row-text row-edit-trigger" on:click={() => startEdit(field)} title="Edit field" aria-label="Edit field {field.name}">
                 <span class="name">{field.name}</span>
-                <span class="type">{field.type}{#if field.type === 'select' && field.options?.length} · {field.options.join(', ')}{/if}</span>
+                <span class="type">{typeLabel(field.type)}{#if field.type === 'select' && field.options?.length} · {field.options.join(', ')}{/if}</span>
               </button>
               <button class="delete-btn" on:click={() => remove(field)} title="Remove field" aria-label="Remove field {field.name}">×</button>
             </div>
@@ -161,7 +165,7 @@
     {#if newType === 'select'}
       <input class="name-input" bind:value={newOptions} placeholder="Options, comma-separated" />
     {/if}
-    <button class="add-btn" on:click={add} disabled={!newName.trim()}>+ Add field</button>
+    <button class="add-btn" on:click={add} disabled={!newName.trim() || (newType === 'select' && !hasOptions(newOptions))}>+ Add field</button>
   </div>
 </div>
 {/if}
