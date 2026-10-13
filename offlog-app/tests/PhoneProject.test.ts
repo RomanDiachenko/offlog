@@ -15,6 +15,7 @@ const deleteProject = vi.fn();
 const getArchivedTasksForProject = vi.fn();
 const findProjectsByName = vi.fn();
 const unarchiveTask = vi.fn();
+const getBlockingTasks = vi.fn();
 vi.mock('../src/lib/db', () => {
   const posBetween = (b: number | null, a: number | null) => (b === null && a === null ? 1024 : b === null ? a! / 2 : a === null ? b + 1024 : (a + b) / 2);
   return {
@@ -30,6 +31,8 @@ vi.mock('../src/lib/db', () => {
     unarchiveTask: (...a: unknown[]) => unarchiveTask(...a),
     findProjectsByName: (...a: unknown[]) => findProjectsByName(...a),
     getTaskIdsBlocked: vi.fn().mockResolvedValue(new Set(['task:b'])),
+    getBlockingTasks: (...a: unknown[]) => getBlockingTasks(...a),
+    isBlockerResolved: (b: { column_id: string; project_id: string }, last: Record<string, string>) => b.column_id === last[b.project_id],
     getTaskIdsWithRelatedLinks: vi.fn().mockResolvedValue(new Set()),
     getTagColorOverrides: vi.fn().mockResolvedValue({}),
     getCustomFieldDefs: vi.fn().mockResolvedValue([]),
@@ -251,6 +254,13 @@ describe('phone Project screen — board', () => {
     expect(await toggleDone(tasks[0], project)).toBe(true);
     expect(showError).not.toHaveBeenCalled();
     expect(get(toast)?.text).toBe('Done: a');
+  });
+
+  it('finishing a task with open blockers still finishes it and says so', async () => {
+    getBlockingTasks.mockResolvedValue([task('task:x'), task('task:y', { column_id: 'col:done' }), task('task:z', { column_id: 'col:doing' })]);
+    expect(await toggleDone({ ...tasks[0], blocked_by: ['task:x', 'task:y', 'task:z'] }, project)).toBe(true);
+    expect(updateTask).toHaveBeenCalledWith('task:a', { column_id: 'col:done' });
+    expect(get(toast)?.text).toBe('Done: a, though 2 blockers are still open');
   });
 
   it('a one-status project has no finish checkbox', () => {

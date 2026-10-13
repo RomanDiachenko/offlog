@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import { updateProject, updateTask } from '../../db';
+import { updateProject, updateTask, getBlockingTasks, isBlockerResolved } from '../../db';
 import { projects, reloadTasks, showError } from '../../store';
 import { hapticToggle } from '../../haptics';
 import { showToast } from '../nav';
@@ -62,6 +62,7 @@ export async function toggleDone(task: TaskDoc, project: ProjectDoc): Promise<bo
   const target = done ? project.columns[0]?.id : last;
   if (!target) return false;
   const before = snapshot(task);
+  const open = done ? 0 : await openBlockers(task);
   markLeaving(task._id);
   try {
     await updateTask(task._id, { column_id: target });
@@ -71,8 +72,20 @@ export async function toggleDone(task: TaskDoc, project: ProjectDoc): Promise<bo
     return false;
   }
   try { await reloadTasks(); } catch { /* the write landed; lists catch up on the next change */ }
-  showToast(`${done ? 'Not done' : 'Done'}: ${task.title}`, () => { markReturning(task._id); return restore([[task._id, before]]); });
+  const text = `${done ? 'Not done' : 'Done'}: ${task.title}`
+    + (open ? `, though ${open} blocker${open === 1 ? ' is' : 's are'} still open` : '');
+  showToast(text, () => { markReturning(task._id); return restore([[task._id, before]]); });
   return true;
+}
+
+// Finishing a blocked task is allowed; the toast only says so. A failed read
+// just leaves the note out.
+async function openBlockers(task: TaskDoc): Promise<number> {
+  if (!task.blocked_by?.length) return 0;
+  try {
+    const last = Object.fromEntries(get(projects).map(p => [p._id, p.columns.at(-1)?.id]));
+    return (await getBlockingTasks(task._id)).filter(b => !isBlockerResolved(b, last)).length;
+  } catch { return 0; }
 }
 
 // Writes each task's earlier values back; the Undo behind every bulk or
