@@ -737,9 +737,9 @@ keys by HKDF:
   names must be exactly the sealed ones.
 - **attachments**: 2-byte type length, content type, bytes, sealed under
   their own key with AAD = server id + name and an IV that is an HMAC of
-  all of that (unchanged content seals to the same bytes, so NyxDB, which
-  keeps one blob per distinct content and never frees old ones, stores it
-  once), stored as
+  all of that (unchanged content seals to the same bytes, and NyxDB stores
+  one file per distinct content, so an edit doesn't store a new copy),
+  stored as
   `application/octet-stream`; a fetched attachment comes back with its
   real type.
 
@@ -1052,6 +1052,19 @@ server and mDNS run once NyxDB accepts connections: after the first 20 s
 the background thread keeps re-checking with a 1 s → 30 s capped backoff
 for as long as the sidecar process is alive, so a slow start delays
 pairing instead of disabling it for the session.
+
+**NyxDB data folder** (v0.1.8): sled files plus `att/<db>/<sha256>`, one file
+per distinct attachment content. NyxDB sweeps unreferenced files itself (a
+minute after start, about daily when idle, and on `_compact`, never one
+under an hour old) and `DELETE /{db}` removes that database's folder, so
+Offlog never deletes inside it while NyxDB runs; only the debug-only
+`reset_sync_data` removes the whole folder, after terminating NyxDB. The
+first start after upgrading moves attachments out of sled in the
+background while serving; readiness (`GET /`) doesn't wait for it, and
+nothing kills NyxDB during it. Measured from a v0.1.5 folder (24,856 docs,
+200 attachments, 275 MB): `GET /` after 3.6 s, migration done after 5.9 s;
+each client's one full re-compare then took ~8.5 s, the next one 5 ms.
+sled's old files don't shrink.
 
 **Supervision.** The same background thread then polls the sidecar every
 5 s (`supervise_nyxdb()` in `lib.rs`). If NyxDB exits on its own it is

@@ -111,8 +111,8 @@ export async function encryptAttachment(k: SyncKeys, serverId: string, name: str
   plain.set(t, 2); plain.set(bytes, 2 + t.length);
   // The IV is an HMAC of everything sealed, so an unchanged attachment seals
   // to the same bytes: the replicator re-sends every attachment with each
-  // edit, and NyxDB keeps one blob per distinct content, never freeing old
-  // ones. Same IV only ever means same plaintext.
+  // edit, and NyxDB stores one file per distinct content, so a fresh IV
+  // would store a new copy per edit. Same IV only ever means same plaintext.
   const aad = attAad(serverId, name);
   const iv = new Uint8Array(await subtle().sign('HMAC', k.attIv, join(utf8.encode(aad + '\n'), plain))).subarray(0, 12);
   return seal(k.att, iv, plain, aad);

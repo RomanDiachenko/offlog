@@ -39,6 +39,13 @@ detail for anything summarized here lives in git history.
 
 ## Open Questions
 
+- **Can one sync batch outgrow the server's request limit?** PouchDB batches
+  100 docs whatever their size, and Offlog allows 10 attachments of 10 MB
+  per task, so a run of attachment-heavy tasks could exceed NyxDB's 256 MB
+  body limit; the replication would then retry forever. v0.1.5 refused a
+  ~90 MB batch in testing (2026-10-13); v0.1.8 accepted it. Unanswered:
+  whether real data gets near it, and whether a smaller `batch_size` is
+  worth its cost for small docs.
 - **Does local-network sync attract extra Play review friction?** Android's
   local-network permission prompts, or general policy scrutiny of an app that
   talks to LAN addresses over cleartext HTTP. Answered only by the C3 review

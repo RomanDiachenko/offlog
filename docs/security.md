@@ -217,9 +217,10 @@ nothing changes in how the app looks or works.
 encrypted. On first start the updated PC creates the key, changes the sync
 password, moves to a new encrypted database, and once its first sync is
 done copies in anything only the old readable database held and deletes
-it from the server. Deleting doesn't scrub the PC's disk: pieces of the old
-readable data can stay in the server's files until they are overwritten,
-next to the app's own readable copy anyway. An older phone app stops
+it from the server. That removes its attachment files, but doesn't scrub
+the rest of the PC's disk: pieces of the old readable task text can stay in
+the server's database files until they are overwritten, next to the app's
+own readable copy anyway. An older phone app stops
 syncing and can't pair again: it only shows "Incorrect or expired code",
 while the PC's pairing screen says that a phone with an older Offlog
 tried. Once updated, each phone pairs again, once.
