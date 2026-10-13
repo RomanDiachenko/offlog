@@ -60,8 +60,13 @@ testing surface, not a distribution target, and is documented as such.
   see [docs/decisions.md](docs/decisions.md).
 - The pairing endpoint accepts requests from any web origin; the code
   is the secret, not the origin.
-- The desktop's built-in sync server keeps its own admin password in
-  plain text in `sync-host.json`, in the app's data folder.
+- The desktop's built-in sync server keeps its own admin password and the
+  sync key in plain text in `sync-host.json`, in the app's data folder;
+  each app keeps the sync key in its own storage. Anyone who can read
+  those can read the tasks directly.
+- The sync server sees the shape of the data (counts, sizes, id lengths,
+  revision history, timing) and can withhold updates; revision ids are
+  content hashes (docs/security.md §3).
 - The Android credential store reuses a fixed GCM IV, a weakness of the
   `capacitor-native-biometric` plugin (docs/security.md §2).
 - App Lock's PIN gates the **UI, not the data**. It is not encryption,
@@ -88,10 +93,14 @@ deliberately doesn't cover. The summary below is the short version.
 - **Pairing** uses a single-use 6-digit code that expires after 5
   minutes and is destroyed after 8 wrong guesses. The code itself never
   crosses the network: the phone proves it knows the code with a
-  PBKDF2-derived value, and the PC returns the password encrypted with
-  AES-256-GCM under a separate key derived from the same code. Every
-  failure gets the same bare `403`, and the mDNS TXT record carries
-  **no credentials**.
+  PBKDF2-derived value, and the PC returns the password and the sync key
+  encrypted with AES-256-GCM under a separate key derived from the same
+  code. Every failed code gets the same bare `403` (an app too old for
+  encrypted sync gets `426` before its code is checked), and the mDNS TXT
+  record carries **no credentials**.
+- **Synced tasks are end-to-end encrypted** with AES-256-GCM under a key
+  only the paired devices hold. The server can't read, forge or alter
+  them, or make a device skip changes (docs/security.md §3).
 - **App Lock** supports a PIN plus optional fingerprint unlock. Only a
   salted SHA-256 hash of the PIN is stored, never the PIN itself; a
   short PIN can still be guessed from that hash by someone who copies

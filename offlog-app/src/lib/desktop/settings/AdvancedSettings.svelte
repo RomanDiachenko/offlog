@@ -73,7 +73,7 @@
               {#if syncEnabled}
                 <div class="setting-group">
                   <div class="setting-section-title">Manual server connection (advanced)</div>
-                  <p class="setting-hint">Only if you run your own sync server. Pairing a device doesn't need this. A server entered here receives your tasks readable, not end-to-end encrypted.</p>
+                  <p class="setting-hint">Only if you run your own sync server. Pairing a device doesn't need this. A server you enter here instead of the built-in one receives your tasks readable, not end-to-end encrypted.</p>
                   <label class="field-label">
                     Server address
                     <input bind:value={syncUrl} placeholder="http://192.168.1.100:5984/offlog" />

@@ -173,11 +173,13 @@ src/
       core.ts                   PouchDB instance, indexes, task cache, logChange, subscribe
       entities.ts               CRUD: spaces, projects, tasks, blocked-by, attachments, undo, trash
       sync.ts                   Live replication, sync state, conflict scan/resolve
+      encryptedFetch.ts         The remote's fetch: seals what goes to the server, opens what comes back
       tags.ts                   Tag colour overrides, tag rename/delete
       stats.ts                  Dashboard and storage-breakdown aggregate reads
       maintenance.ts            Retention pruning, integrity check/repair, import/export
     store.ts                    Svelte stores — the only reactive state layer
     types.ts                    SpaceDoc, ProjectDoc, TaskDoc, Column, CustomFieldDef
+    syncCrypto.ts               End-to-end sync encryption: keys, ids, documents, attachments, checkpoints
     constants.ts                Priority colours/labels, default columns
     utils.ts                    Date formatting and task filtering (see table below)
     theme.ts                    Light/dark/system, high contrast, reduce motion
@@ -718,8 +720,11 @@ rewrites `_bulk_docs`, `_revs_diff`, `_bulk_get`, `_changes`, `_all_docs`
 and single-document and attachment reads, and seals `_local/` checkpoint
 bodies (`sealLocal`; one that doesn't open reads as 404, so PouchDB
 compares from the start). `_design/` docs are encrypted like any other.
-Only the server root passes through (its uuid feeds the replication id, so
-an address change doesn't restart the comparison). `syncCrypto.ts` derives four keys by HKDF:
+Only the server root (its uuid feeds the replication id, so an address
+change doesn't restart the comparison) and the database's own info and
+create request pass through. Documents are sealed one at a time, so a batch
+with photos never holds every copy at once. `syncCrypto.ts` derives five
+keys by HKDF:
 
 - **ids**: `x:` + base64url(iv ‖ AES-GCM(id)), iv = HMAC(id)[0..12].
   Deterministic, so revisions still match and any device can reverse a
@@ -731,7 +736,10 @@ an address change doesn't restart the comparison). `syncCrypto.ts` derives four 
   end in that rev and replaces the server's; the server's attachment
   names must be exactly the sealed ones.
 - **attachments**: 2-byte type length, content type, bytes, sealed under
-  their own key with AAD = server id + name, stored as
+  their own key with AAD = server id + name and an IV that is an HMAC of
+  all of that (unchanged content seals to the same bytes, so NyxDB, which
+  keeps one blob per distinct content and never frees old ones, stores it
+  once), stored as
   `application/octet-stream`; a fetched attachment comes back with its
   real type.
 

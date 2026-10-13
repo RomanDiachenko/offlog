@@ -47,6 +47,13 @@ describe('the server database', () => {
 });
 
 describe('sync attachments', () => {
+  it('seal to the same bytes while unchanged, so the server stores them once', async () => {
+    const a = await encryptAttachment(k, 'x:a', 'att:1', new Uint8Array([1, 2, 3]), 'image/png');
+    expect(await encryptAttachment(k, 'x:a', 'att:1', new Uint8Array([1, 2, 3]), 'image/png')).toEqual(a);
+    expect(await encryptAttachment(k, 'x:a', 'att:1', new Uint8Array([1, 2, 4]), 'image/png')).not.toEqual(a);
+    expect((await encryptAttachment(k, 'x:a', 'att:1', new Uint8Array([1, 2, 4]), 'image/png')).subarray(0, 12)).not.toEqual(a.subarray(0, 12));
+  });
+
   it('come back with the type they were stored as', async () => {
     const sealed = await encryptAttachment(k, 'x:a', 'att:1', new Uint8Array([1, 2, 3]), 'image/svg+xml');
     expect(await decryptAttachment(k, 'x:a', 'att:1', sealed)).toEqual({ type: 'image/svg+xml', bytes: new Uint8Array([1, 2, 3]) });

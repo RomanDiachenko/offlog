@@ -3,7 +3,7 @@
 /// <reference types="pouchdb-find" />
 import { getSyncUrl, getSyncCredentials, isSyncEnabled, getSyncKey, getPairedHostUuid, PLAIN_SERVER_TO_RETIRE_KEY } from '../../config';
 import { importSyncKey } from '../syncCrypto';
-import { encryptedFetch } from './encryptedFetch';
+import { encryptedFetch, EncryptedSyncError } from './encryptedFetch';
 import { db, invalidateTaskCache, now } from './core';
 import { PRISTINE_DEFAULTS, type PristineDoc } from './entities';
 import type { Source } from '../types';
@@ -32,15 +32,18 @@ interface SyncEmitter {
 // With a sync key, everything to and from the server goes through
 // encryptedFetch (end-to-end encryption, lib/syncCrypto.ts).
 let _remote: { key: string; db: PouchDB.Database } | null = null;
+let _credentialsMissing = false;
 async function remote() {
   const { user, pass } = await getSyncCredentials();
   const url = getSyncUrl();
   const syncKey = getSyncKey();
+  _credentialsMissing = !user && !pass;
   const key = JSON.stringify([url, user, pass, syncKey]);
   if (_remote?.key !== key) {
     // An encrypted database reached without the key (a hand-edited address)
     // would take readable documents and hand back sealed ones as if real.
-    if (!syncKey && /\/offlog-e-[0-9a-f]+\/?$/.test(url)) throw new Error('This server holds encrypted data. Pair with the computer in Settings → Sync instead of entering its address.');
+    if (!syncKey && /\/offlog-e-[0-9a-f]+\/?$/.test(url)) throw new EncryptedSyncError('This server holds encrypted data. Pair with the computer in Settings → Sync instead of entering its address.');
+    if (syncKey && !globalThis.crypto?.subtle) throw new EncryptedSyncError('Could not start encrypted sync here. Please use the Offlog app.');
     syncState.rejected = 0;
     const auth = { username: user, password: pass };
     const options = syncKey
@@ -58,10 +61,10 @@ function reportRejected(count: number) {
   notify();
 }
 
-// On a PC syncing encrypted: anything the readable database holds (from
-// before the update, or a phone still on an older app) comes into this
-// device first, then that database is deleted
-// so no readable copy stays on the server. Retried after each sync until done.
+// On a PC moving to encrypted sync: anything the readable database holds
+// comes into this device first, then that database is deleted from the
+// server. Pulled unchecked, so it runs only for that move (config.ts).
+// Retried after each settled sync until done.
 export async function retirePlainServer(): Promise<void> {
   const url = localStorage.getItem(PLAIN_SERVER_TO_RETIRE_KEY);
   if (!url || !getSyncKey()) return;
@@ -97,8 +100,10 @@ export function describeSyncError(err?: SyncError | null): string {
   if (!err) return 'Unknown sync error';
   const status = err.status ?? err.statusCode;
   // The PC changes its sync password when it moves to encrypted sync, so a
-  // device paired before then lands here until it pairs again.
-  if (status === 401 || status === 403) return getPairedHostUuid() ? 'Your PC no longer accepts this device. Pair it again in Settings → Sync.' : 'Authentication failed — check sync credentials';
+  // device paired before that lands here until it pairs again; but only
+  // when a password was sent: an unreadable stored one also ends in 401,
+  // and pairing again would not be the fix.
+  if (status === 401 || status === 403) return getPairedHostUuid() && !_credentialsMissing ? 'Your computer no longer accepts this device. Pair it again in Settings → Sync.' : 'Authentication failed — check sync credentials';
   if (status === 404) return 'Sync database not found on server';
   if (status === 0 || err.name === 'TypeError' || /network|failed to fetch/i.test(err.message ?? '')) {
     // The sync URL is a self-hosted LAN address, so "cannot reach it" has two

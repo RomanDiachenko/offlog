@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import net from 'node:net';
-import { importSyncKey, encryptId, type SyncKeys } from '../src/lib/syncCrypto';
+import { importSyncKey, encryptId, encryptedDbName, type SyncKeys } from '../src/lib/syncCrypto';
 import { encryptedFetch } from '../src/lib/db/encryptedFetch';
 
 const PouchDB = (globalThis as { PouchDB?: PouchDB.Static }).PouchDB!;
@@ -24,7 +24,7 @@ async function until(what: string, check: () => Promise<boolean>, ms = 20000) {
 }
 
 describe.skipIf(!fs.existsSync(BIN))('encrypted sync through a real NyxDB', () => {
-  let child: ChildProcess, data: string, base: string, keys: SyncKeys;
+  let child: ChildProcess, data: string, base: string, keys: SyncKeys, DB: string;
   const syncs: { cancel(): void }[] = [];
   let rejected = 0;
 
@@ -34,7 +34,8 @@ describe.skipIf(!fs.existsSync(BIN))('encrypted sync through a real NyxDB', () =
     base = `http://127.0.0.1:${port}`;
     child = spawn(BIN, [], { env: { ...process.env, NYXDB_ADDR: `127.0.0.1:${port}`, NYXDB_DATA: data, NYXDB_USER: USER, NYXDB_PASSWORD: PASS }, stdio: 'ignore' });
     await until('NyxDB', async () => (await fetch(base + '/')).ok);
-    await fetch(base + '/offlog-e', { method: 'PUT', headers: { Authorization: AUTH } });
+    DB = await encryptedDbName(KEY);
+    await fetch(base + '/' + DB, { method: 'PUT', headers: { Authorization: AUTH } });
     keys = await importSyncKey(KEY);
   }, 30000);
 
@@ -45,11 +46,11 @@ describe.skipIf(!fs.existsSync(BIN))('encrypted sync through a real NyxDB', () =
     fs.rmSync(data, { recursive: true, force: true });
   });
 
-  const remote = (k: SyncKeys, onRejected = (n: number) => { rejected += n; }) => new PouchDB(base + '/offlog-e', {
-    adapter: 'http', auth: { username: USER, password: PASS }, fetch: encryptedFetch(base + '/offlog-e', k, onRejected),
+  const remote = (k: SyncKeys, onRejected = (n: number) => { rejected += n; }) => new PouchDB(base + '/' + DB, {
+    adapter: 'http', auth: { username: USER, password: PASS }, fetch: encryptedFetch(base + '/' + DB, k, onRejected),
   } as PouchDB.Configuration.RemoteDatabaseConfiguration);
   const device = (name: string) => new PouchDB(name + '-' + Date.now(), { adapter: 'memory' });
-  const raw = async (p: string) => (await fetch(`${base}/offlog-e/${p}`, { headers: { Authorization: AUTH } })).json();
+  const raw = async (p: string) => (await fetch(`${base}/${DB}/${p}`, { headers: { Authorization: AUTH } })).json();
 
   it('two devices stay in step, and the server holds nothing readable', async () => {
     const phone = device('phone'), pc = device('pc');
@@ -82,7 +83,7 @@ describe.skipIf(!fs.existsSync(BIN))('encrypted sync through a real NyxDB', () =
 
     const all = JSON.stringify(await raw('_all_docs?include_docs=true'));
     const changes = JSON.stringify(await raw('_changes?include_docs=true&style=all_docs'));
-    const attachmentRaw = await (await fetch(`${base}/offlog-e/${encodeURIComponent(await encryptId(keys, 'task:plumber'))}/att%3A1`, { headers: { Authorization: AUTH } })).text();
+    const attachmentRaw = await (await fetch(`${base}/${DB}/${encodeURIComponent(await encryptId(keys, 'task:plumber'))}/att%3A1`, { headers: { Authorization: AUTH } })).text();
     for (const leak of ['plumber', 'Kitchen', 'urgent', 'Find number', 'task:', 'tag:', 'image/jpeg', 'booked']) {
       expect(all, `_all_docs shows "${leak}"`).not.toContain(leak);
       expect(changes, `_changes shows "${leak}"`).not.toContain(leak);
@@ -98,7 +99,7 @@ describe.skipIf(!fs.existsSync(BIN))('encrypted sync through a real NyxDB', () =
     const sid = await encryptId(keys, 'task:plumber');
     const before = await pc.get('task:plumber');
     // Someone with the sync password, but not the key.
-    await fetch(`${base}/offlog-e/_bulk_docs`, {
+    await fetch(`${base}/${DB}/_bulk_docs`, {
       method: 'POST', headers: { Authorization: AUTH, 'Content-Type': 'application/json' },
       body: JSON.stringify({ new_edits: false, docs: [
         { _id: 'task:planted', _rev: '1-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', type: 'task', title: 'Planted' },
@@ -118,5 +119,25 @@ describe.skipIf(!fs.existsSync(BIN))('encrypted sync through a real NyxDB', () =
     await stranger.replicate.from(remote(await importSyncKey(WRONG), n => { wrong += n; }));
     expect((await stranger.allDocs()).rows.filter(r => !r.id.startsWith('_design/'))).toEqual([]);
     expect(wrong).toBeGreaterThan(0);
+  }, 60000);
+
+  it('a conflict shows the same on both devices, and resolving it on one clears it on the other', async () => {
+    const phone = device('phone3'), pc = device('pc3');
+    await phone.replicate.from(remote(keys));
+    await pc.replicate.from(remote(keys));
+    const base1 = await phone.get('task:plumber');
+    await phone.put({ ...base1, title: 'From the phone' });
+    await pc.put({ ...(await pc.get('task:plumber')), title: 'From the PC' });
+    for (const db of [phone, pc]) await db.replicate.to(remote(keys));
+    for (const db of [phone, pc]) await db.replicate.from(remote(keys));
+    const onPhone = await phone.get('task:plumber', { conflicts: true }) as unknown as Record<string, any>;
+    const onPc = await pc.get('task:plumber', { conflicts: true }) as unknown as Record<string, any>;
+    expect(onPhone._rev).toBe(onPc._rev);
+    expect(onPhone._conflicts).toHaveLength(1);
+    expect(onPc._conflicts).toEqual(onPhone._conflicts);
+    await phone.remove('task:plumber', onPhone._conflicts[0]);
+    await phone.replicate.to(remote(keys));
+    await pc.replicate.from(remote(keys));
+    expect((await pc.get('task:plumber', { conflicts: true }) as unknown as Record<string, any>)._conflicts ?? []).toEqual([]);
   }, 60000);
 });

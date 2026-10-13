@@ -229,6 +229,14 @@ jobs:
         shell: pwsh
         run: ./scripts/fetch-nyxdb-win.ps1
 
+      # The release's own NyxDB: encrypted sync must still work against it.
+      # The Ubuntu test job skips this file (no binary there).
+      - name: Encrypted sync end to end (HTTP)
+        working-directory: offlog-app
+        env:
+          NYXDB_BIN: ${{ github.workspace }}/offlog-desktop/vendor/nyxdb-win/nyxdb.exe
+        run: npx vitest run tests/encryptedSync.e2e.test.ts
+
       - name: Extract this version's user-facing release notes
         id: notes
         shell: bash

@@ -305,6 +305,8 @@ fn handle_pair_request(mut request: tiny_http::Request, state: &PairingState, uu
     };
     if !accepts_client(v) {
         log::warn!("pairing: refused an app too old for encrypted sync");
+        // The old app can only show its generic error, so the PC says why.
+        let _ = app_handle.emit("pairing-refused-old-app", ());
         let _ = request.respond(Response::empty(426).with_header(cors_header()));
         return;
     }

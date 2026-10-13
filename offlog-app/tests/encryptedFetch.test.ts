@@ -66,17 +66,17 @@ describe('encryptedFetch', () => {
   it('fails closed: another address, or a write that is not a replication, is never sent', async () => {
     const inner = vi.fn(async () => json({ ok: true }));
     const f = encryptedFetch(DB, k, () => {}, inner);
-    await expect(f('http://pc:5984/offlog/task%3A1')).rejects.toThrow(/refuses/);
-    await expect(f('http://pc:5984/offlog-e-other/_changes')).rejects.toThrow(/refuses/);
-    await expect(f(DB + '/_bulk_docs', { method: 'POST', body: JSON.stringify({ docs: [{ _id: 'task:1', title: 'Secret' }] }) })).rejects.toThrow(/refuses/);
-    await expect(f(DB + '/task%3A1', { method: 'PUT', body: JSON.stringify({ title: 'Secret' }) })).rejects.toThrow(/refuses/);
-    await expect(f(DB + '/task%3A1?rev=1-a', { method: 'DELETE' })).rejects.toThrow(/refuses/);
-    await expect(f(DB + '/task%3A1/att%3A1', { method: 'PUT', body: 'bytes' })).rejects.toThrow(/refuses/);
-    await expect(f(DB, { method: 'POST', body: JSON.stringify({ title: 'Secret' }) })).rejects.toThrow(/refuses/);
-    await expect(f(DB + '/_find', { method: 'POST', body: '{}' })).rejects.toThrow(/refuses/);
-    await expect(f(DB + '/_security')).rejects.toThrow(/refuses/);
-    await expect(f(DB + '/_changes?filter=_doc_ids', { method: 'POST', body: JSON.stringify({ doc_ids: ['task:1'] }) })).rejects.toThrow(/refuses/);
-    await expect(f(DB + '/_all_docs?startkey=%22task%3A%22')).rejects.toThrow(/refuses/);
+    await expect(f('http://pc:5984/offlog/task%3A1')).rejects.toMatchObject({ name: 'EncryptedSyncError' });
+    await expect(f('http://pc:5984/offlog-e-other/_changes')).rejects.toMatchObject({ name: 'EncryptedSyncError' });
+    await expect(f(DB + '/_bulk_docs', { method: 'POST', body: JSON.stringify({ docs: [{ _id: 'task:1', title: 'Secret' }] }) })).rejects.toMatchObject({ name: 'EncryptedSyncError' });
+    await expect(f(DB + '/task%3A1', { method: 'PUT', body: JSON.stringify({ title: 'Secret' }) })).rejects.toMatchObject({ name: 'EncryptedSyncError' });
+    await expect(f(DB + '/task%3A1?rev=1-a', { method: 'DELETE' })).rejects.toMatchObject({ name: 'EncryptedSyncError' });
+    await expect(f(DB + '/task%3A1/att%3A1', { method: 'PUT', body: 'bytes' })).rejects.toMatchObject({ name: 'EncryptedSyncError' });
+    await expect(f(DB, { method: 'POST', body: JSON.stringify({ title: 'Secret' }) })).rejects.toMatchObject({ name: 'EncryptedSyncError' });
+    await expect(f(DB + '/_find', { method: 'POST', body: '{}' })).rejects.toMatchObject({ name: 'EncryptedSyncError' });
+    await expect(f(DB + '/_security')).rejects.toMatchObject({ name: 'EncryptedSyncError' });
+    await expect(f(DB + '/_changes?filter=_doc_ids', { method: 'POST', body: JSON.stringify({ doc_ids: ['task:1'] }) })).rejects.toMatchObject({ name: 'EncryptedSyncError' });
+    await expect(f(DB + '/_all_docs?startkey=%22task%3A%22')).rejects.toMatchObject({ name: 'EncryptedSyncError' });
     expect(inner).not.toHaveBeenCalled();
   });
 

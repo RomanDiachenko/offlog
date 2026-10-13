@@ -6,8 +6,9 @@
 // Anything from the server that does not open under this key (forged,
 // altered, replayed, or written by a device without the key) is dropped and
 // counted once through onRejected; the replicator never sees it, so it is
-// never stored. _local/ checkpoints keep their ids but are sealed too; only
-// the server root (its uuid) passes through untouched.
+// never stored. _local/ checkpoints keep their ids but are sealed too. Only
+// the server root (its uuid) and the database's own info and create request
+// pass through untouched.
 //
 // Fails closed: a request for any other address, any endpoint not listed
 // here, and any write that is not the replicator's own (_bulk_docs with
@@ -17,7 +18,14 @@
 import { encryptId, decryptId, encryptDoc, decryptDoc, decryptAttachment, sealLocal, openLocal, type SyncKeys } from '../syncCrypto';
 
 type FetchFn = (url: string, init?: RequestInit) => Promise<Response>;
-const refuse = (what: string) => Promise.reject(new TypeError(`Encrypted sync refuses ${what}.`));
+// Its own name, never TypeError: PouchDB passes it through, and a TypeError
+// reads as "cannot reach the server" (describeSyncError) with advice about
+// Wi-Fi and firewalls that has nothing to do with it.
+export class EncryptedSyncError extends Error {
+  override name = 'EncryptedSyncError';
+  constructor(message: string, readonly detail = '') { super(message); }
+}
+const refuse = (what: string) => Promise.reject(new EncryptedSyncError('Could not sync securely: this device held back something it could not encrypt. Please update Offlog and try again.', what));
 type Json = Record<string, unknown>;
 type Doc = Json & { _id: string };
 
@@ -79,7 +87,10 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
     switch (rawPath) {
       case '_bulk_docs': {
         if (body?.new_edits !== false) return refuse('a write that is not a replication');
-        const docs = await Promise.all((body.docs as Doc[]).map(d => encryptDoc(keys, d)));
+        // One at a time: a batch with photos would otherwise hold every
+        // copy of every attachment at once, which a phone may not survive.
+        const docs = [];
+        for (const d of body.docs as Doc[]) docs.push(await encryptDoc(keys, d));
         const res = await send(rawPath, { ...body, docs });
         if (!res.ok) return res;
         const out = await res.json() as Json[];

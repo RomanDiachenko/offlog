@@ -164,7 +164,7 @@ nothing changes in how the app looks or works.
   deleted; and when anything changes.
 - **Revision ids are fingerprints of the content.** PouchDB names each
   version by a hash of what it holds, so for an item whose content is
-  easy to guess (a tag colour, the starter spaces) someone with the server
+  easy to guess (a tag color, the starter spaces) someone with the server
   data can confirm a guess. Tasks, with their random ids and free text,
   aren't practically exposed this way.
 - **What the server can't do:** add, change or forge a task, move one
@@ -195,9 +195,17 @@ nothing changes in how the app looks or works.
 encrypted. On first start the updated PC creates the key, changes the sync
 password, moves to a new encrypted database, and once its first sync is
 done copies in anything only the old readable database held and deletes
-it. An older phone app stops syncing, and the updated PC refuses to pair
-with it ("needs a newer Offlog"); once updated, each phone pairs again,
-once.
+it from the server. Deleting doesn't scrub the PC's disk: pieces of the old
+readable data can stay in the server's files until they are overwritten,
+next to the app's own readable copy anyway. An older phone app stops
+syncing and can't pair again: it only shows "Incorrect or expired code",
+while the PC's pairing screen says that a phone with an older Offlog
+tried. Once updated, each phone pairs again, once.
+
+If the PC can't read `sync-host.json` at startup it runs that session with
+a temporary identity: a new key and password, so phones ask to pair again
+until the next normal start, and an extra encrypted database is left
+behind.
 
 **Honest limits.** The connection itself is still plain HTTP (section
 13): someone watching your Wi-Fi sees the sync password, so they could put

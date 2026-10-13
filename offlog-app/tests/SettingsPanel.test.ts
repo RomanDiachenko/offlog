@@ -205,6 +205,17 @@ describe('SettingsPanel sync save', () => {
 
     expect(setSyncUrl).toHaveBeenCalled();
     expect(setSyncCredentials).toHaveBeenCalled();
+    expect(clearPairedHost).not.toHaveBeenCalled();
+  });
+
+  // A paired tablet that only fixes its password keeps its pairing and key.
+  it('a credentials-only change keeps the pairing', async () => {
+    const { container } = render(SettingsPanel, { initialCategory: 'advanced' });
+    await openAdvancedTab(container);
+    await fireEvent.input(container.querySelector('input[placeholder="offlog"]')!, { target: { value: 'newuser' } });
+    await fireEvent.click(saveButton(container));
+    expect(setSyncCredentials).toHaveBeenCalledWith('newuser', 'oldpass');
+    expect(clearPairedHost).not.toHaveBeenCalled();
   });
 });
 
@@ -390,6 +401,14 @@ describe('SettingsPanel sync tab load failures', () => {
     await new Promise(r => setTimeout(r, 0));
 
     expect(showError).toHaveBeenCalledWith('Could not load recent devices. Please try again.');
+  });
+
+  it('says how many items from the server were refused', async () => {
+    const { syncState } = await import('../src/lib/db');
+    (syncState as { rejected: number }).rejected = 2;
+    const { getByText } = render(SettingsPanel, { initialCategory: 'sync' });
+    expect(getByText(/Refused 2 items from the sync server/)).toBeTruthy();
+    (syncState as { rejected: number }).rejected = 0;
   });
 
   it('surfaces a specific error instead of an unhandled rejection when conflicts fail to load', async () => {

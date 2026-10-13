@@ -32,6 +32,14 @@ describe('describeSyncError', () => {
     expect(describeSyncError({ status: 401 })).toMatch(/check sync credentials/i);
   });
 
+  it('a refusal by the encryption layer says so, never "cannot reach"', async () => {
+    const { encryptedFetch } = await import('../src/lib/db/encryptedFetch');
+    const { importSyncKey } = await import('../src/lib/syncCrypto');
+    const f = encryptedFetch('http://pc:5984/offlog-e-x', await importSyncKey(btoa('k'.repeat(32))), () => {}, vi.fn());
+    const err = await f('http://pc:5984/offlog-e-x/_find', { method: 'POST', body: '{}' }).catch(e => e);
+    expect(describeSyncError(err)).toMatch(/^Could not sync securely/);
+  });
+
   it('classifies 404 as the sync database missing', () => {
     expect(describeSyncError({ status: 404 })).toMatch(/not found/i);
   });

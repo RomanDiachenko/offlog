@@ -1,7 +1,7 @@
 name: Desktop CI
 
-# Two jobs in one (runs only when the Tauri/Rust side actually changes,
-# which is rare):
+# Three jobs in one (runs when the Tauri/Rust side changes, or the code
+# that encrypts sync, or a dependency bump that could change PouchDB):
 #  1. A real compile check for the Tauri/Rust side. Without it a
 #     Dependabot bump can reach a mergeable state with a broken build --
 #     rand 0.10's Rng->RngExt trait split did exactly that.
@@ -26,13 +26,14 @@ name: Desktop CI
 on:
   push:
     branches: [main]
-    paths: ['offlog-desktop/src-tauri/**', '!offlog-desktop/src-tauri/tauri.conf.json', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', 'offlog-desktop/scripts/phase0-repro/**', 'offlog-app/src/lib/syncCrypto.ts', 'offlog-app/src/lib/db/encryptedFetch.ts', 'offlog-app/tests/encryptedSync.e2e.test.ts', '.github/workflows/desktop-ci.yml']
+    paths: ['offlog-desktop/src-tauri/**', '!offlog-desktop/src-tauri/tauri.conf.json', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', 'offlog-desktop/scripts/phase0-repro/**', 'offlog-app/src/lib/syncCrypto.ts', 'offlog-app/src/lib/db/encryptedFetch.ts', 'offlog-app/src/lib/db/sync.ts', 'offlog-app/tests/encryptedSync.e2e.test.ts', 'offlog-app/package-lock.json', '.github/workflows/desktop-ci.yml']
   pull_request:
     branches: [main]
-    paths: ['offlog-desktop/src-tauri/**', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', 'offlog-desktop/scripts/phase0-repro/**', 'offlog-app/src/lib/syncCrypto.ts', 'offlog-app/src/lib/db/encryptedFetch.ts', 'offlog-app/tests/encryptedSync.e2e.test.ts', '.github/workflows/desktop-ci.yml']
+    paths: ['offlog-desktop/src-tauri/**', 'offlog-desktop/scripts/fetch-nyxdb-win.ps1', 'offlog-desktop/scripts/phase0-repro/**', 'offlog-app/src/lib/syncCrypto.ts', 'offlog-app/src/lib/db/encryptedFetch.ts', 'offlog-app/src/lib/db/sync.ts', 'offlog-app/tests/encryptedSync.e2e.test.ts', 'offlog-app/package-lock.json', '.github/workflows/desktop-ci.yml']
 
-# Least-privilege default -- this workflow only checks out code and runs
-# a cargo build, it never needs to write anything back to the repo.
+# Least-privilege default -- this workflow only checks out code, runs
+# tests against the vendored NyxDB and a cargo build; it never needs to
+# write anything back to the repo.
 # A newer push supersedes an in-flight run for the same ref. Without this a
 # burst of pushes leaves several full builds racing, and CodeQL's parallel
 # SARIF uploads for one ref collide.
@@ -104,9 +105,7 @@ jobs:
       - name: Encrypted sync end to end (HTTP)
         working-directory: offlog-app
         env:
-          NYXDB_BIN: ${{ github.workspace }}offlog-desktopendor
-yxdb-win
-yxdb.exe
+          NYXDB_BIN: ${{ github.workspace }}/offlog-desktop/vendor/nyxdb-win/nyxdb.exe
         run: npx vitest run tests/encryptedSync.e2e.test.ts
 
       - name: Cargo build (release profile, matches release.yml)

@@ -18,7 +18,7 @@
 // no user data) but their bodies are sealed too (sealLocal), so a forged
 // checkpoint can't make a device skip changes.
 
-export interface SyncKeys { doc: CryptoKey; id: CryptoKey; idIv: CryptoKey; att: CryptoKey }
+export interface SyncKeys { doc: CryptoKey; id: CryptoKey; idIv: CryptoKey; att: CryptoKey; attIv: CryptoKey }
 
 // Web Crypto takes only ArrayBuffer-backed bytes.
 type Bytes = Uint8Array<ArrayBuffer>;
@@ -26,14 +26,20 @@ const subtle = () => globalThis.crypto.subtle;
 const utf8 = new TextEncoder(), fromUtf8 = new TextDecoder();
 const ID_PREFIX = 'x:';
 
-export const passesThrough = (id: string) => id.startsWith('_local/');
+const passesThrough = (id: string) => id.startsWith('_local/');
 
+// The engine's own base64 where it has it (a photo is milliseconds instead
+// of a main-thread stall); the string-building fallback otherwise.
+const nativeToB64 = (Uint8Array.prototype as { toBase64?: (this: Uint8Array) => string }).toBase64;
+const nativeFromB64 = (Uint8Array as { fromBase64?: (s: string) => Bytes }).fromBase64;
 function b64(bytes: Bytes): string {
+  if (nativeToB64) return nativeToB64.call(bytes);
   let s = '';
   for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   return btoa(s);
 }
 function unb64(s: string): Bytes {
+  if (nativeFromB64) return nativeFromB64(s);
   const bin = atob(s);
   const out = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
@@ -55,6 +61,7 @@ export async function importSyncKey(base64Key: string): Promise<SyncKeys> {
     id: await derive('offlog sync v1 id', aes, ['encrypt', 'decrypt']),
     idIv: await derive('offlog sync v1 id-iv', { name: 'HMAC', hash: 'SHA-256', length: 256 }, ['sign']),
     att: await derive('offlog sync v1 attachment', aes, ['encrypt', 'decrypt']),
+    attIv: await derive('offlog sync v1 attachment-iv', { name: 'HMAC', hash: 'SHA-256', length: 256 }, ['sign']),
   };
 }
 
@@ -102,7 +109,13 @@ export async function encryptAttachment(k: SyncKeys, serverId: string, name: str
   const plain = new Uint8Array(2 + t.length + bytes.length);
   plain[0] = t.length >> 8; plain[1] = t.length & 0xff;
   plain.set(t, 2); plain.set(bytes, 2 + t.length);
-  return seal(k.att, randomIv(), plain, attAad(serverId, name));
+  // The IV is an HMAC of everything sealed, so an unchanged attachment seals
+  // to the same bytes: the replicator re-sends every attachment with each
+  // edit, and NyxDB keeps one blob per distinct content, never freeing old
+  // ones. Same IV only ever means same plaintext.
+  const aad = attAad(serverId, name);
+  const iv = new Uint8Array(await subtle().sign('HMAC', k.attIv, join(utf8.encode(aad + '\n'), plain))).subarray(0, 12);
+  return seal(k.att, iv, plain, aad);
 }
 export async function decryptAttachment(k: SyncKeys, serverId: string, name: string, sealed: Bytes): Promise<{ type: string; bytes: Bytes } | null> {
   const plain = await open(k.att, sealed, attAad(serverId, name));

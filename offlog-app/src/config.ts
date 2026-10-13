@@ -76,12 +76,11 @@ export async function initTauriSyncDefaults(): Promise<void> {
   if (!followsSidecar) return;
   try {
     const info = await invokeTauri<{ port: number; user: string; password: string; key?: string }>('get_sync_info');
-    // With a key, the sidecar's encrypted database; whatever its readable one
-    // holds is pulled in and that database deleted (retirePlainServer in db/sync.ts).
+    // With a key, the sidecar's encrypted database. Moving off the readable
+    // one marks it to be pulled in and deleted (retirePlainServer in
+    // db/sync.ts) — only then: it is pulled unchecked, so it must never be
+    // something anyone with the password could recreate later.
     const url = `http://127.0.0.1:${info.port}/${info.key ? await encryptedDbName(info.key) : PLAIN_DB}`;
-    // Only when moving off the readable database: pulled in unchecked, it
-    // must not be something anyone with the password could recreate later
-    // (and an older app can no longer pair, pairing.rs PAIRING_VERSION).
     if (info.key && saved && /\/offlog$/.test(saved)) localStorage.setItem(PLAIN_SERVER_TO_RETIRE_KEY, `http://127.0.0.1:${info.port}/${PLAIN_DB}`);
     setSyncKey(info.key ?? '');
     setSyncUrl(url);

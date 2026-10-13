@@ -564,6 +564,9 @@
   // sync write reaching getDeviceLastSeen(). Success is shown off this
   // flag; the name upgrades in place once the poll below finds it.
   let pcJustPaired = false;
+  // An Offlog too old for encrypted sync tried this code (pairing.rs turns
+  // it away; that phone can only say "Incorrect or expired code").
+  let pcOldAppRefused = false;
   let pcPollTimer: ReturnType<typeof setInterval> | null = null;
   function stopPcPairPoll() {
     if (pcPollTimer) { clearInterval(pcPollTimer); pcPollTimer = null; }
@@ -604,6 +607,7 @@
     pcPairingBusy = true;
     pcPairedDeviceName = null;
     pcJustPaired = false;
+    pcOldAppRefused = false;
     pcPairingExpired = false;
     clearPcPairingExpiryTimer();
     try {
@@ -621,18 +625,20 @@
   // on close: Settings remounts on every open and the app stays in the tray.
   // Harmless to receive while no code is showing (nothing reads
   // pcJustPaired outside the pcPairingCode-shown states below).
-  let unlistenPairing: (() => void) | null = null, settingsGone = false;
+  let unlistenPairing: (() => void) | null = null, unlistenOldApp: (() => void) | null = null, settingsGone = false;
   if (isTauri) {
     import('@tauri-apps/api/event').then(({ listen }) => listen('pairing-succeeded', () => {
       pcJustPaired = true;
       clearPcPairingExpiryTimer();
     })).then(un => { if (settingsGone) un(); else unlistenPairing = un; }).catch(() => {});
+    import('@tauri-apps/api/event').then(({ listen }) => listen('pairing-refused-old-app', () => { pcOldAppRefused = true; }))
+      .then(un => { if (settingsGone) un(); else unlistenOldApp = un; }).catch(() => {});
   }
-  onDestroy(() => { settingsGone = true; unlistenPairing?.(); });
+  onDestroy(() => { settingsGone = true; unlistenPairing?.(); unlistenOldApp?.(); });
   // Stop polling (and clear any stale success message on either side)
   // once the modal closes, so it doesn't keep running in the background
   // or show last time's result if it's reopened.
-  $: if (!showConnectModal) { stopPcPairPoll(); clearPcPairingExpiryTimer(); pcPairedDeviceName = null; pcJustPaired = false; pairSuccessName = null; scanAttempted = false; }
+  $: if (!showConnectModal) { stopPcPairPoll(); clearPcPairingExpiryTimer(); pcPairedDeviceName = null; pcJustPaired = false; pcOldAppRefused = false; pairSuccessName = null; scanAttempted = false; }
   onDestroy(() => { stopPcPairPoll(); clearPcPairingExpiryTimer(); });
 
   // Dev-only: wipes this PC's NyxDB data and restarts, so testing "what
@@ -1295,6 +1301,7 @@
             <p class="setting-hint">Enter this code on your phone (Settings → Sync → Find my computer):</p>
             <p class="storage-info" style="font-size: 1.5rem; letter-spacing: 0.2em; text-align: center;">{pcPairingCode}</p>
             <p class="setting-hint">Valid for 5 minutes, one-time use — this updates automatically once your phone connects.</p>
+            {#if pcOldAppRefused}<p class="setting-hint setting-hint-warn">A phone with an older Offlog tried this code. Update Offlog on the phone, then enter the code again.</p>{/if}
           {:else}
             <p class="setting-hint">Generates a one-time code to enter on your phone (Settings → Sync → "Find my computer"), so it can connect to this PC.</p>
           {/if}

@@ -156,6 +156,12 @@ Pairing is a **six-digit code** shown on the PC. No typed IP addresses,
 no credentials sent before pairing, and if your PC's address changes the
 phone re-finds it instead of making you pair again.
 
+Synced tasks are **end-to-end encrypted** (AES-256-GCM). The key is made
+by your PC and handed over inside the pairing, so there is nothing to
+remember. The sync server stores only scrambled data. The Wi-Fi
+connection itself is plain HTTP; a server you run yourself gets readable
+data. Details in [docs/security.md](docs/security.md) §3.
+
 **Everywhere else**
 - Light, dark, high contrast, and a reduce-motion setting every animation
   actually respects
