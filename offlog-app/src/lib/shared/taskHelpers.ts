@@ -1,5 +1,6 @@
 // Pure helpers lifted out of CardDetail.svelte -- no component state, so
 // they stay unit-testable without mounting the card.
+import { shareViaCache } from './shareFile';
 import type { TaskDoc, TaskAttachment } from '../types';
 import { fmtTime } from '../utils';
 import { getDefaultReminderTime, isNativePlatform, isTauri } from '../../config';
@@ -151,15 +152,7 @@ export function safeFileName(name: string): string {
 export async function openAttachmentFile(blob: Blob, rawName: string): Promise<void> {
   const filename = safeFileName(rawName);
   if (isNativePlatform()) {
-    const { Filesystem, Directory } = await import('@capacitor/filesystem');
-    const { Share } = await import('@capacitor/share');
-    // No `encoding` means the base64 is written as bytes rather than text.
-    const written = await Filesystem.writeFile({
-      path: filename,
-      data: await blobToBase64(blob),
-      directory: Directory.Cache,
-    });
-    await Share.share({ title: filename, url: written.uri });
+    await shareViaCache(filename, await blobToBase64(blob), false);
     return;
   }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Attachment opening and CSV/backup export (carddetail/helpers.ts,
-         settings/helpers.ts) both write through Directory.Cache before
+    <!-- Attachment opening and CSV/backup export (shared/shareFile.ts)
+         write to Directory.Cache/share before
          handing the file to the share sheet: this is the only root the
          app ever asks FileProvider to grant a content:// URI under.
          The scaffolded external-path (Capacitor/Cordova's default

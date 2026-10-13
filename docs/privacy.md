@@ -52,6 +52,9 @@ stored, and the limits of each — see
   about once a day, keeping the last seven, only to the app's own
   private storage on your device — never uploaded anywhere. Android's
   own cloud backup of app data is switched off for Offlog.
+- **Shared exports.** A backup, CSV or attachment you share from the
+  phone is written to the app's private cache for the share sheet; the
+  next share replaces it, so at most one such copy stays there.
 - **Device name.** To tell your devices apart in sync and History, the
   app reads your device's own name (Android's device name or model;
   Windows' computer name) once, and you can change it. It is stored with

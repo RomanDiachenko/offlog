@@ -2,6 +2,7 @@
 // they stay unit-testable without mounting the panel.
 import { isTauri as isTauriCheck } from '../../config';
 import type { MaintStepResult } from '../db';
+import { shareViaCache } from './shareFile';
 
 // Named distinctly from db.ts's MaintStatus -- this one adds 'pending' for
 // steps that haven't started yet, so the two aren't interchangeable.
@@ -36,15 +37,7 @@ export function formatStorageEstimate(usage: number, quota: number): { info: str
 // up (Files, Drive, email, etc.) same as any other Android share flow.
 export async function downloadBlob(content: string, mime: string, filename: string) {
   if (window.Capacitor?.isNativePlatform?.()) {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem');
-    const { Share } = await import('@capacitor/share');
-    const written = await Filesystem.writeFile({
-      path: filename,
-      data: content,
-      directory: Directory.Cache,
-      encoding: Encoding.UTF8,
-    });
-    await Share.share({ title: filename, url: written.uri });
+    await shareViaCache(filename, content, true);
     return;
   }
   // Same gap as Android's WebView: Tauri's embedded WebView2 has no

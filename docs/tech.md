@@ -388,6 +388,11 @@ One PouchDB database, `offlog`. The `_id` prefix is the document type.
   `<a download>` only functions in a browser, so Android writes to cache and
   offers the share sheet and desktop opens a save dialog — the same gap
   `downloadBlob()` documents for exports, but binary rather than UTF-8.
+  Both go through `shareViaCache()` (`shared/shareFile.ts`): one
+  `cache/share/` folder, emptied before each share, so at most the latest
+  shared file (a backup or CSV is the whole task list in plain text) stays
+  behind. Deleting it right after the share resolves would break a receiving
+  app that reads it later.
   The filename is treated as data on the way to disk: it rides on the doc, so
   it can arrive over sync or from a hand-edited backup, and `safeFileName()`
   strips directory components and leading dots before either platform writes
