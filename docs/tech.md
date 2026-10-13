@@ -141,7 +141,9 @@ flowchart LR
   uses. Home applies `livingHero.ts`'s hue/lightness shift on mount and on
   every return to the foreground. `searchAllTasks()` (shared with the desktop's
   GlobalSearch) returns open before done, title matches first, then by due
-  date (undated last), then title.
+  date (undated last), then title; archived tasks of active projects come
+  last (marked, with Restore from archive on the task), those of archived
+  projects not at all. A query starting with `#` searches tags only.
 - **store.ts** — the only reactive layer for app data. Holds spaces, projects,
   tasks and the active selection; reloads on any database change.
 - **db.ts** — all reads and writes, the changelog, the undo buffer, and
