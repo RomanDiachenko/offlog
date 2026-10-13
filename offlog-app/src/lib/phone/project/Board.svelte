@@ -18,6 +18,8 @@
   export let blockedIds = new Set<string>();
   export let relatedIds = new Set<string>();
   export let tagColors: Record<string, string> = {};
+  // A filter is on: an empty status then says where the matches are.
+  export let filtered = false;
 
   const dispatch = createEventDispatcher<{ open: TaskDoc; menu: TaskDoc }>();
 
@@ -118,7 +120,9 @@
             </div>
           {:else}
             <div class="empty">
-              {#if lastPane}
+              {#if filtered}
+                <p>{tasks.length ? `No matches here: ${tasks.length} in other status${tasks.length === 1 ? '' : 'es'}.` : 'No tasks match the filter.'}</p>
+              {:else if lastPane}
                 <p class="hint"><span class="tick">{@html I.check}</span>Tick a task to finish it.</p>
               {:else}
                 <p>Nothing in {col.name}.</p>

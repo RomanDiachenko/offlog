@@ -482,6 +482,24 @@ describe('phone Project screen — filter', () => {
     expect(titles(r.container)).toEqual(['a', 'b', 'c']);
   });
 
+  it('a filter whose matches are all in another status moves the board there', async () => {
+    const r = setup({}, [task('task:a'), task('task:x', { column_id: 'col:doing', priority: 3 })]);
+    await fireEvent.click(r.getByLabelText('Filter'));
+    await waitFor(() => r.getByRole('dialog', { name: 'Filter' }));
+    await fireEvent.click(chip(r, 'High'));
+    await fireEvent.click(r.getByText('Show 1 task'));
+    await waitFor(() => expect(titles(r.container)).toEqual(['x']));
+  });
+
+  it('a filter with no match anywhere says so on the board', async () => {
+    const r = setup({}, [task('task:a')]);
+    await fireEvent.click(r.getByLabelText('Filter'));
+    await waitFor(() => r.getByRole('dialog', { name: 'Filter' }));
+    await fireEvent.click(chip(r, 'High'));
+    await fireEvent.click(r.getByText('Show 0 tasks'));
+    await waitFor(() => expect(r.getByText('No tasks match the filter.')).toBeTruthy());
+  });
+
   it("the sheet's Clear keeps List's search text", async () => {
     const r = setup({ default_view: 'list' });
     await fireEvent.input(r.getByLabelText('Search tasks'), { target: { value: 'a' } });

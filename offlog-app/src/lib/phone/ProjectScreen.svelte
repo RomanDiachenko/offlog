@@ -42,6 +42,16 @@
   $: m.ci = ci;
   $: m.sort = sort;
   $: shown = applyFilter(mine, filter);
+  // A new filter that leaves the status on show empty moves the board to the
+  // first status with a match.
+  function applyNew(f: Filter) {
+    filter = f;
+    if (list || !project) return;
+    const hits = applyFilter(mine, f);
+    if (!hits.length || hits.some(t => t.column_id === project!.columns[ci]?.id)) return;
+    const i = project.columns.findIndex(c => hits.some(t => t.column_id === c.id));
+    if (i >= 0) ci = i;
+  }
   $: nFilters = activeCount(filter);
   // The + button adds to the status on show (the first one in List).
   // Never the last status: a task added there would be born finished, so +
@@ -104,14 +114,14 @@
     {#if list}
       <ListPane {project} tasks={shown} bind:search={filter.search} bind:sort filtered={nFilters > 0 || !!filter.search} on:open={e => actions.openTask(e.detail)} />
     {:else}
-      <Board {project} tasks={shown} bind:ci {blockedIds} {relatedIds} {tagColors}
+      <Board {project} tasks={shown} filtered={nFilters > 0} bind:ci {blockedIds} {relatedIds} {tagColors}
         on:open={e => actions.openTask(e.detail)} on:menu={e => openSheet('card', e.detail)} />
     {/if}
   </div>
 
   {#key session}
     {#if sheet === 'filter'}
-      <FilterSheet {project} tasks={mine} {filter} {list} {customFields} on:apply={e => (filter = e.detail)} on:close={() => (sheet = null)} />
+      <FilterSheet {project} tasks={mine} {filter} {list} {customFields} on:apply={e => applyNew(e.detail)} on:close={() => (sheet = null)} />
     {:else if sheet === 'more'}
       <ProjectMenuSheet {project} tasks={mine} on:close={() => (sheet = null)} />
     {:else if sheet === 'card' && menuTask}
