@@ -201,7 +201,7 @@ describe('SpaceManager create and reorder', () => {
     const b = mkSpace({ _id: 'space:b', name: 'Beta', position: 1 });
     const { getAllByLabelText } = await renderWith([a, b]);
 
-    await fireEvent.click(getAllByLabelText('Move down')[0]);
+    await fireEvent.click(getAllByLabelText(/^Move .* down$/)[0]);
 
     await waitFor(() => expect(reorderSpaces).toHaveBeenCalledWith(['space:b', 'space:a']));
   });
@@ -213,7 +213,7 @@ describe('SpaceManager create and reorder', () => {
       mkSpace({ _id: 'space:b', name: 'Beta' }),
     ]);
 
-    await fireEvent.click(getAllByLabelText('Move down')[0]);
+    await fireEvent.click(getAllByLabelText(/^Move .* down$/)[0]);
 
     await waitFor(() => expect(showError).toHaveBeenCalledTimes(1));
   });

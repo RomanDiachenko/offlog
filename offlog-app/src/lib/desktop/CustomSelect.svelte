@@ -17,6 +17,8 @@
   export let placeholder = 'Select…';
   export let placement: 'up' | 'down' = 'down';
   export let disabled = false;
+  // Names the control for screen readers when no visible <label> does.
+  export let ariaLabel: string | undefined = undefined;
 
   const dispatch = createEventDispatcher<{ change: string }>();
 
@@ -93,6 +95,7 @@
     on:keydown={onTriggerKey}
     aria-haspopup="listbox"
     aria-expanded={open}
+    aria-label={ariaLabel ? `${ariaLabel}: ${selected?.label ?? placeholder}` : undefined}
   >
     <span class="cs-value">{#if selected?.dotColor}<span class="cs-dot" style="background:{selected.dotColor}"></span>{/if}{selected?.label ?? placeholder}</span>
     <svg class="cs-chevron" viewBox="0 0 10 6" width="10" height="6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,1 5,5 9,1" /></svg>

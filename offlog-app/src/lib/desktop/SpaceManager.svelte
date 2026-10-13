@@ -179,7 +179,7 @@
       {#each items as s, i (s._id)}
         <div class="row">
           <label class="swatch-wrap" title="Change color">
-            <input type="color" value={s.color} on:change={(e) => setColor(s, (e.target as HTMLInputElement).value)} />
+            <input type="color" aria-label="Color of {s.name}" value={s.color} on:change={(e) => setColor(s, (e.target as HTMLInputElement).value)} />
             <span class="swatch" style="background:{soften(s.color)}"></span>
           </label>
   
@@ -212,8 +212,8 @@
           {/if}
   
           <div class="reorder-btns">
-            <button on:click={() => move(i, -1)} disabled={i === 0} aria-label="Move up" title="Move up">↑</button>
-            <button on:click={() => move(i, 1)} disabled={i === items.length - 1} aria-label="Move down" title="Move down">↓</button>
+            <button on:click={() => move(i, -1)} disabled={i === 0} aria-label="Move {s.name} up" title="Move up">↑</button>
+            <button on:click={() => move(i, 1)} disabled={i === items.length - 1} aria-label="Move {s.name} down" title="Move down">↓</button>
           </div>
   
           {#if s._id !== 'space:unsorted'}
@@ -226,7 +226,7 @@
       {#if adding}
         <div class="row new-row">
           <label class="swatch-wrap" title="Pick a color">
-            <input type="color" bind:value={newColor} />
+            <input type="color" aria-label="Color of the new space" bind:value={newColor} />
             <span class="swatch" style="background:{soften(newColor)}"></span>
           </label>
           <div class="icon-picker-wrap">

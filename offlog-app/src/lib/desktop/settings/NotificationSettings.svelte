@@ -62,7 +62,7 @@
                 <div class="setting-section-title">Reminder timing</div>
                 <label class="field-label">
                   Default "remind me on the due date" time
-                  <TimePicker value={defaultReminderTime} on:change={saveDefaultReminderTime} />
+                  <TimePicker value={defaultReminderTime} label="Default reminder time" on:change={saveDefaultReminderTime} />
                 </label>
                 <p class="setting-hint">For tasks set to remind on their due date.</p>
               </div>
@@ -78,9 +78,9 @@
                 {#if quietHours.enabled}
                   <div class="setting-row" in:slide={revealIn} out:slide={revealOut}>
                     <span class="setting-label">From</span>
-                    <TimePicker value={quietHours.start} placement="up" on:change={(e) => saveQuietHours({ start: e.detail })} />
+                    <TimePicker value={quietHours.start} label="Quiet hours start" placement="up" on:change={(e) => saveQuietHours({ start: e.detail })} />
                     <span class="setting-label">to</span>
-                    <TimePicker value={quietHours.end} placement="up" on:change={(e) => saveQuietHours({ end: e.detail })} />
+                    <TimePicker value={quietHours.end} label="Quiet hours end" placement="up" on:change={(e) => saveQuietHours({ end: e.detail })} />
                   </div>
                 {/if}
                 <p class="setting-hint">Reminders due in this window wait until it ends.</p>

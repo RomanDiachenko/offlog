@@ -12,6 +12,10 @@
   // scroll wheel or a picker library costs either fidelity or ~100KB.
   export let value = '09:00';
   export let disabled = false;
+  // What the time is for ("Quiet hours start"), so each part is announced
+  // as "…, hour" rather than a bare "10".
+  export let label = '';
+  const part = (p: string) => (label ? `${label}, ${p}` : undefined);
   // Forwarded to each CustomSelect: a picker near the bottom of a
   // scrollable panel must open upward or its dropdown renders clipped.
   export let placement: 'up' | 'down' = 'down';
@@ -51,14 +55,14 @@
 
 <div class="time-picker">
   {#if is24h}
-    <CustomSelect options={HOURS_24} value={pad(hour24)} {disabled} {placement} on:change={onHour24} />
+    <CustomSelect options={HOURS_24} value={pad(hour24)} {disabled} {placement} ariaLabel={part('hour')} on:change={onHour24} />
     <span class="time-sep">:</span>
-    <CustomSelect options={MINUTES} value={m ?? '00'} {disabled} {placement} on:change={onMinute} />
+    <CustomSelect options={MINUTES} value={m ?? '00'} {disabled} {placement} ariaLabel={part('minute')} on:change={onMinute} />
   {:else}
-    <CustomSelect options={HOURS_12} value={hour12} {disabled} {placement} on:change={onHour12} />
+    <CustomSelect options={HOURS_12} value={hour12} {disabled} {placement} ariaLabel={part('hour')} on:change={onHour12} />
     <span class="time-sep">:</span>
-    <CustomSelect options={MINUTES} value={m ?? '00'} {disabled} {placement} on:change={onMinute} />
-    <CustomSelect options={PERIODS} value={period} {disabled} {placement} on:change={onPeriod} />
+    <CustomSelect options={MINUTES} value={m ?? '00'} {disabled} {placement} ariaLabel={part('minute')} on:change={onMinute} />
+    <CustomSelect options={PERIODS} value={period} {disabled} {placement} ariaLabel={part('AM or PM')} on:change={onPeriod} />
   {/if}
 </div>
 
