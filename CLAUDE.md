@@ -106,10 +106,11 @@ satisfy the compiler.
 
 `db.ts` is a barrel over `src/lib/db/` — `core.ts` (instance, indexes, task
 cache, `logChange`, `subscribe`), `entities.ts` (spaces, projects, tasks,
-blocked-by, attachments, undo, trash), `sync.ts`, `tags.ts`, `stats.ts`,
-`maintenance.ts`. **Always import from `./db`**, never a `db/` module
-directly. Dependencies run one way: `core` ← `entities` ← {`sync`, `tags`,
-`stats`} and `sync` ← `maintenance`. Projects and tasks share a module deliberately —
+blocked-by, attachments, undo, trash), `sync.ts`, `encryptedFetch.ts`,
+`tags.ts`, `stats.ts`, `maintenance.ts`. **Always import from `./db`**, never
+a `db/` module directly. Dependencies run one way: `core` ← `entities` ←
+{`sync`, `tags`, `stats`}, `sync` ← `maintenance`, and `encryptedFetch` ←
+`sync` (it needs only `lib/syncCrypto.ts`). Projects and tasks share a module deliberately —
 `updateTask` needs a project's columns while `deleteProject` cascades into
 tasks, so splitting them would be a cycle.
 
@@ -137,6 +138,11 @@ tasks, so splitting them would be a cycle.
 - **`column_id` is a string id, not the column object.** Assigning
   `p.columns[i]` instead of `p.columns[i].id` makes tasks vanish from the
   Board while remaining valid, queryable docs.
+- **Sync with a key goes only through `encryptedFetch`** (`remote()` in
+  `sync.ts`). Never open another remote PouchDB, or write to the server any
+  other way, while `getSyncKey()` is set: it would store readable documents,
+  or ones no device can open. `encryptedFetch` refuses anything but the
+  replicator's own requests; extend it, don't route around it.
 - **Conflict info lives on `row.doc._conflicts`, never
   `row.value.conflicts`** — the latter has never existed in PouchDB.
   `db.allDocs({conflicts:true})` also needs `include_docs: true`. When
