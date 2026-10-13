@@ -161,6 +161,15 @@ describe('backup and restore — the full cycle', () => {
 
     expect(preview.toCreate).toBe(ok);
   });
+
+  it('a backup carrying History entries previews nothing as unrecognized', async () => {
+    await seedRealistic();
+    const docs = JSON.parse(await backupEverything());
+    docs.push({ _id: 'log:2026-10-13T00:00:00.000Z_x', type: 'log', ts: '2026-10-13T00:00:00.000Z', ref: 'task:t1', action: 'update' });
+    const preview = analyzeImport(docs);
+    expect(preview.toSkip).toBe(0);
+    expect(preview.toCreate).toBe(Object.values(preview.byType).reduce((a, b) => a + b, 0));
+  });
 });
 
 describe('backup and restore — the picked file', () => {

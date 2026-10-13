@@ -241,12 +241,15 @@ export function analyzeImport(docs: ImportedDoc[]): { toCreate: number; toSkip: 
   const byType: Record<string, number> = { space: 0, project: 0, task: 0, meta: 0, tag_color: 0 };
   let toSkip = 0;
   for (const d of docs) {
+    // History entries ride along in every backup and are left out on
+    // purpose; counting them as "unrecognized" made a fresh backup look broken.
+    if (d?.type === 'log') continue;
     const usable = !!d && typeof d._id === 'string' && d.type in byType
       && !(d.type === 'task' && typeof d.project_id !== 'string');
     if (usable) byType[d.type]++;
     else toSkip++;
   }
-  return { toCreate: docs.length - toSkip, toSkip, byType };
+  return { toCreate: Object.values(byType).reduce((a, b) => a + b, 0), toSkip, byType };
 }
 
 // Export a single project — the project doc plus its own tasks only, never
