@@ -1,8 +1,9 @@
 <script lang="ts">
-  // Shared by List and Board. Saved filters are stored per-project, not
-  // per-view (one `offlog_saved_filters_<id>` localStorage key), so a
-  // filter saved from List also appears in the Board's popover.
-  import type { ProjectDoc, TaskDoc, CustomFieldDef } from '../types';
+  // Shared by List and Board. Saved filters belong to the project, not the
+  // view, so a filter saved from List also appears in the Board's popover.
+  import type { ProjectDoc, TaskDoc, CustomFieldDef, SavedFilterDoc } from '../types';
+  import { savedFiltersOf, moveLocalSavedFilters, putSavedFilter, removeSavedFilter } from '../shared/savedFilters';
+  import { showError } from '../store';
   import type { CustomFieldFilter } from '../utils';
   import { PRIORITY_COLOR as PRIO_COLOR } from '../constants';
 
@@ -71,35 +72,31 @@
     showFilterMenu = !showFilterMenu;
   }
 
-  // customFieldFilters is optional: saved filters already in localStorage
-  // may not have it. Absent means "no custom-field filters".
-  interface SavedFilter { name: string; search: string; filterCol: string; filterPrio: number; filterTag: string; customFieldFilters?: CustomFieldFilter[] }
-  $: savedFiltersKey = `offlog_saved_filters_${project._id}`;
-  let savedFilters: SavedFilter[] = [];
+  // customFieldFilters is optional: older saved filters may not have it.
+  // Absent means "no custom-field filters".
+  $: savedFilters = savedFiltersOf(project);
+  $: moveLocalSavedFilters(project._id);
 
-  function loadSavedFilters() {
-    try { savedFilters = JSON.parse(localStorage.getItem(savedFiltersKey) ?? '[]'); }
-    catch { savedFilters = []; }
-  }
-  $: project._id, loadSavedFilters();
-
-  function saveCurrentFilter() {
+  async function saveCurrentFilter() {
     const name = newFilterName.trim();
     if (!name) return;
-    savedFilters = [...savedFilters.filter(f => f.name !== name), { name, search, filterCol, filterPrio, filterTag, customFieldFilters }];
-    localStorage.setItem(savedFiltersKey, JSON.stringify(savedFilters));
-    newFilterName = '';
+    try {
+      savedFilters = await putSavedFilter(project._id, { name, search, filterCol, filterPrio, filterTag, customFieldFilters });
+      newFilterName = '';
+    } catch {
+      showError('Could not save the filter. Please try again.');
+    }
   }
 
-  function applySavedFilter(f: SavedFilter) {
+  function applySavedFilter(f: SavedFilterDoc) {
     search = f.search; filterCol = f.filterCol; filterPrio = f.filterPrio; filterTag = f.filterTag;
     customFieldFilters = f.customFieldFilters ?? [];
     showFilterMenu = false;
   }
 
-  function deleteSavedFilter(name: string) {
-    savedFilters = savedFilters.filter(f => f.name !== name);
-    localStorage.setItem(savedFiltersKey, JSON.stringify(savedFilters));
+  async function deleteSavedFilter(name: string) {
+    try { savedFilters = await removeSavedFilter(project._id, name); }
+    catch { showError('Could not delete the filter. Please try again.'); }
   }
 
   $: activeFilters = (search ? 1 : 0) + (filterCol ? 1 : 0) + (filterPrio ? 1 : 0) + (filterTag ? 1 : 0)

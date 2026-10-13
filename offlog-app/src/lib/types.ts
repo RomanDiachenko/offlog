@@ -64,8 +64,21 @@ export interface ProjectDoc {
   default_view: 'kanban' | 'list' | 'table';
   pinned?: boolean; // same always-sorts-to-top mechanism as TaskDoc.pinned
   archived?: boolean; // soft-archive; project stays, non-done tasks get archived: true too
+  // List/Board filters saved by name, shared by both apps (shared/savedFilters.ts).
+  saved_filters?: SavedFilterDoc[];
   updated_at: string;
   source: Source;
+}
+
+// The field names are the ones the filters had in localStorage, so a saved
+// filter moves into the project unchanged.
+export interface SavedFilterDoc {
+  name: string;
+  search: string;
+  filterCol: string;
+  filterPrio: number;
+  filterTag: string;
+  customFieldFilters?: { fieldId: string; value: string }[];
 }
 
 // One entry per file attached to a task; see TaskDoc.attachments.

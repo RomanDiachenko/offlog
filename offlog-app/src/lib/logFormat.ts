@@ -75,6 +75,7 @@ export function describeField(field: string, from: unknown, to: unknown): string
   if (field === 'checklist') return 'Checklist updated';
   if (field === 'custom_values') return 'Fields updated';
   if (field === 'columns') return 'Statuses updated';
+  if (field === 'saved_filters') return 'Saved filters updated';
   if (field === 'related') return 'Related tasks changed';
   if (field === 'blocked_by') return 'Blocked by tasks updated';
   return `${FIELD_LABEL[field] ?? field} changed`;

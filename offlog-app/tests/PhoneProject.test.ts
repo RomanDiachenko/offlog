@@ -507,8 +507,20 @@ describe('phone Project screen — filter', () => {
     expect(chip(r, 'High').classList.contains('none')).toBe(false);
   });
 
-  it('saves a filter under the desktop key and applies it later', async () => {
-    localStorage.removeItem('offlog_saved_filters_project:p');
+  it('a filter that could not be saved says so', async () => {
+    updateProject.mockRejectedValue(new Error('boom'));
+    const r = setup();
+    await fireEvent.click(r.getByLabelText('Filter'));
+    await waitFor(() => r.getByRole('dialog', { name: 'Filter' }));
+    await fireEvent.click(chip(r, '#tiles'));
+    await fireEvent.input(r.getByLabelText('Filter name'), { target: { value: 'Tiles' } });
+    await fireEvent.click(r.getByText('Save'));
+    await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not save the filter. Please try again.'));
+  });
+
+  it('saves a filter on the project, in the desktop shape, and applies it later', async () => {
+    let doc: ProjectDoc = { ...project };
+    updateProject.mockImplementation(async (_id: string, fn: (p: ProjectDoc) => Partial<ProjectDoc>) => (doc = { ...doc, ...fn(doc) }));
     const r = setup();
     await fireEvent.click(r.getByLabelText('Filter'));
     await waitFor(() => r.getByRole('dialog', { name: 'Filter' }));
@@ -517,10 +529,10 @@ describe('phone Project screen — filter', () => {
     await fireEvent.click(chip(r, '#tiles'));
     await fireEvent.input(r.getByLabelText('Filter name'), { target: { value: 'Tiles' } });
     await fireEvent.click(r.getByText('Save'));
-    expect(JSON.parse(localStorage.getItem('offlog_saved_filters_project:p')!)).toEqual([
+    await waitFor(() => expect(doc.saved_filters).toEqual([
       { name: 'Tiles', search: '', filterCol: '', filterPrio: 0, filterTag: 'tiles', customFieldFilters: [] },
-    ]);
-    await fireEvent.click(r.getByText('Tiles'));
+    ]));
+    await fireEvent.click(await r.findByText('Tiles'));
     await waitFor(() => expect(titles(r.container)).toEqual(['b']));
   });
 });

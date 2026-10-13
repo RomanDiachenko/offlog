@@ -1,13 +1,15 @@
 <script lang="ts">
   // Filter a project's board and list. Choices are a draft until "Show N
   // tasks"; a saved filter applies at once. Mount behind a {#key} bumped per open.
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import type { CustomFieldDef, ProjectDoc, TaskDoc } from '../../types';
   import { PRIORITY_LABEL } from '../../constants';
   import { applyFilter, activeCount, loadSaved, saveFilter, deleteSaved, EMPTY, type Filter } from './filter';
   import { I } from '../icons';
   import { shortDate } from '../format';
   import Sheet from '../Sheet.svelte';
+  import { moveLocalSavedFilters } from '../../shared/savedFilters';
+  import { showError } from '../../store';
 
   export let project: ProjectDoc;
   export let tasks: TaskDoc[];
@@ -19,7 +21,8 @@
   const dispatch = createEventDispatcher<{ apply: Filter; close: void }>();
   let sheet: Sheet;
   let draft: Filter = { ...filter, fields: filter.fields.map(f => ({ ...f })) };
-  let saved = loadSaved(project._id);
+  let saved = loadSaved(project);
+  onMount(() => { moveLocalSavedFilters(project._id); });
   let name = '';
 
   const PRIOS: (1 | 2 | 3)[] = [3, 2, 1];
@@ -45,11 +48,19 @@
   }
 
   function apply(f: Filter) { dispatch('apply', f); sheet.close(); }
-  function save() {
+  async function save() {
     const nm = name.trim();
     if (!nm) return;
-    saved = saveFilter(project._id, nm, draft);
-    name = '';
+    try {
+      saved = await saveFilter(project._id, nm, draft);
+      name = '';
+    } catch {
+      showError('Could not save the filter. Please try again.');
+    }
+  }
+  async function remove(nm: string) {
+    try { saved = await deleteSaved(project._id, nm); }
+    catch { showError('Could not delete the filter. Please try again.'); }
   }
 </script>
 
@@ -60,7 +71,7 @@
       {#each saved as s (s.name)}
         <span class="saved">
           <button class="p-chip" on:click={() => apply(s.filter)}>{s.name}</button>
-          <button class="del" aria-label="Delete filter {s.name}" on:click={() => (saved = deleteSaved(project._id, s.name))}>{@html I.x}</button>
+          <button class="del" aria-label="Delete filter {s.name}" on:click={() => remove(s.name)}>{@html I.x}</button>
         </span>
       {/each}
     </div>

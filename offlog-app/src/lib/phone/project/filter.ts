@@ -1,7 +1,8 @@
 // A project screen's filter: the same five inputs the desktop FilterBar
 // feeds into utils.filterTasks, so both apps agree on what a filter means.
 import { filterTasks, type CustomFieldFilter } from '../../utils';
-import type { TaskDoc } from '../../types';
+import type { TaskDoc, ProjectDoc, SavedFilterDoc } from '../../types';
+import { savedFiltersOf, putSavedFilter, removeSavedFilter } from '../../shared/savedFilters';
 import { computeDropPosition } from '../../db';
 
 export interface Filter { search: string; col: string; prio: number; tag: string; fields: CustomFieldFilter[] }
@@ -20,36 +21,25 @@ export function activeCount(f: Filter): number {
   return (f.col ? 1 : 0) + (f.prio ? 1 : 0) + (f.tag ? 1 : 0) + f.fields.filter(x => x.fieldId && x.value).length;
 }
 
-// Saved filters share the desktop's per-project localStorage key and shape,
-// so a filter saved on either layout shows up on the other.
-interface Saved { name: string; search: string; filterCol: string; filterPrio: number; filterTag: string; customFieldFilters?: CustomFieldFilter[] }
+// Saved filters are the project's own (shared/savedFilters.ts), in the
+// desktop's field names; these convert them to and from this screen's Filter.
 export interface SavedFilter { name: string; filter: Filter }
-const key = (projectId: string) => `offlog_saved_filters_${projectId}`;
+const toFilter = (s: SavedFilterDoc): SavedFilter => ({
+  name: s.name,
+  filter: { search: s.search ?? '', col: s.filterCol ?? '', prio: s.filterPrio ?? 0, tag: s.filterTag ?? '', fields: s.customFieldFilters ?? [] },
+});
 
-function readRaw(projectId: string): Saved[] {
-  try { return JSON.parse(localStorage.getItem(key(projectId)) ?? '[]') ?? []; } catch { return []; }
-}
-function writeRaw(projectId: string, list: Saved[]) {
-  try { localStorage.setItem(key(projectId), JSON.stringify(list)); } catch { /* storage unavailable: the filter just isn't kept */ }
-}
-
-export function loadSaved(projectId: string): SavedFilter[] {
-  return readRaw(projectId).map(s => ({
-    name: s.name,
-    filter: { search: s.search ?? '', col: s.filterCol ?? '', prio: s.filterPrio ?? 0, tag: s.filterTag ?? '', fields: s.customFieldFilters ?? [] },
-  }));
+export function loadSaved(project: ProjectDoc): SavedFilter[] {
+  return savedFiltersOf(project).map(toFilter);
 }
 
-// Same name replaces, as on the desktop.
-export function saveFilter(projectId: string, name: string, f: Filter): SavedFilter[] {
-  const entry: Saved = { name, search: f.search, filterCol: f.col, filterPrio: f.prio, filterTag: f.tag, customFieldFilters: f.fields };
-  writeRaw(projectId, [...readRaw(projectId).filter(s => s.name !== name), entry]);
-  return loadSaved(projectId);
+// Same name replaces, as on the desktop. Throws on a failed write.
+export async function saveFilter(projectId: string, name: string, f: Filter): Promise<SavedFilter[]> {
+  return (await putSavedFilter(projectId, { name, search: f.search, filterCol: f.col, filterPrio: f.prio, filterTag: f.tag, customFieldFilters: f.fields })).map(toFilter);
 }
 
-export function deleteSaved(projectId: string, name: string): SavedFilter[] {
-  writeRaw(projectId, readRaw(projectId).filter(s => s.name !== name));
-  return loadSaved(projectId);
+export async function deleteSaved(projectId: string, name: string): Promise<SavedFilter[]> {
+  return (await removeSavedFilter(projectId, name)).map(toFilter);
 }
 
 // A status's cards as the board shows them: pinned first, then by position.

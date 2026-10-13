@@ -322,7 +322,7 @@ One PouchDB database, `offlog`. The `_id` prefix is the document type.
 | Prefix | Type | Key fields |
 |---|---|---|
 | `space:` | SpaceDoc | `name`, `color`, `icon`, `position` |
-| `project:` | ProjectDoc | `space_id`, `name`, `columns[]`, `default_view`, `archived` |
+| `project:` | ProjectDoc | `space_id`, `name`, `columns[]`, `default_view`, `archived`, `saved_filters[]` (List/Board filters by name; `shared/savedFilters.ts` moves a device's old `offlog_saved_filters_<id>` localStorage copy in once) |
 | `task:` | TaskDoc | `project_id`, `column_id`, `title`, `body`, `priority`, `due_date`, `tags`, `deleted`, `archived` |
 | `log:` | LogDoc | `ts`, `source`, `source_id`, `ref`, `action`, then `field`/`from`/`to` or `diffs` |
 | `meta:` | Custom field definitions (one doc, `meta:custom_fields`) | `fields[]` |

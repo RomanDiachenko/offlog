@@ -2,9 +2,19 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, cleanup, waitFor } from '@testing-library/svelte';
 import type { CustomFieldDef, ProjectDoc, TaskDoc } from '../src/lib/types';
 
-// FilterBar owns no database access at all — its state is the bound filter
-// props plus one localStorage key of saved filters, so these tests read
-// those two surfaces directly.
+// FilterBar's state is the bound filter props plus the project's saved
+// filters; updateProject is faked over one in-memory project doc, which the
+// saved-filter tests read back.
+const db = vi.hoisted(() => ({ project: null as ProjectDoc | null, fail: false }));
+vi.mock('../src/lib/db', () => ({
+  updateProject: vi.fn(async (_id: string, fn: (p: ProjectDoc) => Partial<ProjectDoc>) => {
+    if (db.fail) throw new Error('write failed');
+    db.project = { ...db.project!, ...fn(db.project!) };
+    return db.project;
+  }),
+}));
+const showError = vi.hoisted(() => vi.fn());
+vi.mock('../src/lib/store', () => ({ showError }));
 import FilterBar from '../src/lib/desktop/FilterBar.svelte';
 
 const COLUMNS = [
@@ -38,9 +48,12 @@ function mkTask(custom: Record<string, string>, id = 'task:1'): TaskDoc {
 
 const SAVED_KEY = 'offlog_saved_filters_project:1';
 
-function mount(props: Record<string, unknown> = {}) {
-  return render(FilterBar, { props: { project: mkProject(), ...props } });
+function mount(props: Record<string, unknown> = {}, project: ProjectDoc = mkProject()) {
+  db.project = project;
+  return render(FilterBar, { props: { project, ...props } });
 }
+const withSaved = (saved: ProjectDoc['saved_filters']) => ({ ...mkProject(), saved_filters: saved });
+const savedNames = () => (db.project!.saved_filters ?? []).map(f => f.name);
 
 const countBadge = (c: HTMLElement) => c.querySelector('.filter-count') as HTMLElement | null;
 const filterButton = (c: HTMLElement) => c.querySelector('.action-btn') as HTMLButtonElement;
@@ -66,6 +79,7 @@ const selects = (c: HTMLElement) => [...c.querySelectorAll('.filter-menu .custom
 beforeEach(() => {
   localStorage.clear();
   vi.clearAllMocks();
+  db.fail = false;
 });
 afterEach(cleanup);
 
@@ -224,7 +238,7 @@ describe('FilterBar custom-field filter rows', () => {
 });
 
 describe('FilterBar saved filters', () => {
-  it('saves the whole current filter set under the typed name', async () => {
+  it('saves the whole current filter set under the typed name, on the project', async () => {
     const { container } = mount({
       search: 'draft', filterCol: 'col:done', filterTag: 'urgent', filterPrio: 3,
       allTags: ['urgent'], customFields: FIELDS,
@@ -235,31 +249,38 @@ describe('FilterBar saved filters', () => {
     await fireEvent.input(container.querySelector('.filter-name-input') as HTMLInputElement, { target: { value: '  Hot work  ' } });
     await fireEvent.click(container.querySelector('.filter-save-btn') as HTMLButtonElement);
 
-    expect(JSON.parse(localStorage.getItem(SAVED_KEY)!)).toEqual([{
+    await waitFor(() => expect(db.project!.saved_filters).toEqual([{
       name: 'Hot work', search: 'draft', filterCol: 'col:done', filterPrio: 3, filterTag: 'urgent',
       customFieldFilters: [{ fieldId: 'field:aaa', value: 'Acme' }],
-    }]);
+    }]));
+    expect(localStorage.getItem(SAVED_KEY)).toBeNull();
   });
 
   it('saving the same name again replaces it rather than duplicating', async () => {
-    localStorage.setItem(SAVED_KEY, JSON.stringify([{ name: 'Hot work', search: 'old', filterCol: '', filterPrio: 0, filterTag: '' }]));
-    const { container } = mount({ search: 'new' });
+    const { container } = mount({ search: 'new' }, withSaved([{ name: 'Hot work', search: 'old', filterCol: '', filterPrio: 0, filterTag: '' }]));
     await openMenu(container);
 
     await fireEvent.input(container.querySelector('.filter-name-input') as HTMLInputElement, { target: { value: 'Hot work' } });
     await fireEvent.click(container.querySelector('.filter-save-btn') as HTMLButtonElement);
 
-    const stored = JSON.parse(localStorage.getItem(SAVED_KEY)!);
-    expect(stored).toHaveLength(1);
-    expect(stored[0].search).toBe('new');
+    await waitFor(() => expect(db.project!.saved_filters![0].search).toBe('new'));
+    expect(db.project!.saved_filters).toHaveLength(1);
+  });
+
+  it('a failed save says so', async () => {
+    db.fail = true;
+    const { container } = mount({ search: 'x' });
+    await openMenu(container);
+    await fireEvent.input(container.querySelector('.filter-name-input') as HTMLInputElement, { target: { value: 'A' } });
+    await fireEvent.click(container.querySelector('.filter-save-btn') as HTMLButtonElement);
+    await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not save the filter. Please try again.'));
   });
 
   it('applying a saved filter restores every dimension', async () => {
-    localStorage.setItem(SAVED_KEY, JSON.stringify([{
+    const { container } = mount({ allTags: ['urgent'], customFields: FIELDS }, withSaved([{
       name: 'Hot work', search: 'draft', filterCol: 'col:done', filterPrio: 3, filterTag: 'urgent',
       customFieldFilters: [{ fieldId: 'field:aaa', value: 'Acme' }],
     }]));
-    const { container } = mount({ allTags: ['urgent'], customFields: FIELDS });
     await openMenu(container);
 
     await fireEvent.click(container.querySelector('.filter-apply-btn') as HTMLButtonElement);
@@ -270,10 +291,9 @@ describe('FilterBar saved filters', () => {
   // Filters saved before custom-field rows existed have no such key; an
   // undefined here would make .filter() on it throw at apply time.
   it('applying a pre-custom-field saved filter yields no custom-field rows', async () => {
-    localStorage.setItem(SAVED_KEY, JSON.stringify([
+    const { container } = mount({ customFields: FIELDS }, withSaved([
       { name: 'Legacy', search: 'draft', filterCol: '', filterPrio: 0, filterTag: '' },
     ]));
-    const { container } = mount({ customFields: FIELDS });
     await openMenu(container);
 
     await fireEvent.click(container.querySelector('.filter-apply-btn') as HTMLButtonElement);
@@ -283,17 +303,32 @@ describe('FilterBar saved filters', () => {
     expect(container.querySelectorAll('.field-filter-row')).toHaveLength(0);
   });
 
-  it('deleting a saved filter removes it from storage', async () => {
-    localStorage.setItem(SAVED_KEY, JSON.stringify([
+  it('deleting a saved filter removes it from the project; a failure says so', async () => {
+    const { container } = mount({}, withSaved([
       { name: 'Keep', search: 'a', filterCol: '', filterPrio: 0, filterTag: '' },
       { name: 'Drop', search: 'b', filterCol: '', filterPrio: 0, filterTag: '' },
     ]));
-    const { container } = mount();
     await openMenu(container);
 
     await fireEvent.click(container.querySelector('[aria-label="Delete filter Drop"]') as HTMLButtonElement);
+    await waitFor(() => expect(savedNames()).toEqual(['Keep']));
 
-    expect(JSON.parse(localStorage.getItem(SAVED_KEY)!).map((f: { name: string }) => f.name)).toEqual(['Keep']);
+    db.fail = true;
+    await fireEvent.click(container.querySelector('[aria-label="Delete filter Keep"]') as HTMLButtonElement);
+    await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not delete the filter. Please try again.'));
+  });
+
+  it('filters this device saved before they synced move into the project once', async () => {
+    localStorage.setItem(SAVED_KEY, JSON.stringify([
+      { name: 'Local', search: 'l', filterCol: '', filterPrio: 0, filterTag: '' },
+      { name: 'Both', search: 'local copy', filterCol: '', filterPrio: 0, filterTag: '' },
+    ]));
+    const { container } = mount({}, withSaved([{ name: 'Both', search: 'synced', filterCol: '', filterPrio: 0, filterTag: '' }]));
+    await waitFor(() => expect(savedNames()).toEqual(['Both', 'Local']));
+    expect(db.project!.saved_filters![0].search).toBe('synced');
+    expect(localStorage.getItem(SAVED_KEY)).toBeNull();
+    await openMenu(container);
+    expect(container.querySelector('[aria-label="Delete filter Local"]')).not.toBeNull();
   });
 
   it('a blank name saves nothing', async () => {
@@ -303,14 +338,14 @@ describe('FilterBar saved filters', () => {
     await fireEvent.input(container.querySelector('.filter-name-input') as HTMLInputElement, { target: { value: '   ' } });
     await fireEvent.keyDown(container.querySelector('.filter-name-input') as HTMLInputElement, { key: 'Enter' });
 
-    expect(localStorage.getItem(SAVED_KEY)).toBeNull();
+    expect(db.project!.saved_filters).toBeUndefined();
   });
 
-  // Saved filters are keyed per project, so a corrupt or foreign value must
-  // not take the whole popover down.
-  it('survives a corrupt saved-filters value', async () => {
+  // A corrupt leftover from before saved filters synced must not take the
+  // whole popover down.
+  it('survives a corrupt saved-filters value, local or synced', async () => {
     localStorage.setItem(SAVED_KEY, 'not json');
-    const { container } = mount();
+    const { container } = mount({}, { ...mkProject(), saved_filters: 'junk' as never });
     await openMenu(container);
     expect(container.querySelector('.filter-empty')).not.toBeNull();
   });
