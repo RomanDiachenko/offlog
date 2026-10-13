@@ -89,8 +89,9 @@
   {/if}
   {#if results.length}
     <div class="p-sec" role="heading" aria-level="2">Tasks</div>
-    {#each results.slice(0, limit) as t (t._id)}
+    {#each results.slice(0, limit) as t, i (t._id)}
       {@const sn = snippet(t, ql)}
+      {#if t.archived && !results[i - 1]?.archived}<div class="p-sec" role="heading" aria-level="2">Archived</div>{/if}
       <div in:collapseIn={{ on: returns(t._id) }} out:collapseOut={{ on: leaves(t._id) }}>
         <TaskCard task={t} highlight={t.matchedIn === 'title' ? ql : ''} menu on:open={() => actions.openTask(t)} on:changed={() => run(q)} on:menu={() => openMenu(t)}
           note={sn ? { pre: sn[0], hit: sn[1], post: sn[2] } : WHERE[t.matchedIn] ? { pre: `Matched in ${WHERE[t.matchedIn]}` } : null} />

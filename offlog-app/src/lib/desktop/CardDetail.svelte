@@ -710,6 +710,18 @@
     offerUndo(`archive:${id}`, `Archived "${shortTitle(title)}"`, async () => { await unarchiveTask(id); await reloadTasks(); });
   }
 
+  // An archived task reached from search: it can be put back where it was.
+  let archived = !!task.archived;
+  async function restoreFromArchive() {
+    try {
+      await unarchiveTask(task._id!);
+      await reloadTasks();
+      archived = false;
+    } catch {
+      showError('Could not restore this task. Please try again.');
+    }
+  }
+
   // Saves the edits first, so the copy is what the editor shows.
   async function duplicate() {
     if (saving || leaving) return;
@@ -767,9 +779,9 @@
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.history}</svg>
               {showHistory ? 'Hide history' : 'Show history'}
             </button>
-            <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; archive(); }}>
+            <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; if (archived) restoreFromArchive(); else archive(); }}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.archive}</svg>
-              Archive
+              {archived ? 'Restore from archive' : 'Archive'}
             </button>
             <button type="button" class="menu-item" on:click={() => { showActionsMenu = false; duplicate(); }}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.copy}</svg>

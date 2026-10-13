@@ -527,6 +527,21 @@ describe('CardDetail archive', () => {
     await runUndo(get(undoToasts)[0].key);
     expect(unarchiveTask).toHaveBeenCalledWith('task:1');
   });
+
+  it('an archived task offers Restore from archive instead; a failure says so', async () => {
+    unarchiveTask.mockClear();
+    const { getByLabelText, getByText, queryByText } = render(CardDetail, { props: { task: mkTask({ archived: true }), project: mkProject() } });
+    await fireEvent.click(getByLabelText('More actions'));
+    expect(queryByText('Archive')).toBeNull();
+    await fireEvent.click(getByText('Restore from archive'));
+    await waitFor(() => expect(unarchiveTask).toHaveBeenCalledWith('task:1'));
+    expect(archiveTask).not.toHaveBeenCalled();
+    unarchiveTask.mockRejectedValueOnce(new Error('boom'));
+    const r2 = render(CardDetail, { props: { task: mkTask({ archived: true }), project: mkProject() } });
+    await fireEvent.click(r2.getAllByLabelText('More actions').at(-1)!);
+    await fireEvent.click(r2.getAllByText('Restore from archive').at(-1)!);
+    await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not restore this task. Please try again.'));
+  });
 });
 
 describe('CardDetail notes', () => {

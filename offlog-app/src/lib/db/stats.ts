@@ -146,9 +146,11 @@ export async function searchAllTasks(query: string): Promise<(TaskDoc & { projec
   const activeProjectIds = getActiveProjectIds(allProjects);
   // Excludes an archived project's leftover done tasks the same way
   // getDashboardData() does -- see its comment for why they'd otherwise
-  // still be findable here.
+  // still be findable here. An archived task in an active project is found,
+  // last, so it can be opened and restored; one in an archived project comes
+  // back with its project.
   const tasks = all
-    .filter(d => !d.deleted && !d.archived && activeProjectIds.has(d.project_id))
+    .filter(d => !d.deleted && activeProjectIds.has(d.project_id))
     .map(d => ({ doc: d, matchedIn: taskSearchMatch(d, q) }))
     .filter((x): x is { doc: TaskDoc; matchedIn: TaskSearchMatch } => x.matchedIn !== null);
   const projCache: Record<string, ProjectDoc> = Object.fromEntries(allProjects.map(p => [p._id, p]));
@@ -160,11 +162,12 @@ export async function searchAllTasks(query: string): Promise<(TaskDoc & { projec
     const key = p.name.trim().toLowerCase();
     nameCounts.set(key, (nameCounts.get(key) ?? 0) + 1);
   }
-  // Open before done, then title matches before note/step/tag ones, then by
-  // due date (undated last), then title.
+  // Archived last, open before done, then title matches before note/step/tag
+  // ones, then by due date (undated last), then title.
   const isDone = (t: TaskDoc) => t.column_id === projCache[t.project_id]?.columns.at(-1)?.id;
   tasks.sort((a, b) =>
-    Number(isDone(a.doc)) - Number(isDone(b.doc))
+    Number(!!a.doc.archived) - Number(!!b.doc.archived)
+    || Number(isDone(a.doc)) - Number(isDone(b.doc))
     || Number(a.matchedIn !== 'title') - Number(b.matchedIn !== 'title')
     || (a.doc.due_date ?? '9').localeCompare(b.doc.due_date ?? '9')
     || a.doc.title.localeCompare(b.doc.title));

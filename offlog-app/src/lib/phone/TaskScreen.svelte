@@ -271,6 +271,18 @@
     }
   }
 
+  // An archived task reached from search goes back where it was.
+  async function restoreFromArchive() {
+    if (!task) return;
+    try {
+      await unarchiveTask(task._id);
+      await reloadTasks();
+      showToast('Restored from archive');
+    } catch {
+      showError('Could not restore this task. Please try again.');
+    }
+  }
+
   // Soft delete, no confirm: App shows its own Undo toast for it.
   async function remove() {
     if (!task) return;
@@ -573,7 +585,11 @@
           {#if upPos !== null}<button class="p-row" on:click={() => { const p = upPos ?? 0; afterClosing(close, () => move(p)); }}><span class="p-ico">{@html I.up}</span><span class="p-k"><span>Move up</span></span></button>{/if}
           {#if downPos !== null}<button class="p-row" on:click={() => { const p = downPos ?? 0; afterClosing(close, () => move(p)); }}><span class="p-ico">{@html I.down}</span><span class="p-k"><span>Move down</span></span></button>{/if}
           <button class="p-row" on:click={() => afterClosing(close, duplicate)}><span class="p-ico">{@html I.copy}</span><span class="p-k"><span>Duplicate</span></span></button>
-          <button class="p-row" on:click={() => afterClosing(close, archive)}><span class="p-ico">{@html I.arch}</span><span class="p-k"><span>Archive</span></span></button>
+          {#if task.archived}
+            <button class="p-row" on:click={() => afterClosing(close, restoreFromArchive)}><span class="p-ico">{@html I.arch}</span><span class="p-k"><span>Restore from archive</span></span></button>
+          {:else}
+            <button class="p-row" on:click={() => afterClosing(close, archive)}><span class="p-ico">{@html I.arch}</span><span class="p-k"><span>Archive</span></span></button>
+          {/if}
         </div>
         <div class="p-group">
           <button class="p-row danger" on:click={() => afterClosing(close, remove)}><span class="p-ico">{@html I.trash}</span><span class="p-k"><span>Delete</span></span></button>

@@ -233,7 +233,7 @@
             {/if}
           </div>
           <div class="result-meta">
-            <span class="result-proj">{r.project_name}{#if r.priority >= 2}<span class="result-prio" class:high={r.priority === 3}>{' · '}{PRIORITY_LABEL[r.priority]}</span>{/if}</span>
+            <span class="result-proj">{#if r.archived}<span class="result-archived">Archived · </span>{/if}{r.project_name}{#if r.priority >= 2}<span class="result-prio" class:high={r.priority === 3}>{' · '}{PRIORITY_LABEL[r.priority]}</span>{/if}</span>
             {#if r.due_date}
               <span class="result-due" class:overdue={r.due_date < today}>{fmtDay(dayOf(r.due_date))}</span>
             {/if}
@@ -310,6 +310,7 @@
   .result-tags { font-size: var(--fs-xs); color: var(--faint); font-family: var(--mono); }
   .result-match-hint { font-size: var(--fs-xs); color: var(--faint); font-style: italic; }
 
+  .result-archived { color: var(--muted); }
   .result-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
   .result-proj { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); white-space: nowrap; }
   .result-prio { color: var(--muted); }

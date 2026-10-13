@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, fireEvent, waitFor } from '@testing-library/svelte';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { render, fireEvent, waitFor, cleanup } from '@testing-library/svelte';
 import type { Writable } from 'svelte/store';
 import type { ProjectDoc, TaskDoc } from '../src/lib/types';
 
@@ -33,6 +33,18 @@ describe('phone Search', () => {
   beforeEach(() => {
     (projects as Writable<ProjectDoc[]>).set([project]);
     searchAllTasks.mockReset().mockResolvedValue([]);
+  });
+  afterEach(cleanup);
+
+  it('archived matches come last under their own heading', async () => {
+    searchAllTasks.mockResolvedValue([hit('task:Live', 'title'), hit('task:Old', 'title', { archived: true })]);
+    const { getByLabelText, findByText, container } = render(SearchScreen);
+    await fireEvent.input(getByLabelText('Search'), { target: { value: 'invoice' } });
+    await findByText('Archived');
+    const heads = [...container.querySelectorAll('.p-sec')].map(e => e.textContent);
+    expect(heads).toEqual(['Tasks', 'Archived']);
+    // The query is kept for the next visit; leave it empty for the next test.
+    await fireEvent.input(getByLabelText('Search'), { target: { value: '' } });
   });
 
   it('opening Search puts the cursor in the field', () => {

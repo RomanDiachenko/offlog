@@ -303,6 +303,19 @@ describe('phone TaskScreen', () => {
     expect(db.unarchiveTask).toHaveBeenCalledWith('task:t');
   });
 
+  it('an archived task offers Restore from archive; a failure says so', async () => {
+    db.unarchiveTask.mockResolvedValue(undefined);
+    const { getByLabelText } = await open(task({ archived: true }));
+    await fireEvent.click(getByLabelText('More'));
+    await fireEvent.click(sheetRow('Restore from archive'));
+    await waitFor(() => expect(db.unarchiveTask).toHaveBeenCalledWith('task:t'));
+    await waitFor(() => expect(get(toast)?.text).toBe('Restored from archive'));
+    db.unarchiveTask.mockRejectedValue(new Error('boom'));
+    await fireEvent.click(getByLabelText('More'));
+    await fireEvent.click(sheetRow('Restore from archive'));
+    await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not restore this task. Please try again.'));
+  });
+
   it('a failed archive Undo surfaces an error', async () => {
     push({ k: 'task', id: 'task:t' });
     db.archiveTask.mockResolvedValue(undefined);

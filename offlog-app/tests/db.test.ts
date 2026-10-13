@@ -1937,6 +1937,20 @@ describe('searchAllTasks', () => {
 
     expect(await searchAllTasks('findable checklist item')).toEqual([]);
   });
+
+  it('finds an archived task in an active project, last; not one in an archived project', async () => {
+    await seedSpace();
+    const project = await createProject('space:unsorted', 'Live');
+    const shelved = await createTask(project._id, 'space:unsorted', project.columns[0].id, 'invoice old');
+    await createTask(project._id, 'space:unsorted', project.columns[0].id, 'invoice new');
+    await archiveTask(shelved._id!);
+    const gone = await createProject('space:unsorted', 'Gone');
+    await createTask(gone._id, 'space:unsorted', gone.columns[0].id, 'invoice gone');
+    await archiveProject(gone._id);
+
+    const r = await searchAllTasks('invoice');
+    expect(r.map(t => [t.title, !!t.archived])).toEqual([['invoice new', false], ['invoice old', true]]);
+  });
 });
 
 // pouchdb-adapter-memory (this test suite's adapter) returns a Node Buffer
