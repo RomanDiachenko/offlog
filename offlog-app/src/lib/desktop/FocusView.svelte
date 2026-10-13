@@ -10,7 +10,7 @@
   import { today, loadFocusLock, saveFocusLock, type FocusLock } from '../focusLock';
   import { onNewDay } from '../today';
   import { rankPicker, type Reason as SuggestReason } from '../shared/focusRank';
-  import { offerUndo } from '../undoToast';
+  import { offerUndo, shortTitle } from '../undoToast';
 
   const dispatch = createEventDispatcher<{ menu: void; search: void }>();
 
@@ -182,14 +182,20 @@
       ? (doneFromCol[t._id!] ?? proj.columns[0]?.id)
       : lastCol;
     if (!target || target === t.column_id) return;
-    if (t.column_id !== lastCol) doneFromCol[t._id!] = t.column_id;
+    const finishing = t.column_id !== lastCol;
+    if (finishing) doneFromCol[t._id!] = t.column_id;
+    // Finishing a repeating task also moves its date and resets its steps,
+    // so Undo restores all of them, as in Agenda and List.
+    const { _id: id, column_id, due_date, reminder_at, checklist } = t;
     try {
-      await updateTask(t._id!, { column_id: target });
+      await updateTask(id!, { column_id: target });
       await refresh();
       hapticToggle();
     } catch {
       showError('Could not update task. Please try again.');
+      return;
     }
+    if (finishing) offerUndo(`done:${id}`, `Finished "${shortTitle(t.title)}"`, async () => { await updateTask(id!, { column_id, due_date, reminder_at, checklist }); await refresh(); });
   }
 
   // Shared by allDone and the row template, so a done task actually reads

@@ -308,6 +308,7 @@ describe('FocusView changing a lock already made', () => {
 });
 
 describe('FocusView mark done', () => {
+  afterEach(() => { for (const t of get(undoToasts)) dismissUndo(t.key); });
   async function renderLocked(task: TaskDoc) {
     localStorage.setItem(LOCK_KEY, JSON.stringify({ date: TODAY, taskIds: [task._id!] }));
     let current = task;
@@ -328,6 +329,14 @@ describe('FocusView mark done', () => {
 
     expect(updateTask).toHaveBeenCalledWith('task:a', { column_id: 'col:done' });
     expect(vi.mocked(showError)).not.toHaveBeenCalled();
+  });
+
+  it('offers Undo after finishing, which restores status and date', async () => {
+    const { container } = await renderLocked(mkTask('task:a', { column_id: 'col:doing', due_date: '2026-10-13' }));
+    await fireEvent.click(circle(container));
+    await waitFor(() => expect(get(undoToasts).find(t => t.key === 'done:task:a')?.msg).toMatch(/^Finished "/));
+    await runUndo('done:task:a');
+    expect(updateTask).toHaveBeenLastCalledWith('task:a', expect.objectContaining({ column_id: 'col:doing', due_date: '2026-10-13' }));
   });
 
   it('undoes a done-mark back to the status the task came from', async () => {
