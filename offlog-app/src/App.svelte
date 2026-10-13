@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { trapFocus } from './lib/focusTrap';
   import { ICON } from './lib/shared/iconPaths';
   import { soften } from './lib/tagColors';
   import { onMount, tick } from 'svelte';
@@ -808,14 +809,15 @@
 {#if showShortcuts}
   <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
   <div class="scrim" on:click|self={closeShortcuts} in:fade={scrimIn} out:fade={scrimOut}>
-    <div class="shortcuts-panel" in:scale={centredIn} out:scale={centredOut}>
+    <div class="shortcuts-panel" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title" use:trapFocus in:scale={centredIn} out:scale={centredOut}>
       <div class="shortcuts-head">
-        <h3>Keyboard shortcuts</h3>
+        <h3 id="shortcuts-title">Keyboard shortcuts</h3>
         <button class="shortcuts-close" on:click={closeShortcuts} aria-label="Close">✕</button>
       </div>
       <div class="shortcuts-list">
-        <div class="shortcut-row"><kbd>Ctrl</kbd><span>+</span><kbd>K</kbd><span class="shortcut-desc">Global search</span></div>
+        <div class="shortcut-row"><kbd>Ctrl</kbd><span>+</span><kbd>K</kbd><span class="shortcut-desc">Commands and search</span></div>
         <div class="shortcut-row"><kbd>Ctrl</kbd><span>+</span><kbd>N</kbd><span class="shortcut-desc">Quick add task</span></div>
+        {#if isTauri()}<div class="shortcut-row"><kbd>Ctrl</kbd><span>+</span><kbd>Alt</kbd><span>+</span><kbd>O</kbd><span class="shortcut-desc">Bring Offlog to the front, from any app</span></div>{/if}
         <div class="shortcut-row"><kbd>?</kbd><span class="shortcut-desc">Show this list</span></div>
         <div class="shortcut-row"><kbd>Esc</kbd><span class="shortcut-desc">Close any open panel</span></div>
         <div class="shortcut-row"><kbd>Enter</kbd><span class="shortcut-desc">Open a focused card, save a rename</span></div>
