@@ -1,6 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, fireEvent, waitFor, cleanup } from '@testing-library/svelte';
 import { get } from 'svelte/store';
+import { tick } from 'svelte';
+import type { ProjectDoc, SpaceDoc } from '../src/lib/types';
 
 const getDashboardData = vi.fn();
 vi.mock('../src/lib/db', () => ({
@@ -41,6 +43,25 @@ describe('phone Home', () => {
     switchTab('home');
     getDashboardData.mockReset().mockResolvedValue(data);
     vi.mocked(showError).mockClear();
+  });
+
+  it('a project arriving while a finger is down waits until the touch is over', async () => {
+    const sp = spaces as unknown as Writable<SpaceDoc[]>, pr = projects as unknown as Writable<ProjectDoc[]>;
+    const work = get(sp)[0], workProjects = get(pr);
+    const personal = { _id: 'space:p', name: 'Personal', color: '#22c55e', position: -1 } as SpaceDoc;
+    sp.set([work, personal]);
+    const { container } = render(Home);
+    const heads = () => [...container.querySelectorAll('.sec > span')].map(e => e.textContent);
+    expect(heads()).toEqual(['Work', 'Personal']);
+    try {
+      await fireEvent.pointerDown(window);
+      // Personal now has a project, and sorts first by position.
+      pr.set([...workProjects, { _id: 'project:n', space_id: 'space:p', name: 'New', position: 0, columns: [] } as unknown as ProjectDoc]);
+      await tick();
+      expect(heads()).toEqual(['Work', 'Personal']);
+      await fireEvent.pointerUp(window);
+      await waitFor(() => expect(heads()).toEqual(['Personal', 'Work']));
+    } finally { sp.set([work]); pr.set(workProjects); }
   });
 
   it('shows what is left today, late and pinned counts, and each project; late is said once above the fold', async () => {

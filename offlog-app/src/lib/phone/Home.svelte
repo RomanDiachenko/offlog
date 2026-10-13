@@ -9,6 +9,7 @@
   import { soften } from '../tagColors';
   import NewProjectSheet from './NewProjectSheet.svelte';
   import { onMount, onDestroy } from 'svelte';
+  import type { ProjectDoc } from '../types';
   import { getDashboardData, getTaskById, subscribe } from '../db';
   import { spaces, projects, showError } from '../store';
   import { loadFocusLock } from '../focusLock';
@@ -72,11 +73,20 @@
   // position (the stored order is left alone).
   const UNSORTED = 'space:unsorted';
   // Spaces holding projects come first, so what the user has is on top.
-  const hasProjects = (id: string) => $projects.some(p => p.space_id === id);
+  const hasProjects = (ps: ProjectDoc[], id: string) => ps.some(p => p.space_id === id);
   $: sortedSpaces = [...$spaces].sort((a, b) =>
-    Number(!hasProjects(a._id)) - Number(!hasProjects(b._id))
+    Number(!hasProjects($projects, a._id)) - Number(!hasProjects($projects, b._id))
     || Number(a._id === UNSORTED) - Number(b._id === UNSORTED)
     || a.position - b.position);
+  // A project arriving by sync can re-sort the list; while a finger is down,
+  // and briefly after it lifts, the rows stay where they are so a tap lands
+  // on what was under it. The update applies once the touch is over.
+  let held = false, release: ReturnType<typeof setTimeout> | undefined;
+  let shownSpaces = sortedSpaces, shownProjects = $projects;
+  $: if (!held) { shownSpaces = sortedSpaces; shownProjects = $projects; }
+  function hold() { clearTimeout(release); held = true; }
+  function letGo() { clearTimeout(release); release = setTimeout(() => (held = false), 400); }
+  onDestroy(() => clearTimeout(release));
   let todayStr = localDateStr(new Date());
 
   // The top bar is see-through over the hero, then turns into the regular
@@ -125,6 +135,8 @@
     });
   }
 </script>
+
+<svelte:window on:pointerdown={hold} on:pointerup={letGo} on:pointercancel={letGo} />
 
 <div class="home">
   <div class="appbar" style="--t:{t}">
@@ -176,8 +188,8 @@
       </button>
     </div>
 
-    {#each sortedSpaces as s (s._id)}
-      {@const ps = $projects.filter(p => p.space_id === s._id).sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned) || a.position - b.position)}
+    {#each shownSpaces as s (s._id)}
+      {@const ps = shownProjects.filter(p => p.space_id === s._id).sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned) || a.position - b.position)}
       <div class="p-sec sec" role="heading" aria-level="2">
         <span>{s.name}</span>
         {#if ps.length}<button class="secadd" on:click={() => newProject(s._id)} aria-label="New project in {s.name}">{@html I.plus}</button>{/if}
