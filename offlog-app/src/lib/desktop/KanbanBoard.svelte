@@ -648,7 +648,7 @@
             on:dragend={onCardDragEnd}
             on:touchstart|nonpassive={(e) => onTouchStart(e, task, e.currentTarget)}
             on:click={() => { if (!touchGhost) openDetail(task); }}
-            on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(task); } }}
+            on:keydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDetail(task); } }}
             in:scale={{ duration: 150, start: 0.92, easing: easeDecelerate }}
             out:fade={{ duration: 110, easing: easeAccelerate }}
             animate:flip={{ duration: 200, easing: cubicOut }}

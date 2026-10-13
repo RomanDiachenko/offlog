@@ -280,7 +280,7 @@
           role="button"
           tabindex="0"
           on:click={() => openDetail(t)}
-          on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(t); } }}
+          on:keydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDetail(t); } }}
         >
           <button class="circle" class:done on:click|stopPropagation={() => markDone(t)} title={done ? 'Mark not done' : 'Mark done'} aria-label={done ? 'Mark not done' : 'Mark done'}>
             {#if done}<svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9.5 10,3"/></svg>{/if}
@@ -315,7 +315,7 @@
               role="button"
               tabindex="0"
               on:click={() => toggleSelect(t._id!)}
-              on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSelect(t._id!); } }}
+              on:keydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleSelect(t._id!); } }}
             >
               <span class="note-title">{t.title}</span>
               <div class="note-foot">

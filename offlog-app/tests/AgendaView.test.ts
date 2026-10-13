@@ -17,6 +17,7 @@ vi.mock('../src/lib/db', () => ({
   getTaskById: vi.fn().mockResolvedValue(null),
   // reached only when a row is opened into CardDetail
   getAllTags: vi.fn().mockResolvedValue([]),
+  getTagColorOverrides: vi.fn().mockResolvedValue({}),
   getCustomFieldDefs: vi.fn().mockResolvedValue([]),
   findTasksByTitleInProject: vi.fn().mockResolvedValue([]),
   findSimilarNotes: vi.fn().mockResolvedValue([]),
@@ -147,6 +148,24 @@ describe('AgendaView due-date grouping', () => {
 });
 
 describe('AgendaView mark done', () => {
+  // Enter on the circle belongs to the circle: the row's own Enter (open the
+  // task) must not catch it and cancel the button's click.
+  it('Enter on Mark done does not open the task; Enter on the row does', async () => {
+    getAllTasksDue.mockResolvedValueOnce([mkTask('task:a', '2026-03-11')]);
+    const { container } = render(AgendaView);
+    const circle = await waitFor(() => {
+      const b = container.querySelector('button.circle') as HTMLButtonElement;
+      if (!b) throw new Error('no task rendered');
+      return b;
+    });
+    const enter = (el: Element) => el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    expect(enter(circle)).toBe(true);
+    await new Promise(r => setTimeout(r, 0));
+    expect(document.querySelector('[role=dialog]')).toBeNull();
+    enter(circle.closest('[role=button]')!);
+    await waitFor(() => expect(document.querySelector('[role=dialog]')).not.toBeNull());
+  });
+
   it('moves the task into its own project\'s last status', async () => {
     getAllTasksDue.mockResolvedValueOnce([mkTask('task:a', '2026-03-11')]);
     const { container } = render(AgendaView);

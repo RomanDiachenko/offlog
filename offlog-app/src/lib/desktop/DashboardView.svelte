@@ -138,7 +138,7 @@
     <div class="loading"><span class="spinner"></span>Loading…</div>
   {:else}
     <div class="dash-body">
-      <div class="brief" role="button" tabindex="0" on:click={() => dispatch('focus')} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dispatch('focus'); } }}>
+      <div class="brief" role="button" tabindex="0" on:click={() => dispatch('focus')} on:keydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); dispatch('focus'); } }}>
         {#if focusLock}
           {@const doneCount = focusLockedTasks.filter(isFocusTaskDone).length}
           <div class="brief-head">
@@ -174,7 +174,7 @@
                 role="button"
                 tabindex="0"
                 on:click={() => dispatch('openProject', proj._id)}
-                on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dispatch('openProject', proj._id); } }}
+                on:keydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); dispatch('openProject', proj._id); } }}
               >
                 <div class="proj-card-top">
                   {#if space}
@@ -214,7 +214,7 @@
                     role="button"
                     tabindex="0"
                     on:click={() => openTask(t)}
-                    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTask(t); } }}
+                    on:keydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openTask(t); } }}
                   >
                     <span class="prio-bar" style="background:{PRIORITY_COLOR[t.priority]}"></span>
                     <div class="task-body">
@@ -240,7 +240,7 @@
                     role="button"
                     tabindex="0"
                     on:click={() => openTask(t)}
-                    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTask(t); } }}
+                    on:keydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openTask(t); } }}
                   >
                     <span class="prio-bar" style="background:{PRIORITY_COLOR[t.priority]}"></span>
                     <div class="task-body">
@@ -268,7 +268,7 @@
                     role="button"
                     tabindex="0"
                     on:click={() => openTask(t)}
-                    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTask(t); } }}
+                    on:keydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openTask(t); } }}
                   >
                     <span class="prio-bar" style="background:{PRIORITY_COLOR[t.priority]}"></span>
                     <div class="task-body">

@@ -629,7 +629,7 @@
           role="button"
           tabindex="0"
           on:click={() => selectionMode ? toggleRowSelect(task._id!) : openDetail(task)}
-          on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectionMode ? toggleRowSelect(task._id!) : openDetail(task); } }}
+          on:keydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); selectionMode ? toggleRowSelect(task._id!) : openDetail(task); } }}
           in:slide={revealIn} out:slide={revealOut}
           animate:flip={{ duration: 200, easing: cubicOut }}
         >
