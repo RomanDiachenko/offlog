@@ -57,7 +57,7 @@
   $: hubName = ownServer ? 'Your server' : pairedName || 'Your computer';
   $: hubInText = ownServer ? 'your server' : pairedName || 'your computer';
   const here = isAndroid ? 'phone' : 'device';
-  type Card = { tone: 'ok' | 'idle' | 'bad'; title: string; text: string; act?: 'sync' | 'retry' | 'on' | 'connect' };
+  type Card = { tone: 'ok' | 'idle' | 'bad' | 'attn'; title: string; text: string; act?: 'sync' | 'retry' | 'on' | 'connect' | 'conflicts' };
   $: card = ((): Card => {
     if (!syncUrl) return { tone: 'idle', title: 'Sync with your computer', text: `Keep this ${here} and your computer in step over your own Wi-Fi. Nothing goes to the cloud.`, act: isAndroid ? 'connect' : undefined };
     if (!syncEnabled) return { tone: 'idle', title: 'Sync is off', text: `Everything stays on this ${here}.`, act: 'on' };
@@ -68,6 +68,9 @@
     if (syncStatus === 'error') return /cannot reach/i.test(syncError ?? '')
       ? { tone: 'bad', title: `Can't reach ${hubInText}`, text: ownServer ? 'Check that the server is on and its address is right. Your changes are safe here until then.' : 'Open Offlog on the computer and make sure both are on the same Wi-Fi. If they are, Windows Firewall on the computer may be blocking Offlog. Your changes are safe here until then.', act: 'retry' }
       : { tone: 'bad', title: 'Sync stopped', text: `${syncError || 'Something went wrong.'} Your changes are safe here.`, act: 'retry' };
+    // Sync itself is fine, but a choice is waiting: the card says so, rather
+    // than "Up to date" with a row further down that is easy to miss.
+    if (conflictsShown > 0) return { tone: 'attn', title: `${conflictsShown} conflict${conflictsShown === 1 ? '' : 's'} to resolve`, text: 'Edited on two devices. Pick which version to keep. Everything else is synced.', act: 'conflicts' };
     if (lastSynced) return { tone: 'ok', title: 'Up to date', text: `Synced ${fmtLastSynced(lastSynced)}`, act: 'sync' };
     return { tone: 'ok', title: 'Waiting for the first sync', text: 'This can take a minute.', act: 'sync' };
   })();
@@ -268,7 +271,7 @@
 <section class="card {card.tone}" aria-labelledby="sync-title">
   <div class="pair" aria-hidden="true">
     <span class="end me"><span class="circ">{@html isAndroid ? I.phone : I.monitor}</span><b>{deviceName}</b><small>This {here}</small></span>
-    <span class="link"><i>{@html card.tone === 'ok' ? I.check : card.tone === 'bad' ? '!' : ''}</i></span>
+    <span class="link"><i>{@html card.tone === 'ok' ? I.check : card.tone === 'bad' || card.tone === 'attn' ? '!' : ''}</i></span>
     <span class="end"><span class="circ">{@html ownServer ? I.server : I.monitor}</span><b>{hubName}</b><small>Runs sync</small></span>
   </div>
   <h2 id="sync-title">{card.title}</h2>
@@ -282,13 +285,15 @@
     <button class="cbtn solid" on:click={toggleSyncEnabled}>Turn on sync</button>
   {:else if card.act === 'connect'}
     <button class="cbtn solid" on:click={openConnect}>Connect to my computer</button>
+  {:else if card.act === 'conflicts'}
+    <button class="cbtn solid" on:click={openConflicts}>Review conflicts</button>
   {/if}
 </section>
 {#if !isAndroid && !isTauri && !syncUrl}
   <p class="hint">Pair from the Android or PC app.</p>
 {/if}
 
-{#if syncEnabled && conflictsShown > 0}
+{#if syncEnabled && conflictsShown > 0 && card.act !== 'conflicts'}
   <div class="p-group">
     <button class="p-row" on:click={openConflicts}>
       <span class="p-k"><span>Conflicts</span><span class="p-sub">Edited on two devices. Pick which to keep.</span></span>
@@ -483,6 +488,8 @@
   .bad .link i { background: var(--danger); }
   .idle .link { background: repeating-linear-gradient(90deg, var(--border-strong) 0 6px, transparent 6px 11px); }
   .idle .link i { display: none; }
+  .attn .link, .attn .link i { background: var(--due-soon-ink); }
+  .attn .link i { color: var(--surface); }
   .card h2 { margin: 0; font-size: 19px; font-weight: 700; }
   .card p { margin: 4px 0 16px; font-size: var(--p-fs-m); color: var(--muted); line-height: 1.45; }
   .card p.refused { margin-top: -8px; color: var(--due-soon-ink); }

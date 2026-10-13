@@ -246,7 +246,7 @@ describe('phone Sync page', () => {
   it('no rule styles a card tone class on its own', () => {
     const src = readFileSync(resolve(__dirname, '../src/lib/phone/settings/SyncPage.svelte'), 'utf8');
     const css = src.slice(src.indexOf('<style>'));
-    const bare = css.split('\n').filter(l => /^\s*\.(ok|idle|bad)\s*[{,]/.test(l));
+    const bare = css.split('\n').filter(l => /^\s*\.(ok|idle|bad|attn)\s*[{,]/.test(l));
     expect(bare).toEqual([]);
   });
 
@@ -284,12 +284,24 @@ describe('phone Sync page', () => {
     await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not load recent devices. Please try again.'));
   });
 
+  it('a sync error keeps the card, and conflicts stay reachable from their own row', async () => {
+    m.syncState.conflictCount = 2;
+    getConflicts.mockResolvedValue([conflict, { ...conflict, docId: 'task:b' }]);
+    Object.assign(m.syncState, { status: 'error', error: 'Disk is full.' });
+    const { getByRole, getByText } = render(SettingsPage, { page: 'sync' });
+    expect(getByRole('heading', { name: 'Sync stopped' })).toBeTruthy();
+    await waitFor(() => getByText('Edited on two devices. Pick which to keep.'));
+  });
+
   it('a conflict opens in a sheet and "Keep this" resolves it after confirming', async () => {
     m.syncState.conflictCount = 1;
     getConflicts.mockResolvedValue([conflict]);
-    const { getByText, getAllByText } = render(SettingsPage, { page: 'sync' });
-    await waitFor(() => getByText('Conflicts'));
-    await fireEvent.click(getByText('Conflicts'));
+    const { getByText, getAllByText, getByRole, queryByText } = render(SettingsPage, { page: 'sync' });
+    // The card itself says so, instead of "Up to date" with a row below.
+    await waitFor(() => getByRole('heading', { name: '1 conflict to resolve' }));
+    expect(queryByText('Up to date')).toBeNull();
+    expect(queryByText('Edited on two devices. Pick which to keep.')).toBeNull();
+    await fireEvent.click(getByText('Review conflicts'));
     await waitFor(() => getByText('Buy paint now'));
     confirmAction.mockResolvedValueOnce(false);
     await fireEvent.click(getAllByText('Keep this')[1]);
