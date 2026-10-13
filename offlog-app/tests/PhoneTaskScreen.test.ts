@@ -248,6 +248,65 @@ describe('phone TaskScreen', () => {
     await waitFor(() => expect(get(toast)?.text).toBe('Step removed'));
   });
 
+  it('tapping a step edits it in place: Enter saves, Escape and an empty field keep the old text', async () => {
+    const steps = [{ text: 'Measure', done: false }, { text: 'Pick colour', done: true }];
+    const { getByLabelText } = await open(task({ checklist: steps }));
+    await fireEvent.click(getByLabelText('Edit step: Measure'));
+    const input = getByLabelText('Edit step') as HTMLInputElement;
+    expect(document.activeElement).toBe(input);
+    await fireEvent.input(input, { target: { value: 'Measure twice' } });
+    await fireEvent.keyDown(input, { key: 'Enter' });
+    expect(db.updateTask).toHaveBeenLastCalledWith('task:t', { checklist: [{ text: 'Measure twice', done: false }, steps[1]] });
+
+    const calls = db.updateTask.mock.calls.length;
+    await waitFor(() => getByLabelText('Edit step: Pick colour'));
+    await fireEvent.click(getByLabelText('Edit step: Pick colour'));
+    await fireEvent.input(getByLabelText('Edit step'), { target: { value: 'Paint' } });
+    await fireEvent.keyDown(getByLabelText('Edit step'), { key: 'Escape' });
+    await fireEvent.click(getByLabelText('Edit step: Pick colour'));
+    await fireEvent.input(getByLabelText('Edit step'), { target: { value: '   ' } });
+    await fireEvent.blur(getByLabelText('Edit step'));
+    expect(db.updateTask.mock.calls.length).toBe(calls);
+  });
+
+  it('a step moves with Alt+arrows, or by holding and dragging it', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const steps = [{ text: 'A', done: false }, { text: 'B', done: false }, { text: 'C', done: false }];
+      const { getByLabelText } = await open(task({ checklist: steps }));
+      await fireEvent.keyDown(getByLabelText('Edit step: A'), { key: 'ArrowDown', altKey: true });
+      expect(db.updateTask).toHaveBeenLastCalledWith('task:t', { checklist: [steps[1], steps[0], steps[2]] });
+
+      await waitFor(() => getByLabelText('Edit step: B'));
+      const b = getByLabelText('Edit step: B');
+      await fireEvent.pointerDown(b, { clientX: 10, clientY: 10, pointerId: 1 });
+      await vi.advanceTimersByTimeAsync(450);
+      // jsdom has no layout: every row sits at 0, so below them all is the end.
+      await fireEvent.pointerMove(b, { clientX: 10, clientY: 500, pointerId: 1 });
+      await fireEvent.pointerUp(b, { pointerId: 1 });
+      expect(db.updateTask).toHaveBeenLastCalledWith('task:t', { checklist: [steps[0], steps[2], steps[1]] });
+      // The release is not also a tap that opens the editor.
+      await fireEvent.click(b);
+      expect(() => getByLabelText('Edit step')).toThrow();
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('a finger that moves before the hold is a scroll, not a drag', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const steps = [{ text: 'A', done: false }, { text: 'B', done: false }];
+      const { getByLabelText } = await open(task({ checklist: steps }));
+      const calls = db.updateTask.mock.calls.length;
+      const a = getByLabelText('Edit step: A');
+      await fireEvent.pointerDown(a, { clientX: 10, clientY: 10, pointerId: 1 });
+      await fireEvent.pointerMove(a, { clientX: 10, clientY: 60, pointerId: 1 });
+      await vi.advanceTimersByTimeAsync(450);
+      await fireEvent.pointerMove(a, { clientX: 10, clientY: 500, pointerId: 1 });
+      await fireEvent.pointerUp(a, { pointerId: 1 });
+      expect(db.updateTask.mock.calls.length).toBe(calls);
+    } finally { vi.useRealTimers(); }
+  });
+
   it('a step tick between Done and a step removal keeps Undo from reaching past it', async () => {
     const steps = [{ text: 'Measure', done: false }, { text: 'Pick colour', done: false }];
     const { getByLabelText } = await open(task({ checklist: steps }));

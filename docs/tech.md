@@ -105,7 +105,8 @@ flowchart LR
   bulk bar — a held row enters Select — filter and menu sheets; the card
   menu's status pills move a task in one tap) and Statuses, Task (full screen, every field saved as it
   changes, pickers in bottom sheets; order is title, note, status bar, fields,
-  steps — the rows show values, not labels, Due/Priority/Tags always, the
+  steps (the circle ticks, the text edits in place, a hold drags to reorder,
+  Alt+arrows from a keyboard) — the rows show values, not labels, Due/Priority/Tags always, the
   other fields only once set, the unset ones behind one "Add …" row; dates
   read "Sun 4 Oct" via `phone/format.ts` `shortDate()`; every phone date
   is picked on `phone/Month.svelte`, every time on the wheels), Agenda (month, or a list from tomorrow on, with one row back to Today), Focus, Settings
