@@ -482,6 +482,10 @@ Verified in the code, not just claimed:
   holding your PC's sync identity can't be read, Offlog keeps the broken
   copy alongside (renamed `.bad-…`) and logs a warning before making a new
   one, and it saves that file in a way a crash can't leave half-written.
+- **A damaged sync database doesn't stop sync for good.** If the built-in
+  sync server can't open its data twice in a row, Offlog moves that folder
+  aside (renamed `.damaged-…`, never deleted) and starts a fresh one; your
+  devices upload their full copies again on their next sync.
 - **The log records pairing outcomes, not secrets.** It notes that a
   pairing succeeded or was rejected — never the code or anything derived
   from it.

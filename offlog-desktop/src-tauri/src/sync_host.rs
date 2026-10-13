@@ -349,6 +349,45 @@ pub fn restart_delay(prior_crashes: usize) -> Duration {
     Duration::from_secs(2u64 << prior_crashes.min(5)).min(Duration::from_secs(60))
 }
 
+/// NyxDB's exit code when its store can't be opened or is damaged.
+pub const EXIT_DAMAGED_STORE: i32 = 3;
+
+/// Decides when a damaged store is set aside: on the second damaged-store
+/// exit in a row (one alone can be a passing lock on the folder), and only
+/// once per run, so a failing disk can't make it move folders in a loop.
+/// Pure, so it is testable without a process.
+#[derive(Default)]
+pub struct DamagedStore {
+    in_a_row: u32,
+    set_aside: bool,
+}
+
+impl DamagedStore {
+    pub fn record_exit(&mut self, code: Option<i32>) -> bool {
+        if code != Some(EXIT_DAMAGED_STORE) {
+            self.in_a_row = 0;
+            return false;
+        }
+        self.in_a_row += 1;
+        if self.in_a_row >= 2 && !self.set_aside {
+            self.set_aside = true;
+            return true;
+        }
+        false
+    }
+}
+
+/// Renames a damaged NyxDB data folder to `<name>.damaged-<unix-secs>` beside
+/// it, so NyxDB starts on a fresh one and every device uploads its full copy
+/// again on its next sync. Never deletes: the old folder may still hold
+/// something worth recovering by hand.
+pub fn set_aside_data_dir(data_dir: &Path, now_secs: u64) -> std::io::Result<PathBuf> {
+    let name = data_dir.file_name().and_then(|n| n.to_str()).unwrap_or("nyxdb-data");
+    let target = data_dir.with_file_name(format!("{name}.damaged-{now_secs}"));
+    fs::rename(data_dir, &target)?;
+    Ok(target)
+}
+
 /// Creates the database devices sync to, end-to-end encrypted, named after
 /// the sync key (`encrypted_db_name`) — idempotent (a 412 "already exists"
 /// is treated the same as 201 created). A new key (a rebuilt
@@ -580,5 +619,30 @@ mod tests {
         // Pinned to syncCrypto.test.ts's value for the same key.
         assert_eq!(encrypted_db_name("a2V5LWE="), "offlog-e-e153e859bc5ce847");
         assert_ne!(encrypted_db_name("a2V5LWE="), encrypted_db_name("a2V5LWI="));
+    }
+
+    #[test]
+    fn a_damaged_store_is_set_aside_on_the_second_exit_in_a_row_and_only_once() {
+        let mut d = DamagedStore::default();
+        assert!(!d.record_exit(Some(EXIT_DAMAGED_STORE)));
+        assert!(!d.record_exit(Some(1)));
+        assert!(!d.record_exit(Some(EXIT_DAMAGED_STORE)));
+        assert!(d.record_exit(Some(EXIT_DAMAGED_STORE)));
+        assert!(!d.record_exit(Some(EXIT_DAMAGED_STORE)));
+        assert!(!d.record_exit(Some(EXIT_DAMAGED_STORE)));
+        assert!(!DamagedStore::default().record_exit(None));
+    }
+
+    #[test]
+    fn setting_a_store_aside_keeps_everything_in_it() {
+        let root = std::env::temp_dir().join(format!("offlog-aside-{}", std::process::id()));
+        let data = root.join("nyxdb-data");
+        fs::create_dir_all(&data).unwrap();
+        fs::write(data.join("db"), b"store").unwrap();
+        let moved = set_aside_data_dir(&data, 1700000000).unwrap();
+        assert_eq!(moved, root.join("nyxdb-data.damaged-1700000000"));
+        assert!(!data.exists());
+        assert_eq!(fs::read(moved.join("db")).unwrap(), b"store");
+        fs::remove_dir_all(&root).unwrap();
     }
 }

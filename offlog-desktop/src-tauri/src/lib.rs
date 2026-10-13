@@ -338,6 +338,7 @@ fn supervise_nyxdb(
     mut announced: bool,
 ) {
     let mut policy = sync_host::RestartPolicy::default();
+    let mut damaged = sync_host::DamagedStore::default();
     loop {
         std::thread::sleep(SUPERVISE_POLL);
         if NYXDB_STOPPING.load(Ordering::SeqCst) {
@@ -349,7 +350,7 @@ fn supervise_nyxdb(
             let Some(child) = guard.as_mut() else { return };
             match child.try_wait() {
                 Ok(None) => continue,
-                Ok(Some(status)) => status.to_string(),
+                Ok(Some(status)) => status,
                 Err(e) => {
                     log::warn!("sync_host: couldn't poll NyxDB status: {e}");
                     continue;
@@ -358,6 +359,15 @@ fn supervise_nyxdb(
         };
         if NYXDB_STOPPING.load(Ordering::SeqCst) {
             return;
+        }
+        // NyxDB is not running here, so its folder is free to move. Every
+        // device keeps a full copy, so a fresh store loses nothing.
+        if damaged.record_exit(status.code()) {
+            let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+            match sync_host::set_aside_data_dir(data_dir, now) {
+                Ok(to) => log::error!("sync_host: NyxDB can't open its data; moved it to {} and starting fresh, devices upload again on their next sync", to.display()),
+                Err(e) => log::error!("sync_host: NyxDB can't open its data, and moving it aside failed: {e}"),
+            }
         }
         let delay = match policy.record_crash(Instant::now()) {
             Some(delay) => {

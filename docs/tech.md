@@ -1064,6 +1064,12 @@ policy starts over: a tray session lasts weeks, and a burst's usual causes (a
 full disk, a file a scanner holds) clear on their own. A
 failed respawn counts as another exit. The pairing server and mDNS start
 once per session, the first time NyxDB is ready, never again on restart.
+NyxDB exits with code 3 when it can't open its store; on the second such
+exit in a row (one can be a passing lock), once per session, the data dir is
+renamed to `<name>.damaged-<unix-secs>`, never deleted, and NyxDB restarts on
+a fresh one (`sync_host::DamagedStore`, `set_aside_data_dir`). Every device
+holds a full copy and re-uploads on its next sync; the encrypted database is
+recreated by `ensure_database` as usual.
 Deliberate teardown — `terminate_nyxdb()` (tray Quit, `ExitRequested`) and
 debug `reset_sync_data` — sets `NYXDB_STOPPING` before killing, and the
 supervisor re-checks it under the `NyxdbProcess` lock before respawning,
