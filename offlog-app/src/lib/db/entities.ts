@@ -211,9 +211,20 @@ export async function deleteSpace(id: string): Promise<void> {
   const projects = [...await getProjects(id), ...(await getArchivedProjects()).filter(p => p.space_id === id)];
   if (projects.length) {
     await bulkWrite(projects.map(p => ({ ...p, space_id: 'space:unsorted', updated_at: now(), source: currentSource() })));
+    await moveProjectTasksToSpace(new Set(projects.map(p => p._id!)), 'space:unsorted');
   }
   await db.remove(doc);
   await logChange(id, 'delete', undefined, undefined, undefined, { space_name: doc.name });
+}
+
+// A task carries its project's space_id (the phone shows a task's own space),
+// so a project changing space takes every task with it: open, done, archived
+// and in the Recycle bin, or restoring one would put it back in the old space.
+async function moveProjectTasksToSpace(projectIds: Set<string>, spaceId: string): Promise<void> {
+  const moved = (await getAllTasksRaw()).filter(t => projectIds.has(t.project_id) && t.space_id !== spaceId);
+  if (!moved.length) return;
+  await bulkWrite(moved.map(t => ({ ...t, space_id: spaceId, updated_at: now(), source: currentSource() })));
+  invalidateTaskCache();
 }
 
 // ── Projects ──────────────────────────────────────────────────────────────────
@@ -332,6 +343,7 @@ export async function updateProject(id: string, changesOrFn: Partial<ProjectDoc>
   const changes = typeof changesOrFn === 'function' ? changesOrFn(doc) : changesOrFn;
   const updated = { ...doc, ...changes, updated_at: now(), source: currentSource() };
   await db.put(updated);
+  if (changes.space_id && changes.space_id !== doc.space_id) await moveProjectTasksToSpace(new Set([id]), changes.space_id);
   const skip = new Set(['updated_at', 'source', 'default_view']);
   for (const key of Object.keys(changes) as (keyof ProjectDoc)[]) {
     if (skip.has(key)) continue;

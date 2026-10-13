@@ -2829,3 +2829,29 @@ describe('history (log:) entries', () => {
     expect(log.diffs.body).toEqual({ from: '', to: 'tiny note' });
   });
 });
+
+// A task keeps its project's space_id (the phone shows the task's own space),
+// so moving a project, or deleting the space it was in, moves its tasks too.
+describe('space of a project and its tasks', () => {
+  it('moving a project moves its tasks, open, done and deleted', async () => {
+    const { updateProject } = await import('../src/lib/db');
+    const work = await createSpace('Work zone', '#888888');
+    const home = await createSpace('Home zone', '#888888');
+    const p = await createProject(work._id!, 'Moving');
+    const a = await createTask(p._id!, work._id!, p.columns[0].id, 'open one');
+    const b = await createTask(p._id!, work._id!, p.columns[0].id, 'deleted one');
+    await deleteTask(b._id!);
+    await updateProject(p._id!, { space_id: home._id! });
+    expect((await db.get<{ space_id: string }>(a._id!)).space_id).toBe(home._id);
+    expect((await db.get<{ space_id: string }>(b._id!)).space_id).toBe(home._id);
+    expect((await getTaskById(a._id!))?.space_id).toBe(home._id);
+  });
+
+  it('deleting a space moves its projects\' tasks to Unsorted with them', async () => {
+    const gone = await createSpace('Going away', '#888888');
+    const p = await createProject(gone._id!, 'Orphan');
+    const t = await createTask(p._id!, gone._id!, p.columns[0].id, 'child');
+    await deleteSpace(gone._id!);
+    expect((await db.get<{ space_id: string }>(t._id!)).space_id).toBe('space:unsorted');
+  });
+});
