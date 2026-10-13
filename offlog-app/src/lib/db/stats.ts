@@ -125,7 +125,12 @@ export async function getDashboardData() {
 // doesn't contain the query.
 export type TaskSearchMatch = 'title' | 'tags' | 'body' | 'checklist' | 'attachments';
 
+// Tags are shown as #tag everywhere, so a query starting with # searches tags only.
 function taskSearchMatch(d: TaskDoc, q: string): TaskSearchMatch | null {
+  if (q.length > 1 && q.startsWith('#')) {
+    const tag = q.slice(1);
+    return d.tags?.some((t: string) => t.toLowerCase().includes(tag)) ? 'tags' : null;
+  }
   if (d.title.toLowerCase().includes(q)) return 'title';
   if (d.tags?.some((t: string) => t.toLowerCase().includes(q))) return 'tags';
   if (d.body?.toLowerCase().includes(q)) return 'body';

@@ -1844,6 +1844,18 @@ describe('searchAllTasks', () => {
     expect(result.matchedIn).toBe('tags');
   });
 
+  it('a #-prefixed query searches tags the way they are shown', async () => {
+    await seedSpace();
+    const project = await createProject('space:unsorted', 'Test Project');
+    const task = await createTask(project._id, 'space:unsorted', project.columns[0].id, 'Contractor call');
+    await updateTask(task._id!, { tags: ['health'] });
+    await createTask(project._id, 'space:unsorted', project.columns[0].id, 'health check');
+
+    const results = await searchAllTasks('#health');
+    expect(results.map(r => r._id)).toEqual([task._id]);
+    expect(results[0].matchedIn).toBe('tags');
+  });
+
   it('matches by body (Notes) and reports matchedIn: body', async () => {
     await seedSpace();
     const project = await createProject('space:unsorted', 'Test Project');
