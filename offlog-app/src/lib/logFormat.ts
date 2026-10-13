@@ -145,6 +145,10 @@ export function describeLog(log: LogEntry): string {
     : null;
 
   if (log.action === 'create') return `Created ${entityLabel(log)} ${who ?? ''}`.trim();
+  // A task's delete is a move to the Recycle bin; leaving the bin is logged
+  // again with field 'purged'. Spaces and projects are deleted outright.
+  if (log.action === 'delete' && log.field === 'purged') return `Deleted ${who ?? 'task'} for good`;
+  if (log.action === 'delete' && entityLabel(log) === 'task') return `Moved ${who ?? 'task'} to the Recycle bin`;
   if (log.action === 'delete') return `Deleted ${entityLabel(log)} ${who ?? ''}`.trim();
 
   if (log.action === 'move') {

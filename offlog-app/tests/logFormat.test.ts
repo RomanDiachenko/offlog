@@ -16,7 +16,12 @@ describe('describeLog (regression: raw "deleted: Yes → No" instead of "Restore
 
   it('still formats a forward delete via the delete action, not the field branch', () => {
     const text = describeLog({ action: 'delete', task_title: 'Buy milk', ref: 'task:abc' });
-    expect(text).toBe('Deleted task "Buy milk"');
+    expect(text).toBe('Moved "Buy milk" to the Recycle bin');
+  });
+
+  it('tells a delete for good from a move to the Recycle bin; projects are deleted outright', () => {
+    expect(describeLog({ action: 'delete', field: 'purged', task_title: 'Buy milk', ref: 'task:abc' })).toBe('Deleted "Buy milk" for good');
+    expect(describeLog({ action: 'delete', project_name: 'Work', ref: 'project:xyz' })).toBe('Deleted project "Work"');
   });
 
   it('resolves entity type (project/space/field) from the ref prefix for a restored item', () => {
