@@ -93,10 +93,22 @@ function ensureListening() {
   window.addEventListener('popstate', onPopState);
 }
 
+// Focus goes back to whatever opened a layer once it closes, so a keyboard
+// user isn't dropped on <body>: only when focus did fall there, never stealing
+// it, and never to a text field (on the phone that pops the keyboard back up).
+function restoreFocus(opener: Element | null) {
+  if (!(opener instanceof HTMLElement) || opener.matches('input, textarea, [contenteditable="true"]')) return;
+  setTimeout(() => {
+    const now = document.activeElement;
+    if (opener.isConnected && (!now || now === document.body)) opener.focus({ preventScroll: true });
+  }, 0);
+}
+
 export function closeOnBack(close: CloseFn): CloseFn {
   ensureListening();
   const id = nextId++;
-  const entry: Entry = { close, id };
+  const opener = typeof document === 'undefined' ? null : document.activeElement;
+  const entry: Entry = { close: () => { close(); restoreFocus(opener); }, id };
   stack.push(entry);
   sync();
   history.pushState({ offlogLayer: true, offlogId: id }, '');

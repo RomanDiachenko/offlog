@@ -154,3 +154,36 @@ describe('modalStack', () => {
     expect(isTopLayer(() => {})).toBe(false);
   });
 });
+
+// Keyboard users land back where they were, not on <body>.
+describe('modalStack focus return', () => {
+  it('closing a layer gives focus back to what opened it', async () => {
+    closeAll();
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+    opener.focus();
+    const before = history.state;
+    const panelInput = document.createElement('input');
+    closeOnBack(() => panelInput.remove());
+    document.body.appendChild(panelInput);
+    panelInput.focus();
+    window.dispatchEvent(new PopStateEvent('popstate', { state: before }));
+    await new Promise(r => setTimeout(r, 0));
+    expect(document.activeElement).toBe(opener);
+    opener.remove();
+  });
+
+  it('never re-focuses a text field (the phone keyboard would pop up)', async () => {
+    closeAll();
+    const field = document.createElement('input');
+    document.body.appendChild(field);
+    field.focus();
+    const before = history.state;
+    closeOnBack(() => {});
+    field.blur();
+    window.dispatchEvent(new PopStateEvent('popstate', { state: before }));
+    await new Promise(r => setTimeout(r, 0));
+    expect(document.activeElement).not.toBe(field);
+    field.remove();
+  });
+});
