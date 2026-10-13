@@ -398,7 +398,11 @@ export async function getCustomFieldDefs(): Promise<CustomFieldDef[]> {
   }
 }
 
+// A repeated option would show twice in the picker and match the same value.
+const uniqueOptions = (options?: string[]) => options?.filter((o, i) => options.findIndex(x => x.toLowerCase() === o.toLowerCase()) === i);
+
 export async function addCustomFieldDef(name: string, type: CustomFieldDef['type'], options?: string[]): Promise<CustomFieldDef[]> {
+  options = uniqueOptions(options);
   const field: CustomFieldDef = { id: `field:${nanoid()}`, name, type, ...(options ? { options } : {}) };
   let doc: CustomFieldsDoc;
   try { doc = await db.get<CustomFieldsDoc>(CUSTOM_FIELDS_DOC_ID); } catch { doc = { _id: CUSTOM_FIELDS_DOC_ID, type: 'meta' }; }
@@ -413,6 +417,7 @@ export async function addCustomFieldDef(name: string, type: CustomFieldDef['type
 // text value under a field switched to 'number' simply won't parse until the
 // task is edited again, which is not a crash.
 export async function updateCustomFieldDef(fieldId: string, patch: { name?: string; type?: CustomFieldDef['type']; options?: string[] }): Promise<CustomFieldDef[]> {
+  if (patch.options) patch = { ...patch, options: uniqueOptions(patch.options) };
   let doc: CustomFieldsDoc;
   try { doc = await db.get<CustomFieldsDoc>(CUSTOM_FIELDS_DOC_ID); } catch { return []; }
   const fields = (doc.fields ?? []).map(f => f.id === fieldId ? { ...f, ...patch } : f);

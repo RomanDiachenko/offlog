@@ -1006,6 +1006,14 @@ describe('checkIntegrity / repairDatabase', () => {
     expect(fixedDoc.project_id).toBe(fallback._id);
   });
 
+  it('Select options are stored once each, on add and on edit', async () => {
+    await seedSpace();
+    const [f] = await addCustomFieldDef('Stage', 'select', ['Alpha', 'Beta', 'alpha', 'Gamma']);
+    expect(f.options).toEqual(['Alpha', 'Beta', 'Gamma']);
+    const [g] = await updateCustomFieldDef(f.id, { options: ['One', 'One', 'Two'] });
+    expect(g.options).toEqual(['One', 'Two']);
+  });
+
   it('reports conflicts on non-task docs too, matching what the sync badge counts', async () => {
     // The conflict pass used to list entity prefixes only, so a conflict on
     // the custom-fields doc showed in the sync badge and the Resolve screen
