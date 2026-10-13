@@ -23,7 +23,7 @@
   } from '../db';
   import { confirmAction } from '../confirm';
   import { projects as projectsStore } from '../store';
-  import { getSyncUrl, setSyncUrl, clearPairedHost, getSyncCredentials, setSyncCredentials, getDeviceName, setDeviceName, isSyncEnabled, setSyncEnabled, getDefaultReminderTime, setDefaultReminderTime, getWeekStartsMonday, setWeekStartsMonday, getTimeFormat24h, setTimeFormat24h, getQuietHours, setQuietHours, getNotificationsEnabled, setNotificationsEnabled, getAutoUpdateCheckEnabled, setAutoUpdateCheckEnabled, isTauri as isTauriCheck, invokeTauri, isAppLockEnabled, setAppLockPin, clearAppLockPin, getAppLockTimeoutMinutes, setAppLockTimeoutMinutes, getAppLockHint, isNativePlatform, isAppLockBiometricEnabled, setAppLockBiometricEnabled, syncPrivacyScreen, isHapticsEnabled, setHapticsEnabled, isPrivacyScreenEnabled, setPrivacyScreenEnabled } from '../../config';
+  import { getSyncUrl, setSyncUrl, clearPairedHost, getSyncCredentials, setSyncCredentials, getDeviceName, setDeviceName, isSyncEnabled, setSyncEnabled, getDefaultReminderTime, setDefaultReminderTime, getWeekStartsMonday, setWeekStartsMonday, getTimeFormat24h, setTimeFormat24h, getQuietHours, setQuietHours, getNotificationsEnabled, setNotificationsEnabled, getAutoUpdateCheckEnabled, setAutoUpdateCheckEnabled, isTauri as isTauriCheck, invokeTauri, isAppLockEnabled, setAppLockPin, clearAppLockPin, APP_LOCK_CHANGED, getAppLockTimeoutMinutes, setAppLockTimeoutMinutes, getAppLockHint, isNativePlatform, isAppLockBiometricEnabled, setAppLockBiometricEnabled, syncPrivacyScreen, isHapticsEnabled, setHapticsEnabled, isPrivacyScreenEnabled, setPrivacyScreenEnabled } from '../../config';
   import { fmtLastSynced, localDateStr } from '../utils';
   import { discoveredHosts, isScanning, scanForHosts, stopScan, pairWithHost, type DiscoveredHost } from '../discovery';
   import { checkExactAlarmPermission, rescheduleAll } from '../notifications';
@@ -274,6 +274,15 @@
   // "collect every field, write them all on Save" flow the rest of this
   // panel uses.
   let appLockEnabled = isAppLockEnabled();
+  // The lock screen's "Forgot PIN?" clears the PIN while this page may be open.
+  function onAppLockChanged() {
+    appLockEnabled = isAppLockEnabled();
+    biometricEnabled = isAppLockBiometricEnabled();
+  }
+  onMount(() => {
+    window.addEventListener(APP_LOCK_CHANGED, onAppLockChanged);
+    return () => window.removeEventListener(APP_LOCK_CHANGED, onAppLockChanged);
+  });
   let appLockTimeout = getAppLockTimeoutMinutes();
   let lockTimeoutStr = String(appLockTimeout);
   let showPinForm = false;

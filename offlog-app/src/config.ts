@@ -632,6 +632,7 @@ export async function setAppLockPin(pin: string, hint?: string): Promise<{ recov
     localStorage.setItem(APP_LOCK_RECOVERY_SALT_KEY, rSalt);
     localStorage.setItem(APP_LOCK_RECOVERY_HASH_KEY, rHash);
   }
+  window.dispatchEvent(new Event(APP_LOCK_CHANGED));
   return { recoveryCode };
 }
 
@@ -643,6 +644,10 @@ export function hasAppLockRecoveryCode(): boolean {
   return !!localStorage.getItem(APP_LOCK_RECOVERY_HASH_KEY);
 }
 
+// Sent on window whenever a PIN is set or cleared: the lock screen can do
+// either while a Settings page showing the lock state is open.
+export const APP_LOCK_CHANGED = 'offlog:app-lock-changed';
+
 export function clearAppLockPin(): void {
   localStorage.removeItem(APP_LOCK_HASH_KEY);
   localStorage.removeItem(APP_LOCK_SALT_KEY);
@@ -651,6 +656,7 @@ export function clearAppLockPin(): void {
   localStorage.removeItem(APP_LOCK_RECOVERY_SALT_KEY);
   localStorage.removeItem(APP_LOCK_BIOMETRIC_KEY);
   localStorage.removeItem(PRIVACY_SCREEN_KEY);
+  window.dispatchEvent(new Event(APP_LOCK_CHANGED));
 }
 
 export function isAppLockBiometricEnabled(): boolean {

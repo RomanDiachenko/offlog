@@ -32,7 +32,8 @@ vi.mock('../src/config', () => ({
   getNotificationsEnabled: () => true, setNotificationsEnabled: vi.fn(),
   getAutoUpdateCheckEnabled: () => true, setAutoUpdateCheckEnabled: vi.fn(),
   isTauri: () => tauri, invokeTauri: (...a: unknown[]) => invokeTauri(...a),
-  isAppLockEnabled: () => false, setAppLockPin: vi.fn(), clearAppLockPin: vi.fn(),
+  isAppLockEnabled: () => appLock.on, setAppLockPin: vi.fn(), clearAppLockPin: vi.fn(),
+  APP_LOCK_CHANGED: 'offlog:app-lock-changed',
   getAppLockTimeoutMinutes: () => 5, setAppLockTimeoutMinutes: vi.fn(),
   getAppLockHint: () => '', isNativePlatform: () => false,
   isAppLockBiometricEnabled: () => false, setAppLockBiometricEnabled: vi.fn(),
@@ -99,6 +100,7 @@ vi.mock('../src/lib/autoBackup', () => ({
 }));
 
 const setReduceTransparency = vi.hoisted(() => vi.fn());
+const appLock = vi.hoisted(() => ({ on: false }));
 vi.mock('../src/lib/theme', () => ({
   getThemeMode: () => 'system', setThemeMode: vi.fn(),
   getHighContrast: () => false, setHighContrast: vi.fn(),
@@ -253,6 +255,17 @@ describe('SettingsPanel Escape key', () => {
     expect(back).toHaveBeenCalledTimes(1);
     await new Promise(r => setTimeout(r, 450));
     back.mockRestore();
+  });
+
+  // The lock screen can clear the PIN (Forgot PIN?) while this page is open.
+  it('the App lock page follows a PIN cleared or set elsewhere', async () => {
+    appLock.on = true;
+    const { findByText, queryByText } = render(SettingsPanel, { initialCategory: 'security' });
+    await findByText('PIN is set');
+    appLock.on = false;
+    window.dispatchEvent(new Event('offlog:app-lock-changed'));
+    await findByText('Set a PIN');
+    expect(queryByText('PIN is set')).toBeNull();
   });
 
   it('backs out of the PIN entry form without closing the whole panel', async () => {

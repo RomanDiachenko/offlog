@@ -17,7 +17,7 @@
     type ImportedDoc,
   } from '../../db';
   import { projects as projectsStore, showError } from '../../store';
-  import { getSyncUrl, getPairedHostUuid, getPairedHostName, getDefaultReminderTime, setDefaultReminderTime, getWeekStartsMonday, setWeekStartsMonday, getTimeFormat24h, setTimeFormat24h, getQuietHours, setQuietHours, getNotificationsEnabled, setNotificationsEnabled, isAppLockEnabled, setAppLockPin, clearAppLockPin, getAppLockTimeoutMinutes, setAppLockTimeoutMinutes, getAppLockHint, isNativePlatform, isAppLockBiometricEnabled, setAppLockBiometricEnabled, syncPrivacyScreen, isHapticsEnabled, setHapticsEnabled, isPrivacyScreenEnabled, setPrivacyScreenEnabled } from '../../../config';
+  import { getSyncUrl, getPairedHostUuid, getPairedHostName, getDefaultReminderTime, setDefaultReminderTime, getWeekStartsMonday, setWeekStartsMonday, getTimeFormat24h, setTimeFormat24h, getQuietHours, setQuietHours, getNotificationsEnabled, setNotificationsEnabled, isAppLockEnabled, setAppLockPin, clearAppLockPin, APP_LOCK_CHANGED, getAppLockTimeoutMinutes, setAppLockTimeoutMinutes, getAppLockHint, isNativePlatform, isAppLockBiometricEnabled, setAppLockBiometricEnabled, syncPrivacyScreen, isHapticsEnabled, setHapticsEnabled, isPrivacyScreenEnabled, setPrivacyScreenEnabled } from '../../../config';
   import { fmtLastSynced, localDateStr } from '../../utils';
   import { checkExactAlarmPermission, rescheduleAll } from '../../notifications';
   import { getThemeMode, setThemeMode, getHighContrast, setHighContrast, getReduceMotion, setReduceMotion, getReduceTransparency, setReduceTransparency, type ThemeMode } from '../../theme';
@@ -85,6 +85,15 @@
 
   // ── App lock ──
   let appLockEnabled = isAppLockEnabled();
+  // The lock screen's "Forgot PIN?" clears the PIN while this page may be open.
+  function onAppLockChanged() {
+    appLockEnabled = isAppLockEnabled();
+    biometricEnabled = isAppLockBiometricEnabled();
+  }
+  onMount(() => {
+    window.addEventListener(APP_LOCK_CHANGED, onAppLockChanged);
+    return () => window.removeEventListener(APP_LOCK_CHANGED, onAppLockChanged);
+  });
   let lockTimeoutStr = String(getAppLockTimeoutMinutes());
   let showPinForm = false;
   let newPin = '';

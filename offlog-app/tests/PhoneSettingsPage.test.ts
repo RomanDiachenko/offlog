@@ -43,6 +43,7 @@ vi.mock('../src/config', async () => {
     getNotificationsEnabled: () => true, setNotificationsEnabled: vi.fn(),
     getAutoUpdateCheckEnabled: () => true, setAutoUpdateCheckEnabled: vi.fn(),
     isTauri: () => m.tauri, invokeTauri: (...a: unknown[]) => m.invokeTauri(...a),
+    APP_LOCK_CHANGED: 'offlog:app-lock-changed',
     isAppLockEnabled: () => m.lockOn, verifyAppLockPin: async (p: string) => p === '2580', setAppLockPin: (...a: unknown[]) => setAppLockPin(...a), clearAppLockPin: vi.fn(),
     getAppLockTimeoutMinutes: () => 5, setAppLockTimeoutMinutes: vi.fn(),
     getAppLockHint: () => '', isNativePlatform: () => m.native,
