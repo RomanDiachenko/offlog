@@ -2,11 +2,20 @@ import { writable, get } from 'svelte/store';
 import db, { getAllActiveTasksWithReminders, updateTask, getTaskById, clearReminderIfUnchanged } from './db';
 import { invokeTauri, isTauri as isTauriPlatform, getQuietHours, getNotificationsEnabled } from '../config';
 import type { TaskDoc, ProjectDoc } from './types';
-import { fmtDay, dayOf } from './utils';
+import { fmtDay, dayOf, localDateStr } from './utils';
 
 // The line under a reminder's title, the same on every platform.
+// Worded for the moment the reminder rings, not when it was scheduled:
+// Android builds the text up front, possibly days earlier.
 export function reminderBody(task: TaskDoc): string {
-  return task.due_date ? `Due ${fmtDay(dayOf(task.due_date), { weekday: true })}` : 'Reminder';
+  if (!task.due_date) return 'Reminder';
+  const at = task.reminder_at ? new Date(task.reminder_at) : new Date();
+  const next = new Date(at);
+  next.setDate(next.getDate() + 1);
+  const due = task.due_date.slice(0, 10);
+  if (due === localDateStr(at)) return 'Due today';
+  if (due === localDateStr(next)) return 'Due tomorrow';
+  return `Due ${fmtDay(dayOf(due), { weekday: true })}`;
 }
 
 // Spread queued reminders out instead of letting them all land on the

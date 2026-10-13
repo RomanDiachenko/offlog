@@ -49,7 +49,7 @@
   function show(o: NonNullable<typeof open>) { open = o; session++; }
 </script>
 
-<TopBar title="Organize" />
+<TopBar title="Spaces, tags &amp; fields" />
 
 <div class="p-seg" role="group" aria-label="Organize" style="--n:3;--i:{['spaces', 'tags', 'fields'].indexOf(tab)}">
   {#each [['spaces', 'Spaces'], ['tags', 'Tags'], ['fields', 'Fields']] as [k, label] (k)}

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import db, { createProject, createTask, updateTask, invalidateTaskCache } from '../src/lib/db';
-import { catchUpWeb, applyQuietHours } from '../src/lib/notifications';
+import { catchUpWeb, applyQuietHours, reminderBody } from '../src/lib/notifications';
 import { setQuietHours } from '../src/config';
 import type { SpaceDoc } from '../src/lib/types';
 
@@ -261,5 +261,16 @@ describe('catchUpWeb with quiet hours', () => {
     expect(fireTimes).toHaveLength(3);
     const gaps = [fireTimes[1] - fireTimes[0], fireTimes[2] - fireTimes[1]];
     expect(gaps).toEqual([15_000, 15_000]);
+  });
+});
+
+describe('reminderBody', () => {
+  const at = new Date(2030, 9, 9, 9, 0).toISOString();
+  const t = (due_date: string | null) => ({ _id: 'task:a', title: 'A', due_date, reminder_at: at }) as never;
+  it('says today or tomorrow relative to when the reminder rings', () => {
+    expect(reminderBody(t('2030-10-09'))).toBe('Due today');
+    expect(reminderBody(t('2030-10-10'))).toBe('Due tomorrow');
+    expect(reminderBody(t('2030-10-12'))).toMatch(/^Due Sat 12 Oct/);
+    expect(reminderBody(t(null))).toBe('Reminder');
   });
 });

@@ -352,7 +352,7 @@
           <dt>Priority</dt><dd><code>!high</code>, <code>!low</code>, <code>!!</code>, <code>!!!</code></dd>
           <dt>Tag</dt><dd><code>#errand</code>, repeat for more</dd>
           <dt>Project</dt><dd><code>@fitness</code> matches a project by name</dd>
-          <dt>Escape</dt><dd>Tap a highlighted word to keep it as text, or type <code>\</code> before it: <code>\friday</code>, <code>\#42</code>. Wrap the whole title in <code>"quotes"</code> to turn parsing off</dd>
+          <dt>Escape</dt><dd>Tap a highlighted word to keep it as text, or type <code>\</code> before it: <code>\friday</code>, <code>\#42</code>. Wrap the whole title in <code>"quotes"</code> to turn parsing off.</dd>
         </dl>
       </div>
     {/if}

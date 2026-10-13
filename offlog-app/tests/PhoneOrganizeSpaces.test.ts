@@ -74,7 +74,7 @@ async function openSpace(r: Awaited<ReturnType<typeof setup>>, name: string) {
 describe('phone Organize → Spaces', () => {
   it('lists spaces in order with their project counts', async () => {
     const r = await setup();
-    expect(r.getByRole('heading', { name: 'Organize' })).toBeTruthy();
+    expect(r.getByRole('heading', { name: 'Spaces, tags & fields' })).toBeTruthy();
     const rows = [...r.container.querySelectorAll('.p-group .p-row')].map(b => b.textContent!.replace(/\s+/g, ' ').trim());
     expect(rows).toEqual(['Unsorted 0', 'Home 2', 'Work 0', 'New space']);
   });
