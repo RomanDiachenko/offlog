@@ -285,6 +285,13 @@ describe('phone Quick add', () => {
     await waitFor(() => expect(createTask.mock.calls[0][4]).toMatchObject({ due_date: due, reminder_at: new Date(`${due}T10:00`).toISOString() }));
   });
 
+  it('only recognised words: Add stays off and says a title is missing', async () => {
+    const { getByLabelText, findByText } = render(QuickAddSheet);
+    await type(getByLabelText, '#onlytag !high tomorrow');
+    expect((getByLabelText('Add') as HTMLButtonElement).disabled).toBe(true);
+    expect(await findByText('Add a title: everything typed so far was read as details')).toBeTruthy();
+  });
+
   it('"No reminder" beats a typed time', async () => {
     const { getByLabelText, getByRole, findByLabelText } = render(QuickAddSheet);
     await type(getByLabelText, 'Call mum tomorrow at 6pm');

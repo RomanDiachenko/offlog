@@ -340,6 +340,8 @@
 
     {#if parsed.raw || !project}
       <p class="note">{#if !project}Create a project first{:else}Quoted, parsing off{/if}</p>
+    {:else if text.trim() && !parsed.title}
+      <p class="note">Add a title: everything typed so far was read as details</p>
     {/if}
     {#if dupHint}<p class="warn">{dupHint}</p>{/if}
 
