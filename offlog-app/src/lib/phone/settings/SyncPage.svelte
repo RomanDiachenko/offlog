@@ -38,6 +38,8 @@
   let pairedName = getPairedHostName();
   let pairedUuid = getPairedHostUuid();
   function onSyncChange() {
+    // A finished sync may have brought the computer's name (meta:sync-host).
+    if (syncState.lastSynced !== lastSynced) loadHost();
     syncStatus = syncState.status;
     lastSynced = syncState.lastSynced;
     syncError = syncState.error;
@@ -99,7 +101,8 @@
   // id too: after a rename a device's newest log still carries the old name.
   const myId = getDeviceId();
   let host: SyncHostRecord | null = null;
-  getSyncHostRecord().then(h => (host = h), () => {});
+  function loadHost() { getSyncHostRecord().then(h => (host = h), () => {}); }
+  loadHost();
   $: others = deviceLastSeen.filter(d => d.id !== myId && !(host && d.id === host.device_id) && d.device !== deviceName && d.device !== hubName);
   const DAY = 24 * 3600e3;
   const recent = (iso: string) => Date.now() - new Date(iso).getTime() < DAY;

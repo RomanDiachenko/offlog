@@ -237,6 +237,16 @@ describe('phone Sync page', () => {
     expect([...container.querySelectorAll('.dev')].map(r => r.textContent!).some(t => t.includes('Test PC'))).toBe(false);
   });
 
+  it('the computer\'s name arriving with the first sync replaces its network name', async () => {
+    getSyncHostRecord.mockResolvedValueOnce(null);
+    const { container } = render(SettingsPage, { page: 'sync' });
+    await waitFor(() => expect(container.querySelector('.card')!.textContent).toContain('Office PC'));
+    getSyncHostRecord.mockResolvedValue({ device_id: 'dev:pc', name: 'Test PC' });
+    m.syncState.lastSynced = new Date().toISOString();
+    m.syncState.listeners.forEach(fn => fn());
+    await waitFor(() => expect(container.querySelector('.card')!.textContent).toContain('Test PC'));
+  });
+
   it('an unreachable computer says what to do, and Try again syncs', async () => {
     Object.assign(m.syncState, { status: 'error', error: 'Cannot reach sync server — it may be switched off' });
     const { getByRole, getByText, container } = render(SettingsPage, { page: 'sync' });
