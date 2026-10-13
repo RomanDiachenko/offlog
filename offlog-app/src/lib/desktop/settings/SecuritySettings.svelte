@@ -7,6 +7,7 @@
   // those read fine at 2-3 short options, but 4 numeric ones ("1m 5m 15m
   // 30m") in a row are cramped.
   const LOCK_TIMEOUT_OPTIONS = [
+    { value: '0', label: 'Immediately' },
     { value: '1', label: '1 minute' },
     { value: '5', label: '5 minutes' },
     { value: '15', label: '15 minutes' },

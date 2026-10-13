@@ -9,6 +9,7 @@
   import { I } from '../icons';
 
   const LOCK_TIMEOUT_OPTIONS = [
+    { value: '0', label: 'Immediately' },
     { value: '1', label: '1 minute' },
     { value: '5', label: '5 minutes' },
     { value: '15', label: '15 minutes' },

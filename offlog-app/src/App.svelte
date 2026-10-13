@@ -466,7 +466,9 @@
   function resetIdleTimer() {
     if (idleTimer) clearTimeout(idleTimer);
     if (locked || !isAppLockEnabled()) return;
-    idleTimer = setTimeout(() => { locked = true; }, getAppLockTimeoutMinutes() * 60000);
+    // Immediately (0) locks on leaving the app, not on a pause while it is in use.
+    const minutes = getAppLockTimeoutMinutes();
+    if (minutes > 0) idleTimer = setTimeout(() => { locked = true; }, minutes * 60000);
   }
 
   function onVisibilityChange() {

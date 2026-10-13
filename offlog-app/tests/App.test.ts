@@ -87,3 +87,26 @@ describe('App undo-delete toast', () => {
     expect((await getTaskById(other._id!))?.deleted).toBe(true);
   });
 });
+
+describe('App Lock "Immediately"', () => {
+  it('never locks while in use, and locks on coming back to the app', async () => {
+    localStorage.setItem('offlog_app_lock_timeout_minutes', '0');
+    const hidden = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden');
+    try {
+      const r = await renderReady(false);
+      lockOn = true;
+      window.dispatchEvent(new Event('mousemove'));
+      await new Promise(res => setTimeout(res, 50));
+      expect(r.container.querySelector('.lock-screen')).toBeNull();
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+      document.dispatchEvent(new Event('visibilitychange'));
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+      document.dispatchEvent(new Event('visibilitychange'));
+      await waitFor(() => expect(r.container.querySelector('.lock-screen')).not.toBeNull());
+    } finally {
+      localStorage.removeItem('offlog_app_lock_timeout_minutes');
+      delete (document as { hidden?: boolean }).hidden;
+      if (hidden) Object.defineProperty(Document.prototype, 'hidden', hidden);
+    }
+  });
+});
