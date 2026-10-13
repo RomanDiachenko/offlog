@@ -13,9 +13,8 @@
   import { projects, spaces, reloadTasks, showError } from '../store';
   import { resolveTagColor, soften } from '../tagColors';
   import { PRIORITY_COLOR, PRIORITY_LABEL } from '../constants';
-  import { fmtTime, localDateStr } from '../utils';
   import { back, push, showToast, sealUndo } from './nav';
-  import { duePill, shortDate } from './format';
+  import { duePill, shortDate, reminderWhen } from './format';
   import { today } from '../today';
   import { I } from './icons';
   import TopBar from './TopBar.svelte';
@@ -386,11 +385,7 @@
   $: openBlockers = blocking.filter(b => !isBlockerResolved(b, lastColByProject)).length;
   $: pill = task ? duePill(task.due_date, done, $today) : null;
   $: reminderText = task?.reminder_at ? reminderLabel(task.reminder_at, $today) : '';
-  function reminderLabel(iso: string, todayStr: string) {
-    const d = new Date(iso);
-    const day = localDateStr(d);
-    return `${fmtTime(d)}, ${day === todayStr ? 'today' : shortDate(day)}`;
-  }
+  const reminderLabel = (iso: string, todayStr: string) => reminderWhen(iso, todayStr);
   $: repeatText = !task?.recurrence ? ''
     : (task.recurrenceInterval ?? 1) > 1
       ? `Every ${task.recurrenceInterval} ${UNIT[task.recurrence]}` + (task.recurrence === 'daily' && task.recurrenceWeekdaysOnly ? ', weekdays' : '')

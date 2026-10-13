@@ -9,8 +9,8 @@
   import { lastProject, rememberProject, keyboardHeight, trackKeyboard } from './quickadd/memory';
   import { PRIORITY_LABEL, PRIORITY_COLOR } from '../constants';
   import { confirmRequest } from '../confirm';
-  import { fmtTime, localDateStr } from '../utils';
-  import { duePill, shortDate } from './format';
+  import { localDateStr } from '../utils';
+  import { duePill, shortDate, reminderWhen } from './format';
   import { I } from './icons';
   import { showToast } from './nav';
   import { soften } from '../tagColors';
@@ -76,10 +76,7 @@
     if (!d) return 'No date';
     return d < localDateStr(new Date()) ? shortDate(d) : duePill(d)!.text;
   }
-  function reminderText(iso: string): string {
-    const d = new Date(iso), day = localDateStr(d);
-    return day === localDateStr(new Date()) ? fmtTime(d) : `${dueText(day)} ${fmtTime(d)}`;
-  }
+  const reminderText = (iso: string) => reminderWhen(iso);
   $: tagText = tags.length ? `#${tags[0]}${tags.length > 1 ? ` +${tags.length - 1}` : ''}` : 'Tag';
 
   // Set chips lead, so a value just parsed is on screen rather than past the

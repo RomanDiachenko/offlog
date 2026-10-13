@@ -1,4 +1,4 @@
-import { localDateStr, daysDiff } from '../utils';
+import { localDateStr, daysDiff, fmtTime } from '../utils';
 
 const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -27,4 +27,12 @@ export function duePill(due: string | null | undefined, done = false, today = lo
 
 export function greeting(hour = new Date().getHours()): string {
   return hour < 5 ? 'Good night' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+}
+
+// A reminder, day first like every date: "Today, 16:05", "Tomorrow, 9:00",
+// "Tue 20 Oct, 16:05".
+export function reminderWhen(iso: string, today = localDateStr(new Date())): string {
+  const d = new Date(iso), day = localDateStr(d), n = daysDiff(day, today);
+  const word = n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : shortDate(day, new Date(today + 'T12:00:00'));
+  return `${word}, ${fmtTime(d)}`;
 }
