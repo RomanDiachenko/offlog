@@ -249,6 +249,10 @@
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
     border-width: 1px 0 0; box-shadow: none;
   }
+  /* Rows scroll under the bar, and through the shared 38% glass a coloured
+     control (an on switch) shows as a glow under a tab that isn't selected.
+     The bar stays frosted but lets only a hint of what's beneath through. */
+  :global(body:not(.reduce-transparency):not(.high-contrast)) .tabbar.glass { background: color-mix(in srgb, var(--surface) 86%, transparent); }
   .tb { transition: color var(--dur-medium) var(--ease-standard); display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; font: inherit; font-size: var(--p-fs-xs); font-weight: 600; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer; }
   .tb:active .pill { background: var(--col-bg); }
   .tb.on { color: var(--text); }

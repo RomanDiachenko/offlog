@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, cleanup, waitFor } from '@testing-library/svelte';
 import { get, type Writable } from 'svelte/store';
@@ -235,6 +237,17 @@ describe('phone Sync page', () => {
     expect(await findByRole('heading', { name: 'Pair this phone again' })).toBeTruthy();
     expect(await findByText(/Office PC no longer accepts this phone/)).toBeTruthy();
     expect(queryByText('Try again')).toBeNull();
+  });
+
+  // The card's tone is a class (ok/idle/bad). A rule for that class alone
+  // (the pairing sheet's success message was .ok) lands on the card too:
+  // tinted, cramped, glued to the Conflicts row. Component CSS isn't applied
+  // in jsdom, so the stylesheet itself is checked.
+  it('no rule styles a card tone class on its own', () => {
+    const src = readFileSync(resolve(__dirname, '../src/lib/phone/settings/SyncPage.svelte'), 'utf8');
+    const css = src.slice(src.indexOf('<style>'));
+    const bare = css.split('\n').filter(l => /^\s*\.(ok|idle|bad)\s*[{,]/.test(l));
+    expect(bare).toEqual([]);
   });
 
   it('says how many items from the server were refused', () => {

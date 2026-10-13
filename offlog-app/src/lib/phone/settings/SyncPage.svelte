@@ -365,7 +365,7 @@
         <div class="sh">
           {#if isAndroid}
             {#if pairSuccessName}
-              <p class="ok">Connected to “{pairSuccessName}”. Syncing now.</p>
+              <p class="paired">Connected to “{pairSuccessName}”. Syncing now.</p>
               <button class="p-go" on:click={close}>Done</button>
             {:else if !selectedHost}
               <button class="p-go" on:click={startDeviceScan} disabled={$isScanning}>
@@ -394,10 +394,10 @@
             {/if}
           {:else if isTauri}
             {#if pcPairedDeviceName}
-              <p class="ok">Connected to “{pcPairedDeviceName}”. Syncing now.</p>
+              <p class="paired">Connected to “{pcPairedDeviceName}”. Syncing now.</p>
               <button class="p-go" on:click={close}>Done</button>
             {:else if pcJustPaired}
-              <p class="ok">A device just connected. Syncing now.</p>
+              <p class="paired">A device just connected. Syncing now.</p>
               <button class="p-go" on:click={close}>Done</button>
             {:else}
               {#if pcPairingCode && pcPairingExpired}
@@ -499,7 +499,8 @@
   .chev { display: flex; color: var(--faint); }
   .p-row > .p-k + .chev { margin-left: auto; }
   .p-v + .chev { margin-left: -6px; }
-  .name { max-width: 50%; overflow: hidden; text-overflow: ellipsis; display: block; }
+  /* A long device name ellipsizes before the label beside it wraps word by word. */
+  .name { max-width: 40%; overflow: hidden; text-overflow: ellipsis; display: block; }
   .badge {
     font-size: var(--p-fs-xs); font-weight: 700; background: var(--due-soon-bg); color: var(--due-soon-ink);
     min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center;
@@ -514,7 +515,8 @@
   .sh { display: flex; flex-direction: column; gap: 10px; padding-bottom: 4px; }
   .sh .p-say, .sh .p-fld, .sh .p-group, .sh .warn { margin-bottom: 0; }
   .wide { width: 100%; }
-  .ok { margin: 0; color: var(--text); background: color-mix(in srgb, var(--success) 14%, transparent); padding: 12px 14px; border-radius: 12px; font-weight: 600; }
+  /* Not .ok: the card carries its tone as a class, and .ok is one. */
+  .paired { margin: 0; color: var(--text); background: color-mix(in srgb, var(--success) 14%, transparent); padding: 12px 14px; border-radius: 12px; font-weight: 600; }
   .code { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: .2em; text-align: center; color: var(--text); }
   .crow { display: flex; align-items: center; gap: 10px; }
   .cmeta { flex: 1; min-width: 0; font-size: var(--p-fs-s); color: var(--muted); }
