@@ -597,6 +597,12 @@ untouched seed before a device's first pairing, and auto-resolving a
 pristine-default conflict after sync — which works
 identically whether the project is archived or not.
 
+### No "Move task to another project"
+Offered and declined (2026-10-14). Statuses are per project, so a move has
+to guess where the task lands, and its blockers, related links and field
+values may not mean the same thing there. Duplicate into the other project
+covers the rare case. Revisit only if real daily use asks for it.
+
 ---
 
 ## Security
