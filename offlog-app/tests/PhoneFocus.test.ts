@@ -62,6 +62,12 @@ describe('phone Focus', () => {
     expect(r.rest.map(t => t.title)).toEqual(['Report', 'Socks']);
   });
 
+  it('a task due today is labelled Due today, not Due soon', async () => {
+    getOpenTasksForFocusPicker.mockResolvedValue([task('task:Call', { due_date: day(0) })]);
+    const { container } = render(FocusScreen);
+    await waitFor(() => expect([...container.querySelectorAll('.why')].map(x => x.textContent)).toEqual(['Due today']));
+  });
+
   it('no lock: suggests three with a why label, then commits the picked ones', async () => {
     const { findByText, getByText, getAllByText, queryByText, container } = render(FocusScreen);
     await waitFor(() => expect(emptySlots(container)).toBe(3));

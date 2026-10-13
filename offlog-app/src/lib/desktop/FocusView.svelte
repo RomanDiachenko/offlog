@@ -306,7 +306,7 @@
       {/if}
     {/if}
     {#if picking}
-      <p class="picker-hint">Suggested tasks carry a Pinned, Overdue, Due soon or High priority label. Click up to three, then Let's focus.</p>
+      <p class="picker-hint">Suggested tasks carry a Pinned, Overdue, Due today, Due soon or High priority label. Click up to three, then Let's focus.</p>
       {#if pickable.length === 0}
         <div class="empty">No open tasks to pick from.</div>
       {:else}
@@ -329,7 +329,7 @@
                 <!-- The priority bucket holds every undated task, so it is labelled
                      only when the task really is high priority. -->
                 {#if suggestedReasons.has(t._id!) && (suggestedReasons.get(t._id!) !== 'priority' || (t.priority ?? 1) >= 3)}
-                  <span class="suggest-chip {suggestedReasons.get(t._id!)}">{SUGGEST_LABEL[suggestedReasons.get(t._id!)!]}</span>
+                  <span class="suggest-chip {suggestedReasons.get(t._id!)}">{suggestedReasons.get(t._id!) === 'due_soon' && t.due_date === today() ? 'Due today' : SUGGEST_LABEL[suggestedReasons.get(t._id!)!]}</span>
                 {/if}
               </div>
               <span class="check" class:checked={selected.includes(t._id!)} aria-label={selected.includes(t._id!) ? 'Selected' : 'Select for commitment'}>

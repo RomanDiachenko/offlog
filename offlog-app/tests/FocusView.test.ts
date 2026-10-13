@@ -134,7 +134,7 @@ describe('FocusView picker', () => {
 
     expect(chipOf(noteFor(container, 'Pinned one'))).toBe('Pinned');
     expect(chipOf(noteFor(container, 'Late one'))).toBe('Overdue');
-    expect(chipOf(noteFor(container, 'Soon one'))).toBe('Due soon');
+    expect(chipOf(noteFor(container, 'Soon one'))).toBe('Due today');
     // Only 3 may be suggested — the round robin fills pinned/overdue/due-soon first.
     expect(chipOf(noteFor(container, 'Plain one'))).toBeNull();
     expect(container.querySelectorAll('.suggest-chip')).toHaveLength(3);
