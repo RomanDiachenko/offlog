@@ -105,9 +105,13 @@ export function isRealDiff(d: LogDiff): boolean {
 
 const MAX_CLAUSES = 3;
 
+// Bookkeeping that rides along with a visible change (archived) and means
+// nothing on its own to a reader.
+const HIDDEN_FIELDS = new Set(['archivedWithProject']);
+
 function fmtDiffs(diffs: Record<string, LogDiff>): string {
   const clauses = Object.entries(diffs)
-    .filter(([, d]) => isRealDiff(d))
+    .filter(([field, d]) => !HIDDEN_FIELDS.has(field) && isRealDiff(d))
     .map(([field, d]) => describeField(field, d.from, d.to));
   if (clauses.length === 0) return 'Details updated';
   if (clauses.length > MAX_CLAUSES) {
@@ -151,7 +155,7 @@ export function describeLog(log: LogEntry): string {
   if (log.diffs) {
     // A lone pin/archive change is a verb on the item (Archived "X"), not a
     // change "on" it, which reads like a date or a place.
-    const real = Object.entries(log.diffs).filter(([, d]) => isRealDiff(d));
+    const real = Object.entries(log.diffs).filter(([f, d]) => !HIDDEN_FIELDS.has(f) && isRealDiff(d));
     if (real.length === 1 && VERB_FIELDS.has(real[0][0]) && who) return `${describeField(real[0][0], real[0][1].from, real[0][1].to)} ${who}`;
     return fmtDiffs(log.diffs) + (who ? ` on ${who}` : '');
   }

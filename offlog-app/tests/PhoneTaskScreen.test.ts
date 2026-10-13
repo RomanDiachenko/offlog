@@ -388,6 +388,16 @@ describe('phone TaskScreen', () => {
     await waitFor(() => expect(row('Repeat')).toBeTruthy());
   });
 
+  it('the Repeat sheet says 1 week, 2 weeks', async () => {
+    await open(task({ due_date: '2026-10-01', recurrence: 'weekly', recurrenceInterval: 1 }));
+    await detail('Repeat');
+    await waitFor(() => expect(document.querySelector('.psheet .unit')?.textContent).toBe('week'));
+    cleanup();
+    await open(task({ due_date: '2026-10-01', recurrence: 'weekly', recurrenceInterval: 2 }));
+    await detail('Repeat');
+    await waitFor(() => expect(document.querySelector('.psheet .unit')?.textContent).toBe('weeks'));
+  });
+
   it('adds a tag typed into the Tags sheet', async () => {
     const { getByText } = await open();
     await detail('Tags');

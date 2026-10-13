@@ -53,6 +53,10 @@ describe('describeLog: pin and archive read as verbs on the item', () => {
     expect(describeLog({ field: 'pinned', from: true, to: false, task_title: 'Plan', ref: 'task:a' })).toBe('Unpinned "Plan"');
   });
 
+  it('a project-archive marker riding along is not shown', () => {
+    expect(describeLog({ action: 'update', task_title: 'Plan', ref: 'task:a', diffs: { archived: { from: true, to: false }, archivedWithProject: { from: true, to: undefined } } })).toBe('Taken out of archive "Plan"');
+  });
+
   it('other changes keep "on", alone or mixed with a pin', () => {
     expect(describeLog({ action: 'update', task_title: 'Plan', ref: 'task:a', diffs: { related: { from: [], to: ['task:b'] } } })).toBe('Related tasks changed on "Plan"');
     expect(describeLog({ action: 'update', task_title: 'Plan', ref: 'task:a', diffs: { pinned: { from: false, to: true }, priority: { from: 1, to: 3 } } })).toMatch(/ on "Plan"$/);

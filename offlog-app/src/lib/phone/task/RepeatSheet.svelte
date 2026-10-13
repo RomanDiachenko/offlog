@@ -11,7 +11,8 @@
   const dispatch = createEventDispatcher<{ skip: void }>();
   type Rec = 'daily' | 'weekly' | 'monthly';
   const ERR = 'Could not save the repeat. Please try again.';
-  const UNIT: Record<Rec, string> = { daily: 'days', weekly: 'weeks', monthly: 'months' };
+  const UNIT: Record<Rec, string> = { daily: 'day', weekly: 'week', monthly: 'month' };
+  $: unit = (r: Rec) => UNIT[r] + (every === 1 ? '' : 's');
   const OPTIONS = [
     { value: '', label: 'No repeat' },
     { value: 'daily', label: 'Daily' },
@@ -54,8 +55,8 @@
   <div class="p-group">
     <label class="p-row every">
       <span class="p-k"><span>Every</span></span>
-      <input type="number" min="1" max="365" inputmode="numeric" value={every} on:change={onEvery} aria-label="Repeat every N {UNIT[rec]}" />
-      <span class="unit">{UNIT[rec]}</span>
+      <input type="number" min="1" max="365" inputmode="numeric" value={every} on:change={onEvery} aria-label="Repeat every N {unit(rec)}" />
+      <span class="unit">{unit(rec)}</span>
     </label>
     {#if rec === 'daily'}
       <button class="p-row" role="switch" aria-checked={weekdays} on:click={() => save(rule(rec, every, !weekdays), ERR)}>
