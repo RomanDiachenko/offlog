@@ -1,6 +1,8 @@
 package com.offlog.app;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.webkit.WebSettings;
 import androidx.core.splashscreen.SplashScreen;
 import com.getcapacitor.BridgeActivity;
 
@@ -29,5 +31,21 @@ public class MainActivity extends BridgeActivity {
         // Activity window is created.
         SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
+        fontScale = getResources().getConfiguration().fontScale;
+    }
+
+    private float fontScale = 1f;
+
+    // fontScale is in the manifest's configChanges, so a system font-size
+    // change no longer recreates the activity (which reloaded the page and
+    // lost the open screen). The page takes the new size here instead, scaled
+    // from whatever text zoom the WebView had.
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.fontScale == fontScale || bridge == null || bridge.getWebView() == null) return;
+        WebSettings s = bridge.getWebView().getSettings();
+        s.setTextZoom(Math.round(s.getTextZoom() * newConfig.fontScale / fontScale));
+        fontScale = newConfig.fontScale;
     }
 }

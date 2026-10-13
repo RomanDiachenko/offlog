@@ -968,6 +968,9 @@ never on load.
 Capacitor wraps the same `dist/` in a WebView — same PouchDB, same sync,
 same UI.
 
+- **System font size**: `fontScale` is in MainActivity's `configChanges`, so
+  changing it doesn't recreate the activity (that reloaded the page and lost
+  the open screen); `onConfigurationChanged` rescales the WebView's text zoom.
 - **Touch drag on the desktop Board** (tablet-sized screens get the desktop
   views): HTML5 drag events don't fire on touch, so `KanbanBoard.svelte`
   uses `touchstart`/`touchmove`/`touchend` with `document.elementFromPoint`.
