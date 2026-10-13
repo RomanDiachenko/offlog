@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, cleanup, waitFor } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import { get, type Writable } from 'svelte/store';
 import type { ProjectDoc, TaskDoc } from '../src/lib/types';
 
@@ -673,6 +674,21 @@ describe('phone Project screen — project menu', () => {
     expect(get(activeProjectId)).toBe('');
     await get(toast)!.undo!();
     expect(unarchiveProject).toHaveBeenCalledWith('project:p');
+  });
+
+  it('Archive and Delete project still leave and offer Undo when the change feed drops the project first', async () => {
+    for (const [fn, item] of [[archiveProject, 'Archive project'], [deleteProject, 'Delete project']] as const) {
+      push({ k: 'project', id: 'project:p' });
+      fn.mockImplementation(async () => { (projects as Writable<ProjectDoc[]>).set([]); await tick(); });
+      const r = setup();
+      await openMore(r);
+      await fireEvent.click(r.getByText(item));
+      if (item === 'Delete project') await fireEvent.click(r.getByText('Delete project', { selector: '.p-go' }));
+      await waitFor(() => expect(get(stack).map(s => s.k)).toEqual(['home']));
+      if (item === 'Archive project') expect(get(toast)?.text).toBe('Project archived');
+      r.unmount();
+      await new Promise(res => setTimeout(res, 20));
+    }
   });
 
   it('a failed Undo of Archive project surfaces an error', async () => {

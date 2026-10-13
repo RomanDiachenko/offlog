@@ -58,7 +58,10 @@
   }
 
   // The project leaves the store before the screen is popped, so it can't
-  // claim activeProjectId back on its way out.
+  // claim activeProjectId back on its way out. Archive and delete leave at
+  // once rather than through then(): the write's change feed can drop the
+  // project, and with it this sheet, before the sheet's close completes,
+  // and then closed() never runs. popScreen() closes the sheet in the same step.
   function leave(id: string) {
     activeProjectId.set('');
     projects.update(ps => ps.filter(p => p._id !== id));
@@ -76,12 +79,10 @@
       busy = false;
       return;
     }
-    then(() => {
-      leave(_id);
-      showToast('Project archived', async () => {
-        try { await unarchiveProject(_id); await reloadTasks(); }
-        catch { showError('Could not undo. Please try again.'); }
-      });
+    leave(_id);
+    showToast('Project archived', async () => {
+      try { await unarchiveProject(_id); await reloadTasks(); }
+      catch { showError('Could not undo. Please try again.'); }
     });
   }
   async function remove() {
@@ -90,7 +91,7 @@
     const { _id } = project;
     try {
       await deleteProject(_id);
-      then(() => leave(_id));
+      leave(_id);
     } catch {
       showError('Could not delete this project. Please try again.');
       busy = false;
