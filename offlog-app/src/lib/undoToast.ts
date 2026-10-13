@@ -31,6 +31,19 @@ export function dismissUndo(key: string): void {
   undoToasts.update(list => list.filter(t => t.key !== key));
 }
 
+// WCAG 2.2.1: while the pointer or keyboard focus is on a toast it doesn't
+// time out; leaving it starts a full countdown again.
+export function holdUndo(key: string): void {
+  clearTimeout(timers.get(key));
+  timers.delete(key);
+}
+export function releaseUndo(key: string): void {
+  let shown = false;
+  undoToasts.update(list => { shown = list.some(t => t.key === key); return list; });
+  if (!shown || timers.has(key)) return;
+  timers.set(key, setTimeout(() => dismissUndo(key), SHOW_MS));
+}
+
 export async function runUndo(key: string): Promise<void> {
   let toast: UndoToast | undefined;
   undoToasts.update(list => { toast = list.find(t => t.key === key); return list; });

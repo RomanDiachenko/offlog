@@ -39,3 +39,25 @@ describe('desktop undo toasts', () => {
     expect(showError).toHaveBeenCalledWith('Could not undo. Please try again.');
   });
 });
+
+// WCAG 2.2.1: a toast that times out pauses while the pointer or keyboard
+// focus is on it, and gets its full time again when left.
+describe('undo toast pause', () => {
+  it('holds while hovered or focused, then runs a fresh countdown', async () => {
+    vi.useFakeTimers();
+    try {
+      const { offerUndo, holdUndo, releaseUndo, undoToasts } = await import('../src/lib/undoToast');
+      const { get } = await import('svelte/store');
+      offerUndo('k:pause', 'Deleted "x"', async () => {});
+      vi.advanceTimersByTime(4000);
+      holdUndo('k:pause');
+      vi.advanceTimersByTime(60000);
+      expect(get(undoToasts).some(t => t.key === 'k:pause')).toBe(true);
+      releaseUndo('k:pause');
+      vi.advanceTimersByTime(4900);
+      expect(get(undoToasts).some(t => t.key === 'k:pause')).toBe(true);
+      vi.advanceTimersByTime(200);
+      expect(get(undoToasts).some(t => t.key === 'k:pause')).toBe(false);
+    } finally { vi.useRealTimers(); }
+  });
+});
