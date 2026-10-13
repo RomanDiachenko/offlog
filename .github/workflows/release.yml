@@ -222,7 +222,7 @@ jobs:
           path: offlog-desktop/vendor/nyxdb-win
           # Keep in sync with desktop-ci.yml's key and the fetch
           # script's $Ref.
-          key: nyxdb-win-v0.1.7
+          key: nyxdb-win-v0.1.8
 
       - name: Fetch vendored NyxDB (no-op on cache hit, builds from source otherwise)
         working-directory: offlog-desktop

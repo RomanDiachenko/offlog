@@ -18,8 +18,8 @@
 
 $ErrorActionPreference = "Stop"
 
-$Ref = "v0.1.7"
-$Commit = "fecc0588634e96e11ff1176db890ca5627ba5a28"
+$Ref = "v0.1.8"
+$Commit = "f73ba27d18a2cd6a82ec379dd61fa5b9c4ed423f"
 $RepoUrl = "https://github.com/hrach-gevorgyan/nyxdb.git"
 
 $Root = Split-Path -Parent $PSScriptRoot

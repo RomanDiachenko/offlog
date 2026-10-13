@@ -86,7 +86,7 @@ jobs:
           # script's $Ref -- a stale cache would otherwise pin an old
           # NyxDB forever (the script skips fetching when the directory
           # already exists).
-          key: nyxdb-win-v0.1.7
+          key: nyxdb-win-v0.1.8
 
       - name: Fetch vendored NyxDB (no-op on cache hit)
         working-directory: offlog-desktop
