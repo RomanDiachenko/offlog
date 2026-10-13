@@ -85,7 +85,7 @@
   }
 
   // ── Devices ──
-  let deviceLastSeen: { device: string; lastSeen: string }[] = [];
+  let deviceLastSeen: { device: string; lastSeen: string; id: string }[] = [];
   async function loadDeviceLastSeen() {
     try {
       deviceLastSeen = await getDeviceLastSeen();
