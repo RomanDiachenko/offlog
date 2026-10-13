@@ -70,7 +70,9 @@ export async function scanForHosts(): Promise<void> {
 async function startWatch(): Promise<void> {
   const { ZeroConf } = await import('capacitor-zeroconf');
 
+  // The plugin calls back once with no result when the watch starts.
   watchId = await ZeroConf.watch({ type: SERVICE_TYPE, domain: DOMAIN }, (result) => {
+    if (!result?.service) return;
     const { action, service } = result;
     const uuid = service.txtRecord?.uuid;
     if (!uuid) return;
@@ -246,6 +248,7 @@ async function findPairedHostAddress(uuid: string): Promise<HostResolveResult> {
       resolve({ address, otherHost });
     };
     ZeroConf.watch({ type: SERVICE_TYPE, domain: DOMAIN }, (result) => {
+      if (!result?.service) return;
       const { action, service } = result;
       if (action === 'removed') return;
       const seenUuid = service.txtRecord?.uuid;

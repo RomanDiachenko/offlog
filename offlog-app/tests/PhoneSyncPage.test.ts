@@ -199,6 +199,28 @@ describe('phone Sync page', () => {
     await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not sync. Please try again.'));
   });
 
+  it('Sync now while offline says the computer is out of reach', async () => {
+    m.syncState.status = 'offline';
+    syncNow.mockRejectedValueOnce(new Error('x'));
+    const { getByText } = render(SettingsPage, { page: 'sync' });
+    await fireEvent.click(getByText('Sync now'));
+    await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not reach your computer. Sync picks up again once this phone is back on its network.'));
+  });
+
+  it('resolving the last conflict closes the sheet and says so', async () => {
+    m.syncState.conflictCount = 1;
+    getConflicts.mockResolvedValue([conflict]);
+    const { getByText, getAllByText, queryByText } = render(SettingsPage, { page: 'sync' });
+    await waitFor(() => getByText('Review conflicts'));
+    await fireEvent.click(getByText('Review conflicts'));
+    await waitFor(() => getByText('Buy paint now'));
+    getConflicts.mockResolvedValue([]);
+    confirmAction.mockResolvedValueOnce(true);
+    await fireEvent.click(getAllByText('Keep this')[0]);
+    await waitFor(() => expect(get(nav.toast)?.text).toBe('All conflicts resolved'));
+    await waitFor(() => expect(queryByText('Buy paint now')).toBeNull());
+  });
+
   it('an unreachable computer says what to do, and Try again syncs', async () => {
     Object.assign(m.syncState, { status: 'error', error: 'Cannot reach sync server — it may be switched off' });
     const { getByRole, getByText, container } = render(SettingsPage, { page: 'sync' });

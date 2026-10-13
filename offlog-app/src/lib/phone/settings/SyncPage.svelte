@@ -15,7 +15,7 @@
   import { discoveredHosts, isScanning, scanForHosts, stopScan, pairWithHost, staleHostAlert, type DiscoveredHost } from '../../discovery';
   import TopBar from '../TopBar.svelte';
   import Sheet from '../Sheet.svelte';
-  import { push } from '../nav';
+  import { push, showToast } from '../nav';
   import { I } from '../icons';
   import { runSyncNow, syncing } from './syncNow';
   import { fmtConflictValue, conflictFieldLabel, statusNamesOf } from '../../shared/conflictFormat';
@@ -221,7 +221,7 @@
   onDestroy(() => { stopPcPairPoll(); clearPcPairingExpiryTimer(); unlistenPairing?.(); });
 
   // ── Conflicts ──
-  let showConflicts = false, conflictsSession = 0;
+  let showConflicts = false, conflictsSession = 0, conflictSheet: Sheet;
   function openConflicts() { conflictsSession++; showConflicts = true; }
   let conflictList: ConflictInfo[] = [];
   let loadingConflicts = false;
@@ -254,6 +254,7 @@
     try {
       await resolveConflict(c.docId, v.isCurrent ? 'current' : 'other', v.rev, c.versions.map(x => x.doc._rev));
       await loadConflicts();
+      if (!conflictList.length) { conflictSheet?.close(); showToast('All conflicts resolved'); }
     } catch (e) {
       if ((e as Error)?.name !== 'ConflictChangedError') { showError('Could not resolve conflict. Please try again.'); return; }
       showError((e as Error).message);
@@ -427,7 +428,7 @@
 
   {#if showConflicts}
     {#key conflictsSession}
-      <Sheet title="Conflicts" on:close={() => showConflicts = false}>
+      <Sheet bind:this={conflictSheet} title="Conflicts" on:close={() => showConflicts = false}>
         <div class="sh">
           <div class="crow">
             <span class="cmeta">

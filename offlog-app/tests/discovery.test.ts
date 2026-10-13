@@ -181,6 +181,13 @@ describe('scanForHosts', () => {
     return promise;
   });
 
+  it('ignores the empty callback the plugin sends when the watch starts', async () => {
+    let cb: ((r: unknown) => void) | undefined;
+    vi.mocked(ZeroConf.watch).mockImplementationOnce(async (_o: unknown, c: (r: unknown) => void) => { cb = c; return 'watch-id'; });
+    await scanForHosts();
+    expect(() => cb!(undefined)).not.toThrow();
+  });
+
   it('a scan that cannot start clears Scanning and says why', async () => {
     vi.mocked(ZeroConf.watch).mockRejectedValueOnce(new Error('multicast lock'));
     await scanForHosts();

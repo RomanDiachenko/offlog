@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { syncNow } from '../../db';
+import { syncNow, syncState } from '../../db';
 import { showError } from '../../store';
 import { showToast } from '../nav';
 
@@ -19,7 +19,11 @@ export async function runSyncNow() {
     ]);
     showToast(done ? 'Synced' : 'Still syncing in the background');
   } catch {
-    showError('Could not sync. Please try again.');
+    // The card beside the button already says Offline; a generic retry
+    // message would contradict it.
+    showError(syncState.status === 'offline'
+      ? 'Could not reach your computer. Sync picks up again once this phone is back on its network.'
+      : 'Could not sync. Please try again.');
   } finally {
     clearTimeout(timer);
     syncing.set(false);
