@@ -748,6 +748,7 @@
     try {
       await resolveConflict(c.docId, v.isCurrent ? 'current' : 'other', v.rev, c.versions.map(x => x.doc._rev));
       await loadConflicts();
+      if (!conflictList.length) showConflictsModal = false;
     } catch (e) {
       if ((e as Error)?.name !== 'ConflictChangedError') { showError('Could not resolve conflict. Please try again.'); return; }
       showError((e as Error).message);
@@ -1361,8 +1362,9 @@
         <div class="setting-row">
           <span class="storage-info" style="color: var(--muted)">
             {#if loadingConflicts}Loading…
-            {:else if conflictList.length}{conflictList.length} document{conflictList.length === 1 ? '' : 's'} with unresolved edits
-            {:else}{conflictCount} conflict{conflictCount === 1 ? '' : 's'} detected{/if}
+            {:else if conflictList.length}{conflictList.length} item{conflictList.length === 1 ? '' : 's'} edited on two devices
+            {:else if conflictCount}{conflictCount} conflict{conflictCount === 1 ? '' : 's'}
+            {:else}No conflicts left{/if}
           </span>
           <button class="export-btn" on:click={loadConflicts} disabled={loadingConflicts}>Refresh</button>
         </div>

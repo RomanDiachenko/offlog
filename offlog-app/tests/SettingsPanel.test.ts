@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, cleanup, waitFor } from '@testing-library/svelte';
+import { get } from 'svelte/store';
 import { writable } from 'svelte/store';
 
 // SettingsPanel pulls in config, db, discovery, notifications and the
@@ -461,6 +462,30 @@ describe('SettingsPanel sync tab load failures', () => {
     const { getByText } = render(SettingsPanel, { initialCategory: 'sync' });
     expect(getByText(/Refused 2 items from the sync server/)).toBeTruthy();
     (syncState as { rejected: number }).rejected = 0;
+  });
+
+  it('resolving the last conflict closes the Resolve conflicts dialog', async () => {
+    const { syncState } = await import('../src/lib/db');
+    const { confirmRequest } = await import('../src/lib/confirm');
+    const doc = { _id: 'task:a', _rev: '2-a', title: 'A', updated_at: '' };
+    getConflicts.mockResolvedValueOnce([{ docId: 'task:a', label: 'A', type: 'task', differing: [], versions: [{ rev: '', isCurrent: true, isNewest: true, doc }] }]);
+    getConflicts.mockResolvedValue([]);
+    (syncState as { conflictCount: number }).conflictCount = 1;
+    // setup.ts's animate() stub never finishes, so a closing dialog would stay
+    // in the DOM; this one finishes at once.
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function () {
+      const a = { finished: Promise.resolve(), cancel() {}, finish() {}, play() {}, pause() {}, currentTime: 0, set onfinish(fn: () => void) { queueMicrotask(fn); } };
+      return a as unknown as Animation;
+    };
+    try {
+      const { findByText, queryByRole } = render(SettingsPanel, { initialCategory: 'sync' });
+      await fireEvent.click(await findByText('Resolve conflicts'));
+      await fireEvent.click(await findByText('Keep this'));
+      await waitFor(() => expect(get(confirmRequest)).toBeTruthy());
+      get(confirmRequest)!.resolve(true);
+      await waitFor(() => expect(queryByRole('dialog', { name: 'Resolve conflicts' })).toBeNull());
+    } finally { Element.prototype.animate = animate; (syncState as { conflictCount: number }).conflictCount = 0; getConflicts.mockResolvedValue([]); }
   });
 
   it('surfaces a specific error instead of an unhandled rejection when conflicts fail to load', async () => {
