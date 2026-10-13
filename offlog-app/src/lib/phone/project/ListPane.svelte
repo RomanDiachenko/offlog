@@ -2,7 +2,8 @@
   import Empty from '../Empty.svelte';
   import { PRIORITY_COLOR, PRIORITY_LABEL } from '../../constants';
   // Dense rows with a search field, a sort, Pinned first and Select. In
-  // Select mode a floating bar changes status, priority or tags in bulk.
+  // Select mode a floating bar changes status, priority or tags in bulk, and
+  // archives or deletes under More.
   import { createEventDispatcher, onDestroy } from 'svelte';
   import { fly } from 'svelte/transition';
   import type { ProjectDoc, TaskDoc } from '../../types';
@@ -144,9 +145,9 @@
   $: { const vis = new Set(rows.map(t => t._id)); if ([...selected].some(id => !vis.has(id))) selected = new Set([...selected].filter(id => vis.has(id))); }
   $: allOn = rows.length > 0 && selected.size === rows.length;
 
-  let bulk: 'status' | 'prio' | 'tag' | null = null;
+  let bulk: 'status' | 'prio' | 'tag' | 'more' | null = null;
   let bulkSession = 0;
-  function openBulk(k: 'status' | 'prio' | 'tag') { bulkSession++; bulk = k; }
+  function openBulk(k: 'status' | 'prio' | 'tag' | 'more') { bulkSession++; bulk = k; }
 
   // The sort sheet; {#key} bumped on every open (Sheet rule).
   let sorting = false, sortSession = 0;
@@ -209,6 +210,7 @@
     <button disabled={!selected.size} on:click={() => openBulk('status')}>Status</button>
     <button disabled={!selected.size} on:click={() => openBulk('prio')}>Priority</button>
     <button disabled={!selected.size} on:click={() => openBulk('tag')}>Tag</button>
+    <button class="x" disabled={!selected.size} on:click={() => openBulk('more')} aria-label="More for selected tasks">{@html I.more}</button>
   </div>
 {/if}
 

@@ -13,6 +13,7 @@ const unarchiveProject = vi.fn();
 const deleteProject = vi.fn();
 const getArchivedTasksForProject = vi.fn();
 const unarchiveTask = vi.fn();
+const undoDelete = vi.fn();
 vi.mock('../src/lib/db', () => {
   const posBetween = (b: number | null, a: number | null) => (b === null && a === null ? 1024 : b === null ? a! / 2 : a === null ? b + 1024 : (a + b) / 2);
   return {
@@ -26,6 +27,7 @@ vi.mock('../src/lib/db', () => {
     deleteProject: (...a: unknown[]) => deleteProject(...a),
     getArchivedTasksForProject: (...a: unknown[]) => getArchivedTasksForProject(...a),
     unarchiveTask: (...a: unknown[]) => unarchiveTask(...a),
+    undoDelete: (...a: unknown[]) => undoDelete(...a),
     getTaskIdsBlocked: vi.fn().mockResolvedValue(new Set(['task:b'])),
     getTaskIdsWithRelatedLinks: vi.fn().mockResolvedValue(new Set()),
     getTagColorOverrides: vi.fn().mockResolvedValue({}),
@@ -93,7 +95,7 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 20));
   vi.clearAllMocks();
   toast.set(null);
-  for (const f of [updateTask, updateProject, deleteTask, archiveTask, duplicateTask, archiveProject, deleteProject, unarchiveTask])
+  for (const f of [updateTask, updateProject, deleteTask, archiveTask, duplicateTask, archiveProject, deleteProject, unarchiveTask, undoDelete])
     f.mockReset().mockResolvedValue(undefined);
   getArchivedTasksForProject.mockReset().mockResolvedValue([]);
   activeProjectId.set('');
@@ -194,6 +196,41 @@ describe('phone Project screen — list', () => {
     await fireEvent.click(r.getByLabelText('Exit selection'));
     await waitFor(() => expect(get(modalOpen)).toBe(false));
     expect(r.container.querySelector('.bulkbar')).toBeNull();
+  });
+
+  it('Select mode: More archives or deletes the selection, each with one Undo; a failure says so', async () => {
+    const r = list();
+    await fireEvent.click(r.getByText('Select'));
+    await fireEvent.click(r.getByRole('checkbox', { name: 'a' }));
+    await fireEvent.click(r.getByRole('checkbox', { name: 'c' }));
+    await fireEvent.click(r.getByLabelText('More for selected tasks'));
+    await waitFor(() => r.getByRole('dialog', { name: '2 tasks' }));
+    await fireEvent.click(r.getByText('Archive', { selector: '.psheet .p-row' }));
+    await waitFor(() => expect(archiveTask.mock.calls).toEqual([['task:a'], ['task:c']]));
+    await waitFor(() => expect(get(toast)?.text).toBe('Archived 2 tasks'));
+    await get(toast)!.undo!();
+    expect(unarchiveTask.mock.calls).toEqual([['task:a'], ['task:c']]);
+    // The snackbar's Undo button also takes the toast down.
+    toast.set(null);
+    await waitFor(() => expect(r.queryByRole('dialog')).toBeNull());
+
+    await fireEvent.click(r.getByRole('checkbox', { name: 'b' }));
+    await fireEvent.click(r.getByLabelText('More for selected tasks'));
+    await waitFor(() => r.getByRole('dialog', { name: '1 task' }));
+    await fireEvent.click(r.getByText('Delete', { selector: '.psheet .p-row' }));
+    await waitFor(() => expect(updateTask).toHaveBeenCalledWith('task:b', { deleted: true }));
+    expect(deleteTask).not.toHaveBeenCalled();
+    await waitFor(() => expect(get(toast)?.text).toBe('Deleted 1 task'));
+    await get(toast)!.undo!();
+    expect(undoDelete).toHaveBeenCalledWith('task:b');
+    await waitFor(() => expect(r.queryByRole('dialog')).toBeNull());
+
+    archiveTask.mockRejectedValueOnce(new Error('boom'));
+    await fireEvent.click(r.getByRole('checkbox', { name: 'a' }));
+    await fireEvent.click(r.getByLabelText('More for selected tasks'));
+    await waitFor(() => r.getByRole('dialog', { name: '1 task' }));
+    await fireEvent.click(r.getByText('Archive', { selector: '.psheet .p-row' }));
+    await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not archive some tasks. Please try again.'));
   });
 
   it('holding a row enters Select mode with that row picked; a tap still opens it', async () => {
