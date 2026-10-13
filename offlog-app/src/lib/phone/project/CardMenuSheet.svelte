@@ -59,7 +59,15 @@
     run(() => updateTask(id, { column_id: colId, position }), 'Could not move this task. Please try again.',
       `Moved to ${project.columns.find(c => c.id === colId)?.name ?? ''}`, () => restore([[id, before]]));
   }
-  const duplicate = () => run(() => duplicateTask(task._id), 'Could not duplicate this task. Please try again.');
+  // The copy can land outside the list on screen, so the toast confirms it.
+  function duplicate() {
+    let copyId = '';
+    run(async () => { copyId = (await duplicateTask(task._id))._id!; }, 'Could not duplicate this task. Please try again.',
+      'Duplicated', async () => {
+        try { await deleteTask(copyId); await reloadTasks(); }
+        catch { showError('Could not undo. Please try again.'); }
+      });
+  }
   function archive() {
     const id = task._id;
     run(() => archiveTask(id), 'Could not archive this task. Please try again.', 'Archived', () => unarchive(id));

@@ -105,6 +105,7 @@ beforeEach(async () => {
   toast.set(null);
   for (const f of [updateTask, updateProject, deleteTask, archiveTask, duplicateTask, archiveProject, deleteProject, unarchiveTask])
     f.mockReset().mockResolvedValue(undefined);
+  duplicateTask.mockResolvedValue({ _id: 'task:copy' });
   getArchivedTasksForProject.mockReset().mockResolvedValue([]);
   activeProjectId.set('');
   localStorage.removeItem('offlog_phone_view_project:p');
@@ -457,6 +458,9 @@ describe('phone Project screen — card menu', () => {
     await waitFor(() => expect(duplicateTask).toHaveBeenCalledWith('task:b'));
     expect(reloadTasks).toHaveBeenCalled();
     await waitFor(() => expect(r.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(get(toast)?.text).toBe('Duplicated'));
+    await get(toast)!.undo!();
+    expect(deleteTask).toHaveBeenCalledWith('task:copy');
     duplicateTask.mockRejectedValue(new Error('boom'));
     await openMenu(r, 'b');
     await fireEvent.click(r.getByText('Duplicate'));
