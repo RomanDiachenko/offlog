@@ -290,7 +290,9 @@
   /* Two lines before truncating: at large system font sizes one line cuts most names. */
   .p-row .lbl { flex: 1; min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; }
   .late-n { color: var(--overdue-ink); font-size: var(--p-fs-xs); font-weight: 600; }
-  .stat { font-size: var(--p-fs-s); color: var(--faint); text-align: center; margin: 4px 0 0; }
+  /* Inset by the + button's column (16px edge + 56px) on both sides, so it
+     stays centred and wraps instead of running under the button. */
+  .stat { font-size: var(--p-fs-s); color: var(--faint); text-align: center; text-wrap: balance; margin: 4px 0 0; padding: 0 56px; }
 
   /* Sideways: a shorter hero, so the projects start on the first screen. */
   @media (orientation: landscape) and (max-height: 500px) {
