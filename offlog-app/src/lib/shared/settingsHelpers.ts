@@ -1,7 +1,7 @@
 // Pure helpers lifted out of SettingsPanel.svelte — no component state, so
 // they stay unit-testable without mounting the panel.
 import { isTauri as isTauriCheck } from '../../config';
-import type { MaintStepResult } from '../db';
+import type { MaintStepResult, ImportedDoc } from '../db';
 import { shareViaCache } from './shareFile';
 
 // Named distinctly from db.ts's MaintStatus -- this one adds 'pending' for
@@ -98,4 +98,14 @@ export function summarizeIssues(issues: { type: string }[]): { text: string; man
       const label = ISSUE_LABELS[type] ?? [type, type];
       return { text: `${n} ${n === 1 ? label[0] : label[1]}`, manual: MANUAL_ONLY.has(type) };
     });
+}
+
+// A backup's text as documents, or the one message a person can act on: a
+// raw SyntaxError ("Unexpected token < in JSON") means nothing to someone who
+// picked the wrong file.
+export function parseBackup(text: string): ImportedDoc[] {
+  let docs: unknown;
+  try { docs = JSON.parse(text); } catch { throw new Error("That doesn't look like an Offlog backup file."); }
+  if (!Array.isArray(docs)) throw new Error("That doesn't look like an Offlog backup file.");
+  return docs as ImportedDoc[];
 }

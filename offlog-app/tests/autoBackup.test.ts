@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isBackupDue, filesToDelete, getAutoBackupUsage } from '../src/lib/autoBackup';
+import { isBackupDue, filesToDelete, getAutoBackupUsage, autoBackupTime, readAutoBackup } from '../src/lib/autoBackup';
 
 describe('isBackupDue', () => {
   it('is due when never run before', () => {
@@ -74,5 +74,20 @@ describe('getAutoBackupUsage', () => {
     // Settings section stays silent instead of claiming backups take no
     // space when the truth is that none are kept at all.
     await expect(getAutoBackupUsage()).resolves.toBeNull();
+  });
+});
+
+describe('kept copies', () => {
+  it('reads the moment a copy was written back out of its name', () => {
+    const at = new Date('2026-10-14T00:18:53.123Z');
+    const name = `offlog-autobackup-${at.toISOString().replace(/[:.]/g, '-')}.json`;
+    expect(autoBackupTime(name)).toBe(at.toISOString());
+  });
+
+  it('refuses anything that is not a copy\'s own name before touching the file system', async () => {
+    for (const bad of ['../sync-secret.enc', 'offlog-autobackup-2026-10-14T00-18-53-123Z.json/../x', 'notes.json', '']) {
+      expect(autoBackupTime(bad)).toBeNull();
+      await expect(readAutoBackup(bad)).rejects.toThrow('not an automatic backup');
+    }
   });
 });

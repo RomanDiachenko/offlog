@@ -156,3 +156,55 @@ export async function getAutoBackupUsage(): Promise<{ count: number; bytes: numb
   } catch { /* folder missing or unreadable -- nothing to report */ }
   return null;
 }
+
+export interface AutoBackupFile { name: string; at: string; bytes: number }
+
+// The copy's own name, never a path: anything else is refused before it can
+// reach the file system.
+const NAME = /^offlog-autobackup-(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z\.json$/;
+// The moment a copy was written, read back out of its name.
+export function autoBackupTime(name: string): string | null {
+  const m = NAME.exec(name);
+  return m ? `${m[1]}T${m[2]}:${m[3]}:${m[4]}.${m[5]}Z` : null;
+}
+
+// The kept copies, newest first. Empty where there are none, or none can be read.
+export async function listAutoBackups(): Promise<AutoBackupFile[]> {
+  const out: AutoBackupFile[] = [];
+  try {
+    if (isNativePlatform()) {
+      const { Filesystem, Directory } = await import('@capacitor/filesystem');
+      const listing = await Filesystem.readdir({ path: 'auto-backups', directory: Directory.Data });
+      for (const f of listing.files) {
+        const at = f.type === 'file' ? autoBackupTime(f.name) : null;
+        if (at) out.push({ name: f.name, at, bytes: f.size ?? 0 });
+      }
+    } else if (isTauri()) {
+      const { readDir, stat, exists } = await import('@tauri-apps/plugin-fs');
+      const { appDataDir, join } = await import('@tauri-apps/api/path');
+      const base = await join(await appDataDir(), 'auto-backups');
+      if (!(await exists(base))) return [];
+      for (const e of await readDir(base)) {
+        const at = e.name ? autoBackupTime(e.name) : null;
+        if (!at) continue;
+        let bytes = 0;
+        try { bytes = (await stat(await join(base, e.name!))).size ?? 0; } catch { continue; /* vanished mid-scan */ }
+        out.push({ name: e.name!, at, bytes });
+      }
+    }
+  } catch { return []; }
+  return out.sort((a, b) => b.at.localeCompare(a.at));
+}
+
+// A kept copy's text, for the same preview and restore as a picked file.
+export async function readAutoBackup(name: string): Promise<string> {
+  if (!autoBackupTime(name)) throw new Error('not an automatic backup');
+  if (isNativePlatform()) {
+    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem');
+    const r = await Filesystem.readFile({ path: `auto-backups/${name}`, directory: Directory.Data, encoding: Encoding.UTF8 });
+    return typeof r.data === 'string' ? r.data : await r.data.text();
+  }
+  const { readTextFile } = await import('@tauri-apps/plugin-fs');
+  const { appDataDir, join } = await import('@tauri-apps/api/path');
+  return readTextFile(await join(await appDataDir(), 'auto-backups', name));
+}

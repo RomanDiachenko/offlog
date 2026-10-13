@@ -34,6 +34,10 @@
       "identifier": "fs:allow-write-text-file",
       "allow": [{ "path": "$APPDATA/auto-backups/**" }]
     },
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [{ "path": "$APPDATA/auto-backups/**" }]
+    },
     "fs:allow-write-file",
     {
       "identifier": "fs:scope",

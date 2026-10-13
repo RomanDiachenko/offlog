@@ -1,7 +1,9 @@
 <script lang="ts">
   // Settings → Backup & restore on the phone: back up, restore, export, as
   // rows. PrefsPage owns the work; this is only the page.
-  import { fmtLastSynced } from '../../utils';
+  import { fmtLastSynced, fmtDay, fmtTime } from '../../utils';
+  import { formatAttachmentSize } from '../../attachments';
+  import type { AutoBackupFile } from '../../autoBackup';
   import { isNativePlatform } from '../../../config';
   import { I } from '../icons';
 
@@ -14,6 +16,8 @@
   export let importStatus: string;
   export let handleImport: () => void;
   export let importBusy: boolean;
+  export let autoBackups: AutoBackupFile[] = [];
+  export let openAutoBackup: (b: AutoBackupFile) => void;
   export let doExportCSV: () => void;
   export let storageAvailable: boolean;
   export let storagePercent: number;
@@ -53,6 +57,13 @@
       <span class="p-k"><span>Restore from a file</span><span class="p-sub" role="status">{importStatus || 'Shows what’s inside before anything changes'}</span></span>
       <span class="chev">{@html I.chev}</span>
     </button>
+    {#each autoBackups as b (b.name)}
+      <button class="p-row" aria-label="Restore the daily copy from {fmtDay(new Date(b.at), { weekday: true })}, {fmtTime(new Date(b.at))}" on:click={() => openAutoBackup(b)} disabled={importBusy}>
+        <span class="ri">{@html I.clock}</span>
+        <span class="p-k"><span>Daily copy, {fmtDay(new Date(b.at), { weekday: true })}</span><span class="p-sub">{fmtTime(new Date(b.at))} · {formatAttachmentSize(b.bytes)}</span></span>
+        <span class="chev">{@html I.chev}</span>
+      </button>
+    {/each}
   </div>
 
   <div class="p-sec" role="heading" aria-level="2">Export</div>

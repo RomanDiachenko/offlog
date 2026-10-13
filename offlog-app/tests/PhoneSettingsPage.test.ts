@@ -91,9 +91,11 @@ vi.mock('../src/lib/desktop/updateChecker', async () => {
   const { writable: w } = await import('svelte/store');
   return { updateState: w({ phase: 'idle' }), showUpdateModal: w(false), checkForUpdate: vi.fn() };
 });
+const autoCopies = vi.hoisted(() => ({ list: [] as { name: string; at: string; bytes: number }[], read: vi.fn() }));
 vi.mock('../src/lib/autoBackup', () => ({
   isAutoBackupEnabled: () => true, setAutoBackupEnabled: vi.fn(),
   getLastAutoBackupAt: () => null, getAutoBackupUsage: vi.fn().mockResolvedValue(null),
+  listAutoBackups: async () => autoCopies.list, readAutoBackup: (...a: unknown[]) => autoCopies.read(...a),
 }));
 vi.mock('../src/lib/theme', () => ({
   claimStatusBar: () => ({ set() {}, release() {} }),
@@ -346,6 +348,24 @@ describe('phone settings pages', () => {
       await picker!.onchange!(new Event('change'));
       await waitFor(() => expect(getByRole('button', { name: 'Restore from a file' }).textContent).toContain("That doesn't look like an Offlog backup file."));
     } finally { spy.mockRestore(); }
+  });
+
+  it('Backup: a daily copy opens in the restore preview; one that cannot be read says so', async () => {
+    autoCopies.list = [{ name: 'offlog-autobackup-2026-10-13T09-00-00-000Z.json', at: '2026-10-13T09:00:00.000Z', bytes: 2048 }];
+    autoCopies.read.mockResolvedValueOnce('[{"_id":"task:1","type":"task","project_id":"p"},{"_id":"task:2","type":"task","project_id":"p"}]');
+    vi.mocked(db.analyzeImport).mockReturnValue({ toCreate: 2, toSkip: 0, byType: { space: 0, project: 0, task: 2 } } as never);
+    try {
+      const { findByRole, findByText, getByRole } = render(SettingsPage, { page: 'data' });
+      const row = await findByRole('button', { name: /^Restore the daily copy from / });
+      await fireEvent.click(row);
+      expect(autoCopies.read).toHaveBeenCalledWith('offlog-autobackup-2026-10-13T09-00-00-000Z.json');
+      expect(await findByText('Import 2 items')).toBeTruthy();
+      expect(vi.mocked(db.analyzeImport).mock.calls.at(-1)![0]).toHaveLength(2);
+      await fireEvent.click(await findByText('Cancel'));
+      autoCopies.read.mockRejectedValueOnce(new Error('gone'));
+      await fireEvent.click(row);
+      await waitFor(() => expect(getByRole('button', { name: 'Restore from a file' }).textContent).toContain('Could not open that backup. Please try again.'));
+    } finally { autoCopies.list = []; }
   });
 
   it('Backup: a restore says how it went, by toast or by showError', async () => {

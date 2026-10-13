@@ -92,9 +92,11 @@ vi.mock('../src/lib/desktop/updateChecker', () => ({
 }));
 
 const getAutoBackupUsage = vi.fn().mockResolvedValue(null);
+const autoCopies = vi.hoisted(() => ({ list: [] as { name: string; at: string; bytes: number }[], read: vi.fn() }));
 vi.mock('../src/lib/autoBackup', () => ({
   isAutoBackupEnabled: () => true, setAutoBackupEnabled: vi.fn(),
   getLastAutoBackupAt: () => null,
+  listAutoBackups: async () => autoCopies.list, readAutoBackup: (...a: unknown[]) => autoCopies.read(...a),
   // loadBreakdown() reads this for the storage section. Omitting it left an
   // unhandled rejection that every test still "passed" through -- the exact
   // shape CLAUDE.md warns about: judge the run by its exit code.
@@ -369,6 +371,22 @@ describe('SettingsPanel restore failure', () => {
     await new Promise(r => setTimeout(r, 0));
 
     expect(showError).toHaveBeenCalledWith('Could not import. Please try again.');
+  });
+
+  it('a daily copy opens in the restore preview', async () => {
+    autoCopies.list = [{ name: 'offlog-autobackup-2026-10-13T09-00-00-000Z.json', at: '2026-10-13T09:00:00.000Z', bytes: 2048 }];
+    autoCopies.read.mockResolvedValueOnce('[{"_id":"task:1","type":"task","project_id":"p"}]');
+    const { analyzeImport } = await import('../src/lib/db');
+    vi.mocked(analyzeImport).mockReturnValue({ toCreate: 1, toSkip: 0, byType: { space: 0, project: 0, task: 1 } } as never);
+    tauri = true;
+    try {
+      const { container, findByRole, findByText } = render(SettingsPanel, { initialCategory: 'data' });
+      const nav = [...container.querySelectorAll('.nav-item')].find(b => /Backup/i.test((b as HTMLElement).textContent!)) as HTMLButtonElement;
+      await fireEvent.click(nav);
+      await fireEvent.click(await findByRole('button', { name: /^Restore the copy from / }));
+      expect(autoCopies.read).toHaveBeenCalledWith('offlog-autobackup-2026-10-13T09-00-00-000Z.json');
+      expect(await findByText(/^Import 1 item$/)).toBeTruthy();
+    } finally { autoCopies.list = []; }
   });
 
   it('a finished restore says how much it restored, and the line stays', async () => {

@@ -1,7 +1,8 @@
 <script lang="ts">
   import CustomSelect from '../CustomSelect.svelte';
   import { formatAttachmentSize } from '../../attachments';
-  import { fmtLastSynced } from '../../utils';
+  import { fmtLastSynced, fmtDay, fmtTime } from '../../utils';
+  import type { AutoBackupFile } from '../../autoBackup';
   import { isNativePlatform, isTauri as isTauriCheck } from '../../../config';
   import type { StorageBreakdown } from '../../db';
 
@@ -24,6 +25,8 @@
   export let importStatus: string;
   export let handleImport: () => void;
   export let importBusy: boolean;
+  export let autoBackups: AutoBackupFile[] = [];
+  export let openAutoBackup: (b: AutoBackupFile) => void;
 </script>
 
 
@@ -85,6 +88,13 @@
                     device is lost or breaks — use "Back up" below for a copy you can keep somewhere else too.
                   {/if}
                 </p>
+                {#each autoBackups as b (b.name)}
+                  <div class="setting-row">
+                    <span class="setting-label">{fmtDay(new Date(b.at), { weekday: true })}, {fmtTime(new Date(b.at))}</span>
+                    <span class="storage-info" style="color: var(--muted)">{formatAttachmentSize(b.bytes)}</span>
+                    <button class="export-btn" on:click={() => openAutoBackup(b)} disabled={importBusy} aria-label="Restore the copy from {fmtDay(new Date(b.at), { weekday: true })}, {fmtTime(new Date(b.at))}">Restore…</button>
+                  </div>
+                {/each}
               </div>
               {/if}
 

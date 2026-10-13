@@ -7,8 +7,8 @@
   import { onMount, onDestroy } from 'svelte';
   import AppearanceSettings from '../../shared/AppearanceSettings.svelte';
   import BackupPage from './BackupPage.svelte';
-  import { downloadBlob, freshMaintSteps, formatStorageEstimate, summarizeIssues, type MaintStep } from '../../shared/settingsHelpers';
-  import { isAutoBackupEnabled, setAutoBackupEnabled, getLastAutoBackupAt, getAutoBackupUsage } from '../../autoBackup';
+  import { downloadBlob, freshMaintSteps, formatStorageEstimate, summarizeIssues, parseBackup, type MaintStep } from '../../shared/settingsHelpers';
+  import { isAutoBackupEnabled, setAutoBackupEnabled, getLastAutoBackupAt, getAutoBackupUsage, listAutoBackups, readAutoBackup, type AutoBackupFile } from '../../autoBackup';
   import { formatAttachmentSize } from '../../attachments';
   import db, {
     importJSON, analyzeImport, exportProjectDocs, exportTasksCSV,
@@ -314,15 +314,9 @@
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file) return;
+
       try {
-        const text = await file.text();
-        let docs: unknown;
-        try { docs = JSON.parse(text); } catch { throw new Error("That doesn't look like an Offlog backup file."); }
-        if (!Array.isArray(docs)) throw new Error("That doesn't look like an Offlog backup file.");
-        pendingImportDocs = docs as ImportedDoc[];
-        importPreview = analyzeImport(docs as ImportedDoc[]);
-        importFileName = file.name;
-        importFileModified = file.lastModified ? fmtLastSynced(new Date(file.lastModified).toISOString()) : '';
+        previewBackup(parseBackup(await file.text()), file.name, file.lastModified ? new Date(file.lastModified).toISOString() : '');
       } catch (e) {
         importStatus = e instanceof Error ? e.message : "That doesn't look like an Offlog backup file.";
         setTimeout(() => { importStatus = ''; }, 4000);
@@ -330,6 +324,28 @@
     };
     input.click();
   }
+
+  function previewBackup(docs: ImportedDoc[], name: string, modifiedIso: string) {
+    pendingImportDocs = docs;
+    importPreview = analyzeImport(docs);
+    importFileName = name;
+    importFileModified = modifiedIso ? fmtLastSynced(modifiedIso) : '';
+  }
+
+  // The daily safety copies kept on this device, newest first; one opens in
+  // the same preview as a picked file.
+  let autoBackups: AutoBackupFile[] = [];
+  listAutoBackups().then(l => (autoBackups = l), () => {});
+  async function openAutoBackup(b: AutoBackupFile) {
+    if (importBusy) return;
+    try {
+      previewBackup(parseBackup(await readAutoBackup(b.name)), 'Daily safety copy', b.at);
+    } catch (e) {
+      importStatus = e instanceof Error && e.message.startsWith('That') ? e.message : 'Could not open that backup. Please try again.';
+      setTimeout(() => { importStatus = ''; }, 4000);
+    }
+  }
+
   function cancelImport() { pendingImportDocs = null; importPreview = null; importFileName = ''; importFileModified = ''; }
 
   // Takes the docs before the sheet closes: closing clears the preview state.
@@ -461,7 +477,7 @@
   {:else if page === 'data'}
     <BackupPage scopeLabel={backupScopeOptions.find(o => o.value === backupScope)?.label ?? 'Everything'} pickScope={openScope}
       {doBackup} {autoBackupEnabled} {toggleAutoBackup} {lastAutoBackupAt}
-      {importStatus} {handleImport} {importBusy} {doExportCSV} {storageAvailable} {storagePercent}
+      {importStatus} {handleImport} {importBusy} {autoBackups} {openAutoBackup} {doExportCSV} {storageAvailable} {storagePercent}
     />
   {:else if page === 'security'}
     <LockPage

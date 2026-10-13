@@ -507,6 +507,11 @@ are logged and retried next run — the timestamp only advances on success.
 A stored timestamp in the future (the clock was once set ahead) counts as
 due, as do the retention stamps; otherwise all three stall until real time
 catches up.
+Backup settings list the kept copies (`listAutoBackups()`, newest first) and
+open one in the same preview and restore as a picked file. `readAutoBackup()`
+takes only a name matching the copies' own pattern, never a path; the
+Windows app may read text files only inside `$APPDATA/auto-backups`
+(`fs:allow-read-text-file` in its capabilities).
 
 **Restore** (`importJSON()`) updates docs in place. A one-project export
 inlines attachments like the full backup; for an older file that carries
