@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fmtConflictValue, conflictFieldLabel } from '../src/lib/shared/conflictFormat';
+import { fmtConflictValue, conflictFieldLabel, statusNamesOf } from '../src/lib/shared/conflictFormat';
 
 describe('fmtConflictValue', () => {
   it('shows a due date as a day, not as the stored string', () => {
@@ -16,6 +16,9 @@ describe('fmtConflictValue', () => {
   it('names custom fields and statuses', () => {
     expect(fmtConflictValue('custom_values', { 'field:a': 3 }, { 'field:a': 'Budget' })).toBe('Budget: 3');
     expect(fmtConflictValue('columns', [{ name: 'To do' }, { name: 'Done' }], {})).toBe('To do → Done');
+    const names = statusNamesOf([{ columns: [{ id: 'col:a', name: 'Idea' }] }]);
+    expect(fmtConflictValue('column_id', 'col:a', {}, names)).toBe('Idea');
+    expect(fmtConflictValue('column_id', 'col:gone', {}, names)).toBe('a removed status');
   });
 
   it('uses the shared vocabulary for labels', () => {

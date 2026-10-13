@@ -8,7 +8,7 @@
     syncState, startSync, cancelSync, getDeviceLastSeen,
     getConflicts, resolveConflict, getCustomFieldDefs, type ConflictInfo, type ConflictVersion,
   } from '../../db';
-  import { showError } from '../../store';
+  import { showError, projects } from '../../store';
   import { confirmAction } from '../../confirm';
   import { getSyncUrl, getDeviceName, setDeviceName, isSyncEnabled, setSyncEnabled, shouldAskDeviceNameForSync, markDeviceNameAskedForSync, isTauri as isTauriCheck, invokeTauri, otherHostsDetected, getPairedHostName, getPairedHostUuid } from '../../../config';
   import { fmtLastSynced, timeAgo } from '../../utils';
@@ -18,7 +18,7 @@
   import { push } from '../nav';
   import { I } from '../icons';
   import { runSyncNow, syncing } from './syncNow';
-  import { fmtConflictValue, conflictFieldLabel } from '../../shared/conflictFormat';
+  import { fmtConflictValue, conflictFieldLabel, statusNamesOf } from '../../shared/conflictFormat';
 
   const isAndroid = window.Capacitor?.getPlatform?.() === 'android';
   const isTauri = isTauriCheck();
@@ -455,7 +455,7 @@
                     <button class="p-tbtn" on:click={() => resolve(c, v)}>Keep this</button>
                   </div>
                   {#each c.differing as f}
-                    <div class="cfield"><span class="cfname">{conflictFieldLabel(f)}</span><span>{fmtConflictValue(f, v.doc[f], conflictFieldNames)}</span></div>
+                    <div class="cfield"><span class="cfname">{conflictFieldLabel(f)}</span><span>{fmtConflictValue(f, v.doc[f], conflictFieldNames, statusNamesOf($projects))}</span></div>
                   {/each}
                 </div>
               {/each}

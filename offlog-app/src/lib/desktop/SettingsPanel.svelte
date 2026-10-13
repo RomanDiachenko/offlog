@@ -34,7 +34,7 @@
   import { getThemeMode, setThemeMode, getHighContrast, setHighContrast, getReduceMotion, setReduceMotion, getReduceTransparency, setReduceTransparency, type ThemeMode } from '../theme';
   import { fade, scale } from 'svelte/transition';
   import { scrimIn, scrimOut, dialogIn, dialogOut, centredIn, centredOut, viewIn, exitMs } from '../motion';
-  import { fmtConflictValue, conflictFieldLabel } from '../shared/conflictFormat';
+  import { fmtConflictValue, conflictFieldLabel, statusNamesOf } from '../shared/conflictFormat';
   // Svelte does not run intro transitions on a component's own root elements
   // when the component itself is being created -- and every panel here is
   // created by a parent's {#if}. Without the gate below no modal animates,
@@ -1389,7 +1389,7 @@
                 {#each c.differing as f}
                   <div class="conflict-field">
                     <span class="conflict-field-name">{conflictFieldLabel(f)}</span>
-                    <span class="conflict-field-value">{fmtConflictValue(f, v.doc[f], conflictFieldNames)}</span>
+                    <span class="conflict-field-value">{fmtConflictValue(f, v.doc[f], conflictFieldNames, statusNamesOf($projectsStore))}</span>
                   </div>
                 {/each}
               </div>

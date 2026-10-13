@@ -5,7 +5,8 @@ import { fmtDay, fmtTime, dayOf } from '../utils';
 // person can read: raw JSON showed a status rename as 200 characters of
 // column ids with the one changed word buried inside.
 // `fieldNames` maps custom-field ids to names; values are keyed by id.
-export function fmtConflictValue(field: string, v: unknown, fieldNames: Record<string, string>): string {
+// `statusNames` maps status (column) ids to names, from statusNamesOf().
+export function fmtConflictValue(field: string, v: unknown, fieldNames: Record<string, string>, statusNames: Record<string, string> = {}): string {
   if (v === undefined || v === null || v === '') return '—';
 
   if (field === 'due_date' && typeof v === 'string') return fmtDay(dayOf(v), { weekday: true });
@@ -14,6 +15,7 @@ export function fmtConflictValue(field: string, v: unknown, fieldNames: Record<s
     const d = new Date(v);
     return `${fmtDay(d, { weekday: true })} ${fmtTime(d)}`;
   }
+  if (field === 'column_id' && typeof v === 'string') return statusNames[v] ?? 'a removed status';
   if (field === 'columns' && Array.isArray(v)) {
     return v.map(c => (c as { name?: string })?.name ?? '?').join(' → ') || '—';
   }
@@ -40,6 +42,9 @@ export function fmtConflictValue(field: string, v: unknown, fieldNames: Record<s
   const str = String(v);
   return str.length > 120 ? str.slice(0, 120) + '…' : str;
 }
+
+export const statusNamesOf = (projects: { columns?: { id: string; name: string }[] }[]): Record<string, string> =>
+  Object.fromEntries(projects.flatMap(p => (p.columns ?? []).map(c => [c.id, c.name])));
 
 const CONFLICT_FIELD_LABELS: Record<string, string> = {
   title: 'Title', name: 'Name', body: 'Notes', priority: 'Priority',

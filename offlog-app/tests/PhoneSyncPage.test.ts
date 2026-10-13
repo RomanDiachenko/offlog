@@ -50,7 +50,7 @@ vi.mock('../src/lib/db', () => ({
 }));
 vi.mock('../src/lib/store', async () => {
   const { writable: w } = await import('svelte/store');
-  return { showError: vi.fn(), modalOpen: w(false) };
+  return { showError: vi.fn(), modalOpen: w(false), projects: w([]) };
 });
 const pairWithHost = vi.fn();
 const scanForHosts = vi.fn();
