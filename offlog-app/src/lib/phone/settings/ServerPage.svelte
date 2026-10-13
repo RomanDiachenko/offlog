@@ -55,6 +55,11 @@
     const next = url.trim();
     if (!/^https?:\/\/\S+$/i.test(next)) { urlError = 'Enter the full address, starting with http:// or https://'; return; }
     if (inUse && next === getSyncUrl() && user === storedUser && pass === storedPass) { back(); return; }
+    // Replacing a paired computer also drops end-to-end encryption.
+    if (!inUse && (pairedName || getPairedHostUuid()) && !(await confirmAction(
+      `Stop syncing with ${pairedName ?? 'your computer'} and use this server instead? Your tasks reach it readable, without end-to-end encryption.`,
+      { confirmLabel: 'Use this server', danger: true },
+    ))) return;
     try {
       await setSyncCredentials(user, pass);
     } catch {

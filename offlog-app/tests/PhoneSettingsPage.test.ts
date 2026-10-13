@@ -491,6 +491,21 @@ describe('phone settings pages', () => {
       expect(queryByText('Stop using it')).toBeNull();
     });
 
+    it('replacing a paired computer asks first: it drops end-to-end encryption', async () => {
+      m.uuid = 'u1'; m.hubName = 'Office PC';
+      confirmAction.mockResolvedValueOnce(false);
+      const { container, getByText } = render(SettingsPage, { page: 'server' });
+      await fireEvent.input(field(container, 'Address'), { target: { value: 'http://new.local:5984/offlog' } });
+      await fireEvent.click(getByText('Save and connect'));
+      await waitFor(() => expect(confirmAction).toHaveBeenCalledTimes(1));
+      expect(confirmAction.mock.calls[0][0]).toContain('Office PC');
+      expect(confirmAction.mock.calls[0][0]).toContain('without end-to-end encryption');
+      expect(setSyncUrl).not.toHaveBeenCalled();
+      confirmAction.mockResolvedValueOnce(true);
+      await fireEvent.click(getByText('Save and connect'));
+      await waitFor(() => expect(setSyncUrl).toHaveBeenCalledWith('http://new.local:5984/offlog'));
+    });
+
     it('Stop using it asks first, then clears the server and reloads', async () => {
       confirmAction.mockResolvedValueOnce(false);
       const { getByText } = render(SettingsPage, { page: 'server' });
