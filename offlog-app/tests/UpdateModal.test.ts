@@ -209,3 +209,15 @@ describe('UpdateModal dismissal', () => {
     expect(panel(container)).toBeNull();
   });
 });
+
+// Mounted for the whole session, so while hidden it must leave Escape to
+// whichever overlay is open: every other handler skips a defaultPrevented key.
+describe('UpdateModal while hidden', () => {
+  it('does not claim Escape', () => {
+    render(UpdateModal);
+    showUpdateModal.set(false);
+    const e = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    window.dispatchEvent(e);
+    expect(e.defaultPrevented).toBe(false);
+  });
+});

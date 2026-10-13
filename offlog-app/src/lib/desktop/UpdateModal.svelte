@@ -12,8 +12,10 @@
   // download; the next open picks up wherever the state machine is.
   function close() { showUpdateModal.set(false); }
 
+  // Mounted for the whole session: while hidden it must leave Escape alone,
+  // or every other overlay's handler sees a defaultPrevented key and stays open.
   function onWindowKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') { e.preventDefault(); close(); }
+    if (e.key === 'Escape' && $showUpdateModal) { e.preventDefault(); close(); }
   }
 
   // Minimal renderer for the restricted Markdown subset release-notes.md
