@@ -80,6 +80,17 @@ describe('PhoneLock (keypad lock screen)', () => {
     expect(getByText('Hint: birds')).toBeTruthy();
   });
 
+  it('Show hint after a wrong PIN shows the hint', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const { findByText, getByLabelText, getByText } = renderLock();
+    await findByText('Show hint');
+    await type(getByLabelText, '1111');
+    await vi.advanceTimersByTimeAsync(1400);
+    await findByText("That isn't your PIN.");
+    await fireEvent.click(getByText('Show hint'));
+    expect(getByText('Hint: birds')).toBeTruthy();
+  });
+
   it('Forgot PIN: the right recovery code clears the lock and unlocks', async () => {
     const { findByText, getByText, getByLabelText, unlocked } = renderLock();
     await fireEvent.click(await findByText('Forgot PIN?'));

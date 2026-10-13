@@ -132,7 +132,7 @@
     </div>
 
     <div class="foot">
-      {#if hint && !showHint}<button class="link" on:click={() => (showHint = true)}>Show hint</button>{/if}
+      {#if hint && !showHint}<button class="link" on:click={() => { showHint = true; wrong = false; }}>Show hint</button>{/if}
       <button class="link" on:click={() => { showRecovery = true; recoveryError = ''; recoveryCode = ''; }}>Forgot PIN?</button>
     </div>
   {:else}
