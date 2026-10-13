@@ -81,8 +81,9 @@ million possible codes.
 
 **Honest limit, stated in the code itself:** six digits is six digits.
 Someone who captures the exchange *can* try all million codes offline
-with enough computing power. The maths raises the cost from "read the
-password instantly" to "spend real effort" — it is not a substitute for
+with enough computing power, and a correct guess unlocks the sync key
+(section 3) as well as the password. The maths raises the cost from "read
+them instantly" to "spend real effort" — it is not a substitute for
 TLS against a determined, resourced attacker. This is a handshake
 between two devices you own on your own Wi-Fi, and it's built for that.
 
@@ -143,8 +144,8 @@ Two related details:
 ## 3. What the sync server can see
 
 **The problem.** Sync goes through a server: normally the Offlog PC app's
-built-in one, possibly one you run elsewhere. Whoever can read that
-server's files, or watch its traffic, would otherwise read every task.
+built-in one, possibly one you run elsewhere. Anyone who can watch its
+traffic, or who learns the sync password, would otherwise read every task.
 
 **What actually happens.** What your devices send to the server, and so
 what it stores, is encrypted end to end with **AES-256-GCM** under a key
@@ -154,36 +155,57 @@ nothing changes in how the app looks or works.
 - **One key, made by your PC.** 32 random bytes, created once. It reaches
   a phone only inside the encrypted pairing reply (section 1). You never
   see it, type it or remember it.
-- **What the server sees:** scrambled ids, revision numbers, sizes, and
-  when things change. Not titles, notes, tags, dates, checklists,
-  attachment names, types or contents.
-- **What the server can't do:** add, change, delete or replay a task.
-  Each encrypted document is bound to its own id, revision and deleted
-  flag, so anything that wasn't written by a device holding the key fails
-  to open. Your devices drop it, never store it, and Settings → Sync
-  says how many items were refused. A task's edit history travels sealed
-  too, so the server can't make one version look older than another and
-  hide a conflict.
+- **What the server can't read:** titles, notes, tags, dates, checklists,
+  file names, types or contents, or which task is which.
+- **What the server still sees:** the shape of your data. How many items
+  there are and how big each is; how long each item's id is (which hints
+  at its kind, a task or a tag, and a tag name's length); revision numbers
+  and the full edit and conflict history of each item; which items are
+  deleted; and when anything changes.
+- **Revision ids are fingerprints of the content.** PouchDB names each
+  version by a hash of what it holds, so for an item whose content is
+  easy to guess (a tag colour, the starter spaces) someone with the server
+  data can confirm a guess. Tasks, with their random ids and free text,
+  aren't practically exposed this way.
+- **What the server can't do:** add, change or forge a task, move one
+  version's content onto another, strip a photo from a task, or invent
+  an edit history. Each encrypted document is bound to its id, revision,
+  deleted flag and full set of attachments, and carries its own history;
+  anything else fails to open. Your devices drop it, never store it, and
+  Settings → Sync says how many items were refused. Replication
+  checkpoints are sealed too, so the server can't make a device skip
+  changes by faking where it got to.
+- **What the server can still do:** hold things back. It can withhold a
+  new version, or an item, from a device; it can't make one up.
 - **It fails closed.** If anything ever asked the encryption layer to send
-  a request elsewhere, or to write in a way it can't seal, it refuses
-  rather than sending it readable.
-- **Ids are encrypted the same way every time**, so the server can still
-  match versions of one task without knowing which task it is. The cost:
-  it can tell that the same (unknown) item changed again.
-- **Where the key is kept on each device:** in the app's own storage,
-  beside your tasks. Anyone who can read those can read the tasks
-  directly, so locking the key away more tightly would protect nothing.
+  a request elsewhere, use any request it doesn't handle, or write in a
+  way it can't seal, it refuses rather than sending it readable.
+- **Where the key is kept:** in each app's own storage, beside your tasks,
+  and on the PC also in `sync-host.json` (section 2). Anyone who can read
+  those can read the tasks directly, so locking the key away more tightly
+  would protect nothing. For the same reason the encryption adds nothing
+  against someone reading the PC's own disk, where the readable app data
+  sits next to the server's files. It protects against the network and
+  against someone holding only the password.
+- **Only with your computer.** A server you set up yourself under "Own
+  server" or the manual connection gets readable data; the app says so
+  there.
 
 **Upgrading.** A device from before this change syncs with nothing
-encrypted. On first start the updated PC creates the key, moves to a new
-encrypted database, copies anything only the old one held, and deletes
-the old one. It also changes the sync password, so an older phone stops
-syncing and asks to be paired again: one new pairing per phone, once.
+encrypted. On first start the updated PC creates the key, changes the sync
+password, moves to a new encrypted database, and once its first sync is
+done copies in anything only the old readable database held and deletes
+it. An older phone app stops syncing, and the updated PC refuses to pair
+with it ("needs a newer Offlog"); once updated, each phone pairs again,
+once.
 
-**Honest limit.** The connection itself is still plain HTTP (section 13).
-Someone watching your Wi-Fi sees the sync password and the encrypted
-traffic, so they could sync a device of their own. It would hold only
-ciphertext, and anything it wrote would be refused.
+**Honest limits.** The connection itself is still plain HTTP (section
+13): someone watching your Wi-Fi sees the sync password, so they could put
+junk on the server or hold back updates, but not read or forge tasks.
+Someone who records a pairing can try all million codes offline
+(section 1); succeeding gives them the sync key as well as the password,
+and so everything they captured or capture later. There is no forward
+secrecy; the key changes only if the PC's `sync-host.json` is rebuilt.
 
 ---
 
@@ -524,8 +546,9 @@ situation.
 - **The sync server is reachable from your whole local network** — it
   must be, for your phone to reach it — protected by that random
   24-character password, which the PC itself stores in plain text
-  (section 2). With it, someone can store junk on the server, or delete
-  what's there; your devices refuse it, and their own copies stay intact.
+  (section 2). With it, someone can store junk on the server, delete
+  what's there or hold back updates; your devices refuse what they
+  didn't write, and their own copies stay intact.
 - **The Android credential store uses a fixed IV** (section 2), a
   weakness inherited from the plugin, not a choice Offlog made.
 - **Offlog has never had a third-party security audit.** It's a personal

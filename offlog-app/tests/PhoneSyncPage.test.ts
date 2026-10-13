@@ -213,6 +213,16 @@ describe('phone Sync page', () => {
     expect(getByText('Try again')).toBeTruthy();
   });
 
+  it('a computer that no longer accepts this phone asks to pair again, with the pairing button', async () => {
+    (window as { Capacitor?: unknown }).Capacitor = { getPlatform: () => 'android' };
+    Object.assign(m.syncState, { status: 'error', error: 'Your PC no longer accepts this device. Pair it again in Settings → Sync.' });
+    const { getByRole, getByText, queryByText } = render(SettingsPage, { page: 'sync' });
+    expect(getByRole('heading', { name: 'Pair this phone again' })).toBeTruthy();
+    expect(getByText(/Office PC no longer accepts this phone/)).toBeTruthy();
+    expect(getByText('Connect to my computer')).toBeTruthy();
+    expect(queryByText('Try again')).toBeNull();
+  });
+
   it('no server yet: invites pairing, and offers no Sync now', () => {
     m.url = '';
     const { getByRole, queryByText, getByText } = render(SettingsPage, { page: 'sync' });

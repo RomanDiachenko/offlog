@@ -85,7 +85,7 @@
   <span class="ri">{@html I.server}</span>
   <span class="k"><b><span class="p-dot"></span>{state.title}</b><small>{state.text}</small></span>
 </div>
-<p class="note">For people who run their own CouchDB-compatible server instead of pairing with a computer.</p>
+<p class="note">For people who run their own CouchDB-compatible server instead of pairing with a computer. Your tasks reach it readable: end-to-end encryption needs a paired computer.</p>
 
 <label class="fld"><small>Address</small>
   <input bind:value={url} on:input={() => (urlError = '')} placeholder="http://192.168.1.20:5984/offlog" inputmode="url" autocapitalize="off" autocomplete="off" spellcheck="false" />

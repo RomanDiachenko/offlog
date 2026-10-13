@@ -24,9 +24,12 @@ describe('describeSyncError', () => {
     expect(msg).toMatch(/network/i); // still names the other possible cause
   });
 
-  it('classifies 401/403 as an auth failure', () => {
+  it('classifies 401/403 as an auth failure: pair again when paired, check credentials otherwise', () => {
+    localStorage.setItem('offlog_paired_host_uuid', 'h1');
     expect(describeSyncError({ status: 401 })).toMatch(/pair it again/i);
     expect(describeSyncError({ status: 403 })).toMatch(/pair it again/i);
+    localStorage.removeItem('offlog_paired_host_uuid');
+    expect(describeSyncError({ status: 401 })).toMatch(/check sync credentials/i);
   });
 
   it('classifies 404 as the sync database missing', () => {
@@ -215,6 +218,13 @@ describe('overlapping starts run one replication', () => {
     syncSpy = vi.spyOn(db, 'sync').mockImplementation((() => fakeHandler()) as never);
   });
   afterEach(() => { cancelSync(); syncSpy.mockRestore(); setSyncUrl(originalUrl); });
+
+  it('an encrypted database reached without the key is refused, never synced', async () => {
+    setSyncUrl('http://192.0.2.1:5984/offlog-e-0123456789abcdef');
+    await expect(startSync()).rejects.toThrow(/holds encrypted data/);
+    expect(syncSpy).not.toHaveBeenCalled();
+    expect(syncState.error).toMatch(/holds encrypted data/);
+  });
 
   it('two concurrent starts open one replication', async () => {
     await Promise.all([startSync(), startSync()]);

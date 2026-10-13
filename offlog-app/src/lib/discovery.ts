@@ -156,7 +156,8 @@ export async function pairWithHost(host: DiscoveredHost, code: string): Promise<
     res = await fetch(`http://${host.address}:${host.pairingPort}/pair`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nonce: toBase64(nonce), proof: toBase64(proof) }),
+      // v: pairing protocol 2, this app reads the sync key (pairing.rs).
+      body: JSON.stringify({ nonce: toBase64(nonce), proof: toBase64(proof), v: 2 }),
     });
   } catch {
     // fetch() itself rejects (not a non-ok response) when the host is
@@ -167,6 +168,7 @@ export async function pairWithHost(host: DiscoveredHost, code: string): Promise<
     // here, not there.
     throw new Error("Couldn't reach that computer. Make sure it's turned on and both devices are on the same Wi-Fi network. If they are, Windows Firewall on the computer may be blocking Offlog: in Windows Security, open Firewall & network protection, then Allow an app through firewall, and allow Offlog and nyxdb.");
   }
+  if (res.status === 426) throw new Error('That computer needs a newer Offlog on this device. Update the app, then pair again.');
   if (!res.ok) throw new Error('Incorrect or expired code.');
 
   const envelope = (await res.json()) as { iv: string; ciphertext: string };
@@ -196,9 +198,12 @@ export async function pairWithHost(host: DiscoveredHost, code: string): Promise<
   // lets the upcoming pull adopt the host's versions cleanly. See
   // clearLocalSeedBeforeFirstPair() in db.ts.
   await clearLocalSeedBeforeFirstPair();
+  // Name first: key and address change together, so a sync starting in
+  // between never pairs the new key with the old database.
+  const dbName = data.key ? await encryptedDbName(data.key) : PLAIN_DB;
   await setSyncCredentials(data.user, data.password);
   setSyncKey(data.key ?? '');
-  setSyncUrl(`http://${host.address}:${data.port}/${data.key ? await encryptedDbName(data.key) : PLAIN_DB}`);
+  setSyncUrl(`http://${host.address}:${data.port}/${dbName}`);
   setPairedHostUuid(data.uuid);
   setPairedHostName(host.name);
   startSync().catch(() => {});

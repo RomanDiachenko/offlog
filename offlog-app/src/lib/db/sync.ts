@@ -1,7 +1,7 @@
 // Sync (replication to a CouchDB-protocol remote) and conflict resolution.
 /// <reference types="pouchdb" />
 /// <reference types="pouchdb-find" />
-import { getSyncUrl, getSyncCredentials, isSyncEnabled, getSyncKey, PLAIN_SERVER_TO_RETIRE_KEY } from '../../config';
+import { getSyncUrl, getSyncCredentials, isSyncEnabled, getSyncKey, getPairedHostUuid, PLAIN_SERVER_TO_RETIRE_KEY } from '../../config';
 import { importSyncKey } from '../syncCrypto';
 import { encryptedFetch } from './encryptedFetch';
 import { db, invalidateTaskCache, now } from './core';
@@ -38,6 +38,10 @@ async function remote() {
   const syncKey = getSyncKey();
   const key = JSON.stringify([url, user, pass, syncKey]);
   if (_remote?.key !== key) {
+    // An encrypted database reached without the key (a hand-edited address)
+    // would take readable documents and hand back sealed ones as if real.
+    if (!syncKey && /\/offlog-e-[0-9a-f]+\/?$/.test(url)) throw new Error('This server holds encrypted data. Pair with the computer in Settings → Sync instead of entering its address.');
+    syncState.rejected = 0;
     const auth = { username: user, password: pass };
     const options = syncKey
       ? { auth, fetch: encryptedFetch(url, await importSyncKey(syncKey), reportRejected) }
@@ -94,7 +98,7 @@ export function describeSyncError(err?: SyncError | null): string {
   const status = err.status ?? err.statusCode;
   // The PC changes its sync password when it moves to encrypted sync, so a
   // device paired before then lands here until it pairs again.
-  if (status === 401 || status === 403) return 'Your PC no longer accepts this device. Pair it again in Settings → Sync.';
+  if (status === 401 || status === 403) return getPairedHostUuid() ? 'Your PC no longer accepts this device. Pair it again in Settings → Sync.' : 'Authentication failed — check sync credentials';
   if (status === 404) return 'Sync database not found on server';
   if (status === 0 || err.name === 'TypeError' || /network|failed to fetch/i.test(err.message ?? '')) {
     // The sync URL is a self-hosted LAN address, so "cannot reach it" has two

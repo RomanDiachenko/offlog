@@ -136,7 +136,16 @@ struct PairRequest {
     // itself is never sent.
     nonce: String,
     proof: String,
+    /// The client's pairing protocol; absent from apps before the sync key.
+    #[serde(default)]
+    v: u32,
 }
+
+/// 2: the client reads `key` from the reply. An older app would ignore it
+/// and sync readable documents to a database nothing else reads, so it is
+/// turned away (426) before its code or attempts are spent.
+const PAIRING_VERSION: u32 = 2;
+fn accepts_client(v: u32) -> bool { v >= PAIRING_VERSION }
 
 #[derive(Serialize)]
 struct PairResponse<'a> {
@@ -288,12 +297,17 @@ fn handle_pair_request(mut request: tiny_http::Request, state: &PairingState, uu
     let decoded = parsed.and_then(|p| {
         let nonce = BASE64.decode(&p.nonce).ok()?;
         let proof = BASE64.decode(&p.proof).ok()?;
-        Some((nonce, proof))
+        Some((nonce, proof, p.v))
     });
-    let Some((nonce, proof)) = decoded else {
+    let Some((nonce, proof, v)) = decoded else {
         let _ = request.respond(Response::empty(400).with_header(cors_header()));
         return;
     };
+    if !accepts_client(v) {
+        log::warn!("pairing: refused an app too old for encrypted sync");
+        let _ = request.respond(Response::empty(426).with_header(cors_header()));
+        return;
+    }
     let Some(code) = state.try_consume(&nonce, &proof) else {
         let rejected = REJECTED.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
         log::warn!("pairing: request rejected ({rejected} rejected since start)");
@@ -437,5 +451,14 @@ mod tests {
         assert_eq!(state.try_consume(&nonce, &right_proof2).as_deref(), Some(code2.as_str()));
         // ...and is consumed: the same correct proof doesn't work twice.
         assert!(state.try_consume(&nonce, &right_proof2).is_none());
+    }
+
+    #[test]
+    fn an_app_from_before_the_sync_key_is_turned_away() {
+        assert!(!accepts_client(0));
+        assert!(!accepts_client(1));
+        assert!(accepts_client(2));
+        let old: PairRequest = serde_json::from_str(r#"{"nonce":"bg==","proof":"cA=="}"#).unwrap();
+        assert_eq!(old.v, 0);
     }
 }

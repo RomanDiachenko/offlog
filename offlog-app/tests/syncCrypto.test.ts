@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeAll } from 'vitest';
-import { importSyncKey, encryptId, decryptId, encryptDoc, decryptDoc, encryptAttachment, decryptAttachment, encryptedDbName, type SyncKeys } from '../src/lib/syncCrypto';
+import { importSyncKey, encryptId, decryptId, encryptDoc, decryptDoc, encryptAttachment, decryptAttachment, encryptedDbName, sealLocal, openLocal, type SyncKeys } from '../src/lib/syncCrypto';
 
 const KEY = btoa(String.fromCharCode(...new Uint8Array(32).map((_, i) => i + 1)));
 const OTHER = btoa(String.fromCharCode(...new Uint8Array(32).fill(9)));
@@ -21,9 +21,21 @@ describe('sync ids', () => {
     expect(await decryptId(other, await encryptId(k, 'task:abc'))).toBeNull();
     expect(await decryptId(k, 'x:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')).toBeNull();
   });
-  it('replication checkpoints and design docs pass through', async () => {
+  it('replication checkpoints keep their ids; design docs and x: ids are encrypted like any other', async () => {
     expect(await encryptId(k, '_local/abc')).toBe('_local/abc');
-    expect(await decryptId(k, '_design/idx')).toBe('_design/idx');
+    for (const id of ['_design/idx', 'x:looks-encrypted']) {
+      const sid = await encryptId(k, id);
+      expect(sid).not.toContain(id);
+      expect(await decryptId(k, sid)).toBe(id);
+    }
+  });
+  it('only the exact spelling of a server id opens', async () => {
+    const sid = await encryptId(k, 'task:1');
+    const last = sid.at(-1)!;
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    const twin = sid.slice(0, -1) + alphabet[alphabet.indexOf(last) ^ 1];
+    expect(await decryptId(k, twin)).toBeNull();
+    expect(await decryptId(k, sid + ' ')).toBeNull();
   });
 });
 
@@ -43,6 +55,21 @@ describe('sync attachments', () => {
 });
 
 describe('sync documents', () => {
+  it('a server that strips an attachment, or swaps the sealed history, is refused', async () => {
+    const withPhoto = await encryptDoc(k, { ...task, _attachments: { 'att:1': { content_type: 'image/png', data: btoa('png') } } });
+    const { _attachments, ...stripped } = withPhoto;
+    expect(_attachments).toBeDefined();
+    expect(await decryptDoc(k, stripped)).toBeNull();
+    const sealed = await encryptDoc(k, { ...task, _revisions: { start: 2, ids: ['bbb', 'root'] } });
+    expect(await decryptDoc(k, sealed)).toBeNull();
+  });
+  it('checkpoints open only as sealed, under their own id', async () => {
+    const cp = await sealLocal(k, { _id: '_local/r1', _rev: '0-3', last_seq: 'seq-marker-42', session_id: 's' });
+    expect(JSON.stringify(cp)).not.toContain('seq-marker');
+    expect(await openLocal(k, cp)).toEqual({ _id: '_local/r1', _rev: '0-3', last_seq: 'seq-marker-42', session_id: 's' });
+    expect(await openLocal(k, { ...cp, _id: '_local/r2' })).toBeNull();
+    expect(await openLocal(k, { _id: '_local/r1', last_seq: '999' })).toBeNull();
+  });
   it('carry the history their device sealed, not one the server swaps in', async () => {
     const sealed = await encryptDoc(k, { ...task, _revisions: { start: 2, ids: ['aaa', 'root'] } });
     const forged = { ...sealed, _revisions: { start: 2, ids: ['aaa', 'mine-in-conflict'] } };

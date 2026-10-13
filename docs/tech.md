@@ -715,33 +715,41 @@ base64, from the PC), the remote PouchDB gets `fetch: encryptedFetch(...)`
 `sync_host.rs`); without one it is
 the readable `offlog` (an older PC, or a server set up by hand). The fetch
 rewrites `_bulk_docs`, `_revs_diff`, `_bulk_get`, `_changes`, `_all_docs`
-and single-document and attachment reads; `_local/` checkpoints,
-`_design/` and the server root (its uuid feeds the replication id, so an
-address change doesn't restart the comparison) pass through. `syncCrypto.ts` derives four keys by HKDF:
+and single-document and attachment reads, and seals `_local/` checkpoint
+bodies (`sealLocal`; one that doesn't open reads as 404, so PouchDB
+compares from the start). `_design/` docs are encrypted like any other.
+Only the server root passes through (its uuid feeds the replication id, so
+an address change doesn't restart the comparison). `syncCrypto.ts` derives four keys by HKDF:
 
 - **ids**: `x:` + base64url(iv ‖ AES-GCM(id)), iv = HMAC(id)[0..12].
   Deterministic, so revisions still match and any device can reverse a
-  server id without the document.
+  server id without the document; only the exact spelling opens, since a
+  loosely decoded twin would alias a real document and stall its pull.
 - **documents**: `{_id, _rev, _deleted?, _revisions?, _attachments?, e}`,
   `e` sealing `{i: id, d: body, a: {name: {content_type, digest}}, r: _revisions}`;
-  the AAD binds server id, rev and deleted flag, and the sealed history
-  replaces the server's on the way in.
+  the AAD binds server id, rev and deleted flag; the sealed history must
+  end in that rev and replaces the server's; the server's attachment
+  names must be exactly the sealed ones.
 - **attachments**: 2-byte type length, content type, bytes, sealed under
   their own key with AAD = server id + name, stored as
   `application/octet-stream`; a fetched attachment comes back with its
   real type.
 
-What doesn't open is dropped before the replicator sees it and counted in
-`syncState.rejected` (shown in Settings → Sync). It fails closed: a
-request outside its database, or any write other than `_bulk_docs` with
-`new_edits: false`, is refused instead of sent. On the desktop,
-`initTauriSyncDefaults()` takes the key from `get_sync_info` and, every
-start, sets `offlog_plain_server_to_retire`; `retirePlainServer()`
-(after each settled sync, from `markSynced`) pulls the readable `/offlog` if it
-exists (left from before the update, or recreated by a phone on an older
-app), destroys it and clears the flag. A phone gets the key in the pairing
-reply; `clearPairedHost()` and a hand-typed server URL drop it, so a
-server set up by hand syncs readable. `tests/encryptedSync.e2e.test.ts` runs two devices through a
+What doesn't open is dropped before the replicator sees it and counted,
+once per server revision, in `syncState.rejected` (shown in Settings →
+Sync; reset with each new remote). It fails closed: a request outside its
+database, an endpoint it doesn't handle, a filtered `_changes` or keyed
+`_all_docs`, or any write other than `_bulk_docs` with `new_edits: false`
+and checkpoint PUTs is refused instead of sent. `remote()` refuses an
+`offlog-e-` address without a key. On the desktop,
+`initTauriSyncDefaults()` takes the key from `get_sync_info`; moving off a
+`/offlog` URL sets `offlog_plain_server_to_retire`, and
+`retirePlainServer()` (after a settled sync, from `markSynced`) pulls that
+database in, unchecked, destroys it and clears the flag. Only then: an
+older app can't recreate it, because pairing requires protocol `v: 2`
+(`pairing.rs` `PAIRING_VERSION`, 426 otherwise). A phone gets the key in
+the pairing reply; `clearPairedHost()` (Own server, a hand-typed desktop
+URL) drops it, so a server set up by hand syncs readable. `tests/encryptedSync.e2e.test.ts` runs two devices through a
 real NyxDB and reads the server raw (Desktop CI; skips without the binary).
 
 **Phantom conflicts.** NyxDB before v0.1.7 never sent a doc's revision

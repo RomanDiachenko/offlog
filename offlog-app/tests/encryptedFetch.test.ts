@@ -41,11 +41,26 @@ describe('encryptedFetch', () => {
     expect(onRejected).toHaveBeenCalledTimes(1);
   });
 
-  it('checkpoints pass through untouched', async () => {
-    const inner = vi.fn(async () => json({ _id: '_local/abc', last_seq: 5 }));
+  it('checkpoints are sealed on the way out, and a forged one reads as missing', async () => {
+    let stored: Record<string, unknown> = {};
+    const inner = vi.fn(async (_u: string, init?: RequestInit) => {
+      if (init?.method === 'PUT') { stored = JSON.parse(String(init.body)); return json({ ok: true, id: '_local/abc', rev: '0-1' }); }
+      return json({ ...stored, _rev: '0-1' });
+    });
     const f = encryptedFetch(DB, k, () => {}, inner);
-    await f(DB + '/_local/abc');
-    expect(inner).toHaveBeenCalledWith(DB + '/_local/abc', {});
+    await f(DB + '/_local/abc', { method: 'PUT', body: JSON.stringify({ _id: '_local/abc', last_seq: 'seq-marker-57', session_id: 's' }) });
+    expect(JSON.stringify(stored)).not.toContain('seq-marker');
+    expect(await (await f(DB + '/_local/abc')).json()).toMatchObject({ last_seq: 'seq-marker-57', session_id: 's' });
+    stored = { _id: '_local/abc', last_seq: '999', session_id: 's' };
+    expect((await f(DB + '/_local/abc')).status).toBe(404);
+  });
+
+  it('counts each refused revision once, however often the server sends it', async () => {
+    const onRejected = vi.fn();
+    const f = encryptedFetch(DB, k, onRejected, async () => json({ results: [{ id: 'task:planted', seq: 1, changes: [{ rev: '1-a' }] }], last_seq: 1 }));
+    await f(DB + '/_changes?since=0');
+    await f(DB + '/_changes?since=0');
+    expect(onRejected).toHaveBeenCalledTimes(1);
   });
 
   it('fails closed: another address, or a write that is not a replication, is never sent', async () => {
@@ -57,6 +72,11 @@ describe('encryptedFetch', () => {
     await expect(f(DB + '/task%3A1', { method: 'PUT', body: JSON.stringify({ title: 'Secret' }) })).rejects.toThrow(/refuses/);
     await expect(f(DB + '/task%3A1?rev=1-a', { method: 'DELETE' })).rejects.toThrow(/refuses/);
     await expect(f(DB + '/task%3A1/att%3A1', { method: 'PUT', body: 'bytes' })).rejects.toThrow(/refuses/);
+    await expect(f(DB, { method: 'POST', body: JSON.stringify({ title: 'Secret' }) })).rejects.toThrow(/refuses/);
+    await expect(f(DB + '/_find', { method: 'POST', body: '{}' })).rejects.toThrow(/refuses/);
+    await expect(f(DB + '/_security')).rejects.toThrow(/refuses/);
+    await expect(f(DB + '/_changes?filter=_doc_ids', { method: 'POST', body: JSON.stringify({ doc_ids: ['task:1'] }) })).rejects.toThrow(/refuses/);
+    await expect(f(DB + '/_all_docs?startkey=%22task%3A%22')).rejects.toThrow(/refuses/);
     expect(inner).not.toHaveBeenCalled();
   });
 

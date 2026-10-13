@@ -57,6 +57,7 @@
     if ($staleHostAlert) return { tone: 'bad', title: `Can't find ${hubInText}`, text: `“${$staleHostAlert.name}” is on this network. Connect to it again.`, act: isAndroid ? 'connect' : undefined };
     if (syncStatus === 'syncing') return { tone: 'ok', title: 'Syncing…', text: lastSynced ? `Synced ${fmtLastSynced(lastSynced)}` : 'First sync', act: 'sync' };
     if (syncStatus === 'offline') return { tone: 'idle', title: 'Offline', text: `Sync picks up again when this ${here} is back on your network.`, act: 'sync' };
+    if (syncStatus === 'error' && !ownServer && /pair it again/i.test(syncError ?? '')) return { tone: 'bad', title: `Pair this ${here} again`, text: `${hubInText[0].toUpperCase() + hubInText.slice(1)} no longer accepts this ${here}, usually after an update. Pair once more. Your changes are safe here.`, act: isAndroid ? 'connect' : 'retry' };
     if (syncStatus === 'error') return /cannot reach/i.test(syncError ?? '')
       ? { tone: 'bad', title: `Can't reach ${hubInText}`, text: ownServer ? 'Check that the server is on and its address is right. Your changes are safe here until then.' : 'Open Offlog on the computer and make sure both are on the same Wi-Fi. If they are, Windows Firewall on the computer may be blocking Offlog. Your changes are safe here until then.', act: 'retry' }
       : { tone: 'bad', title: 'Sync stopped', text: `${syncError || 'Something went wrong.'} Your changes are safe here.`, act: 'retry' };

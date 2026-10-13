@@ -10,7 +10,7 @@ let storedUrl = 'http://old.local:5984/offlog';
 let storedCreds = { user: 'olduser', pass: 'oldpass' };
 
 const setSyncUrl = vi.fn((u: string) => { storedUrl = u; });
-const setSyncKey = vi.fn();
+const clearPairedHost = vi.fn();
 const setSyncCredentials = vi.fn().mockResolvedValue(undefined);
 const getSyncCredentials = vi.fn().mockImplementation(async () => storedCreds);
 // Flipped per test to render the Windows-only controls.
@@ -20,7 +20,7 @@ const invokeTauri = vi.fn().mockResolvedValue(undefined);
 vi.mock('../src/config', () => ({
   getSyncUrl: () => storedUrl,
   setSyncUrl: (...a: unknown[]) => setSyncUrl(...(a as [string])),
-  setSyncKey: (...a: unknown[]) => setSyncKey(...a),
+  clearPairedHost: () => clearPairedHost(),
   getSyncCredentials: (...a: unknown[]) => getSyncCredentials(...a),
   setSyncCredentials: (...a: unknown[]) => setSyncCredentials(...a),
   getDeviceName: () => 'PC', setDeviceName: vi.fn(),
@@ -170,7 +170,7 @@ describe('SettingsPanel sync save', () => {
     await fireEvent.click(saveButton(container));
 
     expect(setSyncUrl).toHaveBeenCalledWith('http://new.local:5984/offlog');
-    expect(setSyncKey).toHaveBeenCalledWith('');
+    expect(clearPairedHost).toHaveBeenCalled();
     expect(setSyncCredentials).toHaveBeenCalledWith('olduser', 'oldpass');
     expect(reload).toHaveBeenCalled();
     expect(showError).not.toHaveBeenCalled();

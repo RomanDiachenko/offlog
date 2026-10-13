@@ -58,8 +58,9 @@ fn get_sync_info(info: tauri::State<sync_host::SyncHostInfo>) -> sync_host::Sync
 
 // The sync password (a paired phone's credential, or one typed into
 // Settings' manual-connection field) is encrypted at rest via Windows
-// DPAPI and kept separately from sync-host.json, which holds only this
-// install's own generated identity and is fine as plain JSON.
+// DPAPI and kept separately from sync-host.json, the sync server's own
+// identity (its admin password and the sync key), plain JSON beside the
+// data those protect (security.md §2).
 // See secure_storage.rs. Debug builds use their own file, same split as
 // sync-host.dev.json -- a dev run must never read or overwrite the
 // installed build's stored credential.

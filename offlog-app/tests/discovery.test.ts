@@ -97,6 +97,7 @@ describe('pairWithHost', () => {
     expect(sentBody.nonce).toBe(FIXTURE.nonceB64);
     expect(sentBody.proof).toBe(FIXTURE.authProofB64);
     expect(sentBody).not.toHaveProperty('code');
+    expect(sentBody.v).toBe(2);
     expect(JSON.stringify(sentBody)).not.toContain(FIXTURE.code);
 
     expect(setSyncCredentials).toHaveBeenCalledWith(FIXTURE.expected.user, FIXTURE.expected.password);
@@ -137,6 +138,12 @@ describe('pairWithHost', () => {
 
     await expect(pairWithHost(host, '000000')).rejects.toThrow('Incorrect or expired code.');
     expect(setSyncCredentials).not.toHaveBeenCalled();
+  });
+
+  it('a computer that needs a newer app says so, not "incorrect code"', async () => {
+    stubNonce(b64ToBytes(FIXTURE.nonceB64));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 426 }));
+    await expect(pairWithHost(host, FIXTURE.code)).rejects.toThrow(/newer Offlog/);
   });
 
   it('surfaces a friendly message when the host is unreachable, not the raw fetch TypeError', async () => {

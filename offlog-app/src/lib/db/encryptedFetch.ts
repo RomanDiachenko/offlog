@@ -5,14 +5,16 @@
 //
 // Anything from the server that does not open under this key (forged,
 // altered, replayed, or written by a device without the key) is dropped and
-// counted through onRejected; the replicator never sees it, so it is never
-// stored. _local/ checkpoints and endpoints without user data pass through.
+// counted once through onRejected; the replicator never sees it, so it is
+// never stored. _local/ checkpoints keep their ids but are sealed too; only
+// the server root (its uuid) passes through untouched.
 //
-// Fails closed: a request for any other address, and any write that is not
-// the replicator's own (_bulk_docs with new_edits:false), is refused rather
-// than sent. Such a write would leave the server a readable document, or one
-// sealed under a revision the server then replaces, which no device can open.
-import { encryptId, decryptId, encryptDoc, decryptDoc, decryptAttachment, passesThrough, type SyncKeys } from '../syncCrypto';
+// Fails closed: a request for any other address, any endpoint not listed
+// here, and any write that is not the replicator's own (_bulk_docs with
+// new_edits:false, checkpoint PUTs) is refused rather than sent. Such a
+// write would leave the server a readable document, or one sealed under a
+// revision the server then replaces, which no device can open.
+import { encryptId, decryptId, encryptDoc, decryptDoc, decryptAttachment, sealLocal, openLocal, type SyncKeys } from '../syncCrypto';
 
 type FetchFn = (url: string, init?: RequestInit) => Promise<Response>;
 const refuse = (what: string) => Promise.reject(new TypeError(`Encrypted sync refuses ${what}.`));
@@ -31,11 +33,20 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
   const baseUrl = new URL(dbUrl.replace(/\/+$/, ''));
   const base = baseUrl.origin + baseUrl.pathname;
 
+  // Each refused server revision counted once: PouchDB re-reads a partly
+  // kept page, and a restart before the checkpoint passes reads it again.
+  const refused = new Set<string>();
+  const reject = (serverId: string, revs: unknown[] = ['']) => {
+    let n = 0;
+    for (const rev of revs.length ? revs : ['']) { const key = `${serverId} ${String(rev)}`; if (!refused.has(key)) { refused.add(key); n++; } }
+    if (n) onRejected(n);
+  };
   async function openDoc(doc: Doc): Promise<Doc | null> {
     const opened = await decryptDoc(keys, doc);
-    if (!opened) onRejected(1);
+    if (!opened) reject(doc._id, [doc._rev]);
     return opened as Doc | null;
   }
+  const notFound = (reason: string) => new Response(JSON.stringify({ error: 'not_found', reason }), { status: 404, headers: { 'Content-Type': 'application/json' } });
 
   return async function (url: string, init: RequestInit = {}): Promise<Response> {
     const target = new URL(url);
@@ -53,7 +64,17 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
     const send = (path: string, newBody?: unknown) =>
       inner(`${base}/${path}${qs}`, newBody === undefined ? init : { ...init, body: JSON.stringify(newBody) });
 
-    if (rawPath === '' || rawPath.startsWith('_local/') || rawPath.startsWith('_design/')) return inner(url, init);
+    // The database itself: PouchDB's info() and its create-if-missing setup.
+    if (rawPath === '') return method === 'GET' || method === 'HEAD' || (method === 'PUT' && !init.body) ? inner(url, init) : refuse('a write to the database itself');
+
+    if (rawPath.startsWith('_local/')) {
+      if (method === 'PUT' && body) return send(rawPath, await sealLocal(keys, { ...body, _id: decodeURIComponent(rawPath) }));
+      if (method !== 'GET') return refuse('this checkpoint request');
+      const res = await inner(url, init);
+      if (!res.ok) return res;
+      const opened = await openLocal(keys, await res.json() as Doc);
+      return opened ? asJson(res, opened) : notFound('Checkpoint could not be read.');
+    }
 
     switch (rawPath) {
       case '_bulk_docs': {
@@ -81,7 +102,7 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
         const results = [];
         for (const r of out.results) {
           const id = await decryptId(keys, r.id);
-          if (id === null) { onRejected(r.docs.length); continue; }
+          if (id === null) { reject(r.id, r.docs.map(d => (d.ok as Doc | undefined)?._rev)); continue; }
           const opened = [];
           for (const d of r.docs) {
             if (!d.ok) { opened.push(d); continue; }
@@ -93,13 +114,15 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
         return asJson(res, { ...out, results });
       }
       case '_changes': {
+        // A POST carries real ids or a selector to filter by; never sent.
+        if (method !== 'GET') return refuse('a filtered changes feed');
         const res = await inner(url, init);
         if (!res.ok) return res;
-        const out = await res.json() as { results: (Json & { id: string; doc?: Doc })[] };
+        const out = await res.json() as { results: (Json & { id: string; doc?: Doc; changes?: { rev: string }[] })[] };
         const results = [];
         for (const row of out.results ?? []) {
           const id = await decryptId(keys, row.id);
-          if (id === null) { onRejected(1); continue; }
+          if (id === null) { reject(row.id, (row.changes ?? []).map(c => c.rev)); continue; }
           const next = { ...row, id };
           if (row.doc) { const doc = await openDoc(row.doc); if (!doc) continue; next.doc = doc; }
           results.push(next);
@@ -107,13 +130,16 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
         return asJson(res, { ...out, results });
       }
       case '_all_docs': {
+        // Keys and ranges would go out as real ids, and ranges mean nothing
+        // over encrypted ones.
+        if (method !== 'GET' || ['key', 'keys', 'startkey', 'endkey', 'start_key', 'end_key'].some(p => target.searchParams.has(p))) return refuse('a keyed document listing');
         const res = await inner(url, init);
         if (!res.ok) return res;
         const out = await res.json() as { rows: (Json & { id: string; doc?: Doc })[] };
         const rows = [];
         for (const row of out.rows ?? []) {
           const id = await decryptId(keys, row.id);
-          if (id === null) { onRejected(1); continue; }
+          if (id === null) { reject(row.id); continue; }
           const next = { ...row, id, key: id };
           if (row.doc) { const doc = await openDoc(row.doc); if (!doc) continue; next.doc = doc; }
           rows.push(next);
@@ -121,12 +147,12 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
         return asJson(res, { ...out, rows });
       }
     }
-    if (rawPath.startsWith('_')) return inner(url, init);
+    if (rawPath.startsWith('_') && !rawPath.startsWith('_design/')) return refuse(`the ${rawPath.split('/')[0]} endpoint`);
 
     // A document, or one of its attachments: /{id} or /{id}/{attachment}.
-    const slash = rawPath.indexOf('/');
+    // A design doc's id has a slash of its own (_design/name).
+    const slash = rawPath.indexOf('/', rawPath.startsWith('_design/') ? 8 : 0);
     const id = decodeURIComponent(slash < 0 ? rawPath : rawPath.slice(0, slash));
-    if (passesThrough(id)) return inner(url, init);
     const sid = await encryptId(keys, id);
     const attachment = slash < 0 ? null : rawPath.slice(slash + 1);
     const path = encodeURIComponent(sid) + (attachment === null ? '' : '/' + attachment);
@@ -138,8 +164,8 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
       if (!res.ok || method !== 'GET') return res;
       const plain = await decryptAttachment(keys, sid, decodeURIComponent(attachment), new Uint8Array(await res.arrayBuffer()));
       if (!plain) {
-        onRejected(1);
-        return new Response(JSON.stringify({ error: 'not_found', reason: 'Attachment could not be read.' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+        reject(`${sid}/${attachment}`, [target.searchParams.get('rev') ?? '']);
+        return notFound('Attachment could not be read.');
       }
       const opened = rebuild(res, new Blob([plain.bytes as BlobPart], { type: plain.type }));
       if (plain.type) opened.headers.set('Content-Type', plain.type);
@@ -163,7 +189,7 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
       return asJson(res, opened);
     }
     const doc = await openDoc(out);
-    if (!doc) return new Response(JSON.stringify({ error: 'not_found', reason: 'Document could not be read.' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+    if (!doc) return notFound('Document could not be read.');
     return asJson(res, doc);
   };
 }

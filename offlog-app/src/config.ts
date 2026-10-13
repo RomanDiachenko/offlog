@@ -79,9 +79,10 @@ export async function initTauriSyncDefaults(): Promise<void> {
     // With a key, the sidecar's encrypted database; whatever its readable one
     // holds is pulled in and that database deleted (retirePlainServer in db/sync.ts).
     const url = `http://127.0.0.1:${info.port}/${info.key ? await encryptedDbName(info.key) : PLAIN_DB}`;
-    // Every start, not only the first: a phone still on an app from before
-    // encryption recreates the readable database when it pairs again.
-    if (info.key) localStorage.setItem(PLAIN_SERVER_TO_RETIRE_KEY, `http://127.0.0.1:${info.port}/${PLAIN_DB}`);
+    // Only when moving off the readable database: pulled in unchecked, it
+    // must not be something anyone with the password could recreate later
+    // (and an older app can no longer pair, pairing.rs PAIRING_VERSION).
+    if (info.key && saved && /\/offlog$/.test(saved)) localStorage.setItem(PLAIN_SERVER_TO_RETIRE_KEY, `http://127.0.0.1:${info.port}/${PLAIN_DB}`);
     setSyncKey(info.key ?? '');
     setSyncUrl(url);
     localStorage.setItem(SIDECAR_URL_KEY, url);
