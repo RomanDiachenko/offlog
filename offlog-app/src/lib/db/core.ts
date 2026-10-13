@@ -279,7 +279,9 @@ export async function getRecentLogs(limit = 80): Promise<LogDoc[]> {
 // Per-device last-seen list for Settings. Scans a bounded window of the most
 // recent changelog entries rather than every log ever. Descending order means
 // the first entry seen for a given source is already its most recent.
-export async function getDeviceLastSeen(): Promise<{ device: string; lastSeen: string }[]> {
+// `id` is the device's source_id (or, for old entries, its name), so a caller
+// can recognise this device after a rename.
+export async function getDeviceLastSeen(): Promise<{ device: string; lastSeen: string; id: string }[]> {
   const r = await db.allDocs<LogDoc>({ startkey: 'log:￰', endkey: 'log:', descending: true, limit: 500, include_docs: true });
   // Group by the stable source_id where present, so a rename doesn't split one
   // device into two rows. Older log entries have no source_id and fall back to
@@ -300,14 +302,14 @@ export async function getDeviceLastSeen(): Promise<{ device: string; lastSeen: s
   // caller's keyed {#each device.device} render gets two rows named "PC"
   // and Svelte throws each_key_duplicate the instant this list renders.
   // Newest write wins per display name.
-  const byName = new Map<string, string>();
+  const byName = new Map<string, { ts: string; id: string }>();
   for (const [key, ts] of seen) {
     const name = names.get(key)!;
     const existing = byName.get(name);
-    if (!existing || ts > existing) byName.set(name, ts);
+    if (!existing || ts > existing.ts) byName.set(name, { ts, id: key });
   }
   return [...byName.entries()]
-    .map(([device, lastSeen]) => ({ device, lastSeen }))
+    .map(([device, { ts: lastSeen, id }]) => ({ device, lastSeen, id }))
     .sort((a, b) => b.lastSeen.localeCompare(a.lastSeen));
 }
 

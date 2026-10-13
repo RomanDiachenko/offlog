@@ -22,6 +22,7 @@ vi.mock('../src/config', async () => {
     isSyncEnabled: () => m.enabled,
     setSyncEnabled: (...a: unknown[]) => setSyncEnabled(...(a as [boolean])),
     getDeviceName: () => m.name,
+    getDeviceId: () => 'dev:me',
     getPairedHostName: () => m.hub,
     getPairedHostUuid: () => m.uuid,
     shouldAskDeviceNameForSync: () => m.askName,
@@ -104,6 +105,7 @@ beforeEach(async () => {
     { device: 'Office PC', lastSeen: new Date(Date.now() - 2 * 3600e3).toISOString() },
     { device: 'Galaxy Tab', lastSeen: new Date(Date.now() - 3 * 3600e3).toISOString() },
     { device: 'work phone', lastSeen: new Date(Date.now() - 3 * 86400e3).toISOString() },
+    { device: 'Old name of this phone', id: 'dev:me', lastSeen: new Date(Date.now() - 4 * 86400e3).toISOString() },
   ]);
   getConflicts.mockResolvedValue([]);
   resolveConflict.mockResolvedValue(undefined);

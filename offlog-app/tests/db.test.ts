@@ -2717,6 +2717,7 @@ describe('getDeviceLastSeen() merges a device that upgraded from legacy source-s
     const result = await getDeviceLastSeen();
 
     expect(result.map(d => d.device).sort()).toEqual(['PC', 'Phone']);
+    expect(result.find(d => d.device === 'Phone')?.id).toBe('device-uuid-def');
   });
 });
 

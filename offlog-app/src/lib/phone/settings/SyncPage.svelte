@@ -10,7 +10,7 @@
   } from '../../db';
   import { showError, projects } from '../../store';
   import { confirmAction } from '../../confirm';
-  import { getSyncUrl, getDeviceName, setDeviceName, isSyncEnabled, setSyncEnabled, shouldAskDeviceNameForSync, markDeviceNameAskedForSync, isTauri as isTauriCheck, invokeTauri, otherHostsDetected, getPairedHostName, getPairedHostUuid } from '../../../config';
+  import { getSyncUrl, getDeviceName, setDeviceName, isSyncEnabled, setSyncEnabled, shouldAskDeviceNameForSync, markDeviceNameAskedForSync, isTauri as isTauriCheck, invokeTauri, otherHostsDetected, getPairedHostName, getPairedHostUuid, getDeviceId } from '../../../config';
   import { fmtLastSynced, timeAgo } from '../../utils';
   import { discoveredHosts, isScanning, scanForHosts, stopScan, pairWithHost, staleHostAlert, type DiscoveredHost } from '../../discovery';
   import TopBar from '../TopBar.svelte';
@@ -94,8 +94,10 @@
     }
   }
   loadDeviceLastSeen();
-  // The card already shows this device and the computer.
-  $: others = deviceLastSeen.filter(d => d.device !== deviceName && d.device !== hubName);
+  // The card already shows this device and the computer. This device is also
+  // matched by id: after a rename its newest log still carries the old name.
+  const myId = getDeviceId();
+  $: others = deviceLastSeen.filter(d => d.id !== myId && d.device !== deviceName && d.device !== hubName);
   const DAY = 24 * 3600e3;
   const recent = (iso: string) => Date.now() - new Date(iso).getTime() < DAY;
 
