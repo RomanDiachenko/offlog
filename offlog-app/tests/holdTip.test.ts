@@ -8,7 +8,7 @@ describe('hold tip', () => {
 
   it('shows once, on the first tap of a card', () => {
     holdTipOnTap();
-    expect(get(toast)?.text).toBe('Tip: hold a task in a list for more actions');
+    expect(get(toast)?.text).toBe('Tip: hold a task for more actions, or in a project’s List to select several');
     toast.set(null);
     holdTipOnTap();
     expect(get(toast)).toBeNull();
@@ -20,7 +20,7 @@ describe('hold tip', () => {
     expect(get(toast)?.text).toBe('Done: A');
     toast.set(null);
     holdTipOnTap();
-    expect(get(toast)?.text).toBe('Tip: hold a task in a list for more actions');
+    expect(get(toast)?.text).toBe('Tip: hold a task for more actions, or in a project’s List to select several');
   });
 
   it('waits while a toast with an action is showing', () => {

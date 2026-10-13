@@ -18,7 +18,7 @@ export function holdTipOnTap(): void {
   const live = get(toast);
   if (seen() || live?.undo || live?.action) return;
   remember();
-  showToast('Tip: hold a task in a list for more actions');
+  showToast('Tip: hold a task for more actions, or in a project’s List to select several');
 }
 
 export function holdUsed(): void { remember(); }
