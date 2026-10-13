@@ -2,7 +2,7 @@
 // Settings maintenance run, and backup import/export.
 import type { SpaceDoc, ProjectDoc, TaskDoc, Column } from '../types';
 import { db, currentSource, getAllTasksRaw, invalidateTaskCache, now, DEFAULT_COLS, bulkWrite } from './core';
-import { getProjects, getCustomFieldDefs, createProject, tombstone } from './entities';
+import { getProjects, getArchivedProjects, getSpaces, getCustomFieldDefs, createProject, tombstone } from './entities';
 // repairDatabase() re-scans for conflicts after rewriting docs. maintenance ->
 // sync is the one edge beyond core <- entities; sync never imports back.
 import { scanConflicts, conflictBearingRows, syncState } from './sync';
@@ -293,22 +293,29 @@ const WAITS_FOR_SYNC = new Set<IntegrityIssue['type']>(['orphaned_project', 'orp
 // to display names, not raw column_id / 1-2-3: CSV is a one-way, human-facing
 // format. JSON export is the round-trippable one.
 export async function exportTasksCSV(): Promise<string> {
-  const [tasks, projects] = await Promise.all([getAllTasksRaw(), getProjects()]);
-  const projById: Record<string, ProjectDoc> = Object.fromEntries(projects.map(p => [p._id, p]));
+  const [tasks, active, archived, spaces] = await Promise.all([getAllTasksRaw(), getProjects(), getArchivedProjects(), getSpaces()]);
+  const projById: Record<string, ProjectDoc> = Object.fromEntries([...active, ...archived].map(p => [p._id, p]));
+  const spaceById: Record<string, SpaceDoc> = Object.fromEntries(spaces.map(s => [s._id!, s]));
   const PRIO_NAME: Record<number, string> = { 1: 'Low', 2: 'Medium', 3: 'High' };
-  const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-  const header = ['Title', 'Project', 'Status', 'Priority', 'Due Date', 'Tags', 'Created', 'Updated'];
+  // A cell starting with = + - @ (or a tab/CR) is a formula to a spreadsheet,
+  // and titles arrive by sync: those get a leading ' so they stay plain text.
+  const esc = (v: unknown) => {
+    const s = String(v ?? '');
+    return `"${(/^[=+\-@\t\r]/.test(s) ? `'${s}` : s).replace(/"/g, '""')}"`;
+  };
+  const header = ['Title', 'Space', 'Project', 'Status', 'Priority', 'Due Date', 'Reminder', 'Tags', 'Notes', 'Created', 'Updated'];
   const lines = [header.map(esc).join(',')];
   for (const t of tasks) {
     if (t.deleted) continue;
     const proj = projById[t.project_id];
     const status = proj?.columns.find(c => c.id === t.column_id)?.name ?? '';
     lines.push([
-      t.title, proj?.name ?? '', status, PRIO_NAME[t.priority] ?? '',
-      t.due_date ?? '', (t.tags ?? []).join('; '), t.created_at, t.updated_at,
+      t.title, spaceById[proj?.space_id ?? t.space_id]?.name ?? '', proj?.name ?? '', status, PRIO_NAME[t.priority] ?? '',
+      t.due_date ?? '', t.reminder_at ?? '', (t.tags ?? []).join('; '), t.body ?? '', t.created_at, t.updated_at,
     ].map(esc).join(','));
   }
-  return lines.join('\r\n');
+  // The BOM tells Excel on Windows the file is UTF-8, not the ANSI code page.
+  return '﻿' + lines.join('\r\n');
 }
 
 
