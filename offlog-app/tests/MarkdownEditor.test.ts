@@ -1,5 +1,5 @@
-import { describe, expect, it, afterEach } from 'vitest';
-import { render, cleanup } from '@testing-library/svelte';
+import { describe, expect, it, afterEach, vi } from 'vitest';
+import { render, cleanup, fireEvent } from '@testing-library/svelte';
 
 // The notes editor is the one place the app hands a live CodeMirror
 // instance real user text, and it had no test at all — so a CodeMirror
@@ -49,5 +49,15 @@ describe('MarkdownEditor', () => {
     // the source characters stay put; nothing is converted to a <strong>
     expect(editor.textContent).toContain('**bold**');
     expect(editor.querySelector('strong')).toBeNull();
+  });
+
+  it('a tap on a link opens its address through onLink; other schemes are not handed out', async () => {
+    const onLink = vi.fn();
+    const { container } = render(MarkdownEditor, { value: '[site](https://offlog.io) and [x](javascript:alert(1))', onLink });
+    const links = container.querySelectorAll('.cm-md-link');
+    await fireEvent.mouseDown(links[0]);
+    expect(onLink).toHaveBeenCalledWith('https://offlog.io');
+    await fireEvent.mouseDown(links[1]);
+    expect(onLink).toHaveBeenCalledTimes(1);
   });
 });

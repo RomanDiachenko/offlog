@@ -5,12 +5,16 @@
   import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
   import { markdown } from '@codemirror/lang-markdown';
   import { Strikethrough } from '@lezer/markdown';
-  import { markdownLiveView } from './markdownLiveView';
+  import { markdownLiveView, linkUrlAt } from './markdownLiveView';
 
   export let value: string;
   export let placeholderText = '';
   // The typing area's spoken name; a placeholder alone is not a name.
   export let label = 'Notes';
+  // Opens a link's address. A tap on a link opens it while the note isn't
+  // being edited; while it is, the tap places the cursor and Ctrl/Cmd+click
+  // opens. Without a handler links are only styled.
+  export let onLink: ((url: string) => void) | null = null;
 
   let host: HTMLDivElement;
   let view: EditorView;
@@ -34,6 +38,18 @@
           EditorView.lineWrapping,
           placeholderExt(placeholderText),
           EditorView.contentAttributes.of({ 'aria-label': label, 'aria-multiline': 'true' }),
+          // mousedown, not click: by click time the editor has taken focus.
+          EditorView.domEventHandlers({
+            mousedown(e, v) {
+              if (!onLink || (v.hasFocus && !(e.ctrlKey || e.metaKey))) return false;
+              const el = (e.target as Element | null)?.closest?.('.cm-md-link');
+              const url = el ? linkUrlAt(v, v.posAtDOM(el)) : null;
+              if (!url) return false;
+              e.preventDefault();
+              onLink(url);
+              return true;
+            },
+          }),
           EditorView.updateListener.of((u) => {
             if (u.docChanged) {
               lastEmitted = u.state.doc.toString();

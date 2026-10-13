@@ -14,6 +14,6 @@ export async function openLink(url: string) {
       window.open(url, '_blank', 'noopener');
     }
   } catch {
-    showError('Could not open the link.');
+    showError('Could not open the link. Please try again.');
   }
 }

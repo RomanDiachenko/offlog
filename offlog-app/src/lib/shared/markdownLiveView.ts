@@ -115,3 +115,16 @@ export function markdownLiveView() {
     { decorations: (v) => v.decorations },
   );
 }
+
+// The web address of the [text](url) link at `pos`, if it is one a browser
+// should open; notes arrive by sync, so nothing but http(s) is handed out.
+export function linkUrlAt(view: EditorView, pos: number): string | null {
+  let n = syntaxTree(view.state).resolveInner(pos, 1);
+  while (n.name !== 'Link') {
+    if (!n.parent) return null;
+    n = n.parent;
+  }
+  const u = n.getChild('URL');
+  const url = u ? view.state.sliceDoc(u.from, u.to).trim() : '';
+  return /^https?:\/\/\S+$/i.test(url) ? url : null;
+}
