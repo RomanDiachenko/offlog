@@ -2,6 +2,7 @@
 // The sync URL is also stored in localStorage so it can be changed in-app.
 
 import { writable } from 'svelte/store';
+import { encryptedDbName } from './lib/syncCrypto';
 
 // Vite loads `.env.local` for EVERY build mode, not just `npm run dev`, so
 // without this `import.meta.env.DEV` gate a developer's own sync URL and
@@ -71,13 +72,13 @@ export async function initTauriSyncDefaults(): Promise<void> {
   const saved = localStorage.getItem('offlog_sync_url');
   const lastSidecar = localStorage.getItem(SIDECAR_URL_KEY);
   const followsSidecar = !saved || saved === 'http://127.0.0.1:5984/offlog' || saved === lastSidecar
-    || (lastSidecar === null && /^http:\/\/127\.0\.0\.1:\d+\/offlog(-e)?$/.test(saved));
+    || (lastSidecar === null && /^http:\/\/127\.0\.0\.1:\d+\/offlog(-e-[0-9a-f]+)?$/.test(saved));
   if (!followsSidecar) return;
   try {
     const info = await invokeTauri<{ port: number; user: string; password: string; key?: string }>('get_sync_info');
     // With a key, the sidecar's encrypted database; whatever its readable one
     // holds is pulled in and that database deleted (retirePlainServer in db/sync.ts).
-    const url = `http://127.0.0.1:${info.port}/${info.key ? ENCRYPTED_DB : PLAIN_DB}`;
+    const url = `http://127.0.0.1:${info.port}/${info.key ? await encryptedDbName(info.key) : PLAIN_DB}`;
     // Every start, not only the first: a phone still on an app from before
     // encryption recreates the readable database when it pairs again.
     if (info.key) localStorage.setItem(PLAIN_SERVER_TO_RETIRE_KEY, `http://127.0.0.1:${info.port}/${PLAIN_DB}`);
@@ -119,7 +120,6 @@ export async function checkForOtherHosts(): Promise<void> {
 // more.
 const SYNC_KEY_KEY = 'offlog_sync_key';
 export const PLAIN_DB = 'offlog';
-export const ENCRYPTED_DB = 'offlog-e';
 export const PLAIN_SERVER_TO_RETIRE_KEY = 'offlog_plain_server_to_retire';
 export function getSyncKey(): string { return localStorage.getItem(SYNC_KEY_KEY) ?? ''; }
 export function setSyncKey(key: string) {

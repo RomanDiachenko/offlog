@@ -17,7 +17,7 @@
 // configure on the machine running the app.
 //
 // Reads the readable /offlog database only. A host with a sync key holds
-// end-to-end encrypted documents in /offlog-e instead (syncCrypto.ts), which
+// end-to-end encrypted documents in /offlog-e-<key hash> instead (syncCrypto.ts), which
 // this script cannot measure; point --url at a server without encryption.
 
 const fs = require('node:fs');

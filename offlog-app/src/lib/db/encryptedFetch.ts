@@ -40,6 +40,10 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
   return async function (url: string, init: RequestInit = {}): Promise<Response> {
     const target = new URL(url);
     const at = target.origin + target.pathname;
+    // The server root holds only its uuid, which PouchDB folds into the
+    // replication id; refused, that id would fall back to the address and
+    // every address change would compare everything again.
+    if (target.origin === baseUrl.origin && target.pathname === '/' && (init.method ?? 'GET').toUpperCase() === 'GET') return inner(url, init);
     if (at !== base && !at.startsWith(base + '/')) return refuse('a request outside its database');
     const rawPath = at.slice(base.length + 1);
     const qs = target.search;
@@ -137,11 +141,12 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
         onRejected(1);
         return new Response(JSON.stringify({ error: 'not_found', reason: 'Attachment could not be read.' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
       }
-      const opened = rebuild(res, new Blob([plain as BlobPart], { type: 'application/octet-stream' }));
+      const opened = rebuild(res, new Blob([plain.bytes as BlobPart], { type: plain.type }));
+      if (plain.type) opened.headers.set('Content-Type', plain.type);
       // PouchDB's Node build reads attachments through response.buffer()
       // (node-fetch); browsers and WebViews read the Blob.
       const NodeBuffer = (globalThis as { Buffer?: { from(b: Uint8Array): unknown } }).Buffer;
-      if (NodeBuffer) Object.assign(opened, { buffer: async () => NodeBuffer.from(plain) });
+      if (NodeBuffer) Object.assign(opened, { buffer: async () => NodeBuffer.from(plain.bytes) });
       return opened;
     }
 

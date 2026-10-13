@@ -716,7 +716,7 @@ revision and deleted flag, which makes forged, altered, replayed and
 unsealed-delete documents fail to open. It lives in the remote's `fetch`
 (`db/encryptedFetch.ts`), so the local database, the replicator and every
 screen see plain documents; transform-pouch was rejected for not covering
-ids or attachments. Encrypted data goes to a new database (`offlog-e`)
+ids or attachments. Encrypted data goes to a new database (`offlog-e-` plus a hash of the key)
 rather than rewriting `offlog` in place, and the key arrives with a
 rotated password, so a device that never got the key fails loudly with
 "pair it again" instead of mixing readable and sealed documents. Costs:

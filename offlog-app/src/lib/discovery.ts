@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
-import { setSyncUrl, getSyncUrl, setSyncCredentials, getPairedHostUuid, setPairedHostUuid, setPairedHostName, setSyncKey, getSyncKey, PLAIN_DB, ENCRYPTED_DB } from '../config';
+import { setSyncUrl, getSyncUrl, setSyncCredentials, getPairedHostUuid, setPairedHostUuid, setPairedHostName, setSyncKey, PLAIN_DB } from '../config';
+import { encryptedDbName } from './syncCrypto';
 import { startSync, clearLocalSeedBeforeFirstPair, syncState } from './db';
 import { showError } from './store';
 
@@ -197,7 +198,7 @@ export async function pairWithHost(host: DiscoveredHost, code: string): Promise<
   await clearLocalSeedBeforeFirstPair();
   await setSyncCredentials(data.user, data.password);
   setSyncKey(data.key ?? '');
-  setSyncUrl(`http://${host.address}:${data.port}/${data.key ? ENCRYPTED_DB : PLAIN_DB}`);
+  setSyncUrl(`http://${host.address}:${data.port}/${data.key ? await encryptedDbName(data.key) : PLAIN_DB}`);
   setPairedHostUuid(data.uuid);
   setPairedHostName(host.name);
   startSync().catch(() => {});
@@ -226,6 +227,9 @@ interface HostResolveResult {
 // stores, since this runs in the background, not from the pairing screen.
 async function findPairedHostAddress(uuid: string): Promise<HostResolveResult> {
   const { ZeroConf } = await import('capacitor-zeroconf');
+  // Same database as now, only the address moves.
+  let dbPath = '/' + PLAIN_DB;
+  try { dbPath = new URL(getSyncUrl()).pathname; } catch { /* never synced */ }
   return new Promise((resolve) => {
     let settled = false;
     let id: string | null = null;
@@ -247,7 +251,7 @@ async function findPairedHostAddress(uuid: string): Promise<HostResolveResult> {
       }
       const address = service.ipv4Addresses?.[0];
       if (!address) return;
-      finish(`http://${address}:${service.port}/${getSyncKey() ? ENCRYPTED_DB : PLAIN_DB}`);
+      finish(`http://${address}:${service.port}${dbPath}`);
     }).then((watchId) => { id = watchId; }).catch(() => finish(null));
     setTimeout(() => finish(null), 10_000);
   });

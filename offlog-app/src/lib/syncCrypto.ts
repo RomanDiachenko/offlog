@@ -87,11 +87,30 @@ const docAad = (serverId: string, rev: string | undefined, deleted: boolean | un
   `offlog-doc-v1\n${serverId}\n${rev ?? ''}\n${deleted ? 1 : 0}`;
 const attAad = (serverId: string, name: string) => `offlog-att-v1\n${serverId}\n${name}`;
 
-export async function encryptAttachment(k: SyncKeys, serverId: string, name: string, bytes: Bytes): Promise<Bytes> {
-  return seal(k.att, randomIv(), bytes, attAad(serverId, name));
+// The content type is sealed in front of the bytes (2-byte length, then the
+// type): an attachment fetched on its own must come back as the type it was,
+// or the device stores it as a typeless blob (an SVG then won't render).
+export async function encryptAttachment(k: SyncKeys, serverId: string, name: string, bytes: Bytes, type = ''): Promise<Bytes> {
+  const t = utf8.encode(type);
+  const plain = new Uint8Array(2 + t.length + bytes.length);
+  plain[0] = t.length >> 8; plain[1] = t.length & 0xff;
+  plain.set(t, 2); plain.set(bytes, 2 + t.length);
+  return seal(k.att, randomIv(), plain, attAad(serverId, name));
 }
-export async function decryptAttachment(k: SyncKeys, serverId: string, name: string, sealed: Bytes): Promise<Bytes | null> {
-  return open(k.att, sealed, attAad(serverId, name));
+export async function decryptAttachment(k: SyncKeys, serverId: string, name: string, sealed: Bytes): Promise<{ type: string; bytes: Bytes } | null> {
+  const plain = await open(k.att, sealed, attAad(serverId, name));
+  if (!plain || plain.length < 2) return null;
+  const n = (plain[0] << 8) | plain[1];
+  if (plain.length < 2 + n) return null;
+  return { type: fromUtf8.decode(plain.subarray(2, 2 + n)), bytes: plain.slice(2 + n) };
+}
+
+// The server database for a sync key: a new key starts a new, empty one, so
+// documents sealed under an old key never mix with it. Same name as
+// sync_host.rs encrypted_db_name(); only a one-way hash of the key.
+export async function encryptedDbName(base64Key: string): Promise<string> {
+  const h = new Uint8Array(await subtle().digest('SHA-256', utf8.encode('offlog-db-key-v1\n' + base64Key)));
+  return 'offlog-e-' + Array.from(h.subarray(0, 8), b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // A device's document as the server will hold it. Attachments must carry
@@ -111,7 +130,7 @@ export async function encryptDoc(k: SyncKeys, doc: AnyDoc): Promise<AnyDoc> {
     for (const [name, att] of Object.entries(_attachments)) {
       if (typeof att.data !== 'string') throw new Error('An attachment pushed for sync must carry its data.');
       meta[name] = { content_type: att.content_type, digest: att.digest };
-      out._attachments[name] = { content_type: 'application/octet-stream', data: b64(await encryptAttachment(k, serverId, name, unb64(att.data))) };
+      out._attachments[name] = { content_type: 'application/octet-stream', data: b64(await encryptAttachment(k, serverId, name, unb64(att.data), att.content_type)) };
     }
   }
   const inner = utf8.encode(JSON.stringify({ i: _id, d: body, a: meta, ...(_revisions !== undefined && { r: _revisions }) }));
@@ -150,7 +169,7 @@ export async function decryptDoc(k: SyncKeys, serverDoc: AnyDoc): Promise<AnyDoc
       if (typeof att.data === 'string') {
         const plain = await decryptAttachment(k, serverDoc._id, name, unb64(att.data));
         if (!plain) return null;
-        restored.data = b64(plain);
+        restored.data = b64(plain.bytes);
       } else {
         restored.stub = true;
         if (att.revpos !== undefined) restored.revpos = att.revpos;

@@ -52,18 +52,18 @@ describe('initTauriSyncDefaults', () => {
     await initTauriSyncDefaults();
     expect(getSyncKey()).toBe('');
     invoke.mockImplementation(async (cmd: string) =>
-      cmd === 'get_sync_info' ? { port: 51234, user: 'offlog', password: 'new', key: 'a2V5' } : undefined);
+      cmd === 'get_sync_info' ? { port: 51234, user: 'offlog', password: 'new', key: 'a2V5LWE=' } : undefined);
     await initTauriSyncDefaults();
-    expect(getSyncUrl()).toBe('http://127.0.0.1:51234/offlog-e');
-    expect(getSyncKey()).toBe('a2V5');
+    expect(getSyncUrl()).toBe('http://127.0.0.1:51234/offlog-e-e153e859bc5ce847');
+    expect(getSyncKey()).toBe('a2V5LWE=');
     expect(localStorage.getItem('offlog_plain_server_to_retire')).toBe('http://127.0.0.1:51234/offlog');
   });
 
   it('a fresh install with a key still checks for a readable database at every start', async () => {
     invoke.mockImplementation(async (cmd: string) =>
-      cmd === 'get_sync_info' ? { port: 51234, user: 'offlog', password: 'new', key: 'a2V5' } : undefined);
+      cmd === 'get_sync_info' ? { port: 51234, user: 'offlog', password: 'new', key: 'a2V5LWE=' } : undefined);
     await initTauriSyncDefaults();
-    expect(getSyncUrl()).toBe('http://127.0.0.1:51234/offlog-e');
+    expect(getSyncUrl()).toBe('http://127.0.0.1:51234/offlog-e-e153e859bc5ce847');
     expect(localStorage.getItem('offlog_plain_server_to_retire')).toBe('http://127.0.0.1:51234/offlog');
   });
 });

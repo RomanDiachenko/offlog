@@ -710,11 +710,14 @@ which refuses (`ConflictChangedError`) if sync changed them in the meantime.
 
 **End-to-end encryption.** With a sync key (`offlog_sync_key`, 32 bytes,
 base64, from the PC), the remote PouchDB gets `fetch: encryptedFetch(...)`
-(`db/encryptedFetch.ts`) and the database is `offlog-e`; without one it is
+(`db/encryptedFetch.ts`) and the database is `encryptedDbName(key)`
+(`offlog-e-` + 16 hex digits of a SHA-256 of the key, the same in
+`sync_host.rs`); without one it is
 the readable `offlog` (an older PC, or a server set up by hand). The fetch
 rewrites `_bulk_docs`, `_revs_diff`, `_bulk_get`, `_changes`, `_all_docs`
-and single-document and attachment requests; `_local/` checkpoints and
-`_design/` pass through. `syncCrypto.ts` derives four keys by HKDF:
+and single-document and attachment reads; `_local/` checkpoints,
+`_design/` and the server root (its uuid feeds the replication id, so an
+address change doesn't restart the comparison) pass through. `syncCrypto.ts` derives four keys by HKDF:
 
 - **ids**: `x:` + base64url(iv ‖ AES-GCM(id)), iv = HMAC(id)[0..12].
   Deterministic, so revisions still match and any device can reverse a
@@ -723,8 +726,10 @@ and single-document and attachment requests; `_local/` checkpoints and
   `e` sealing `{i: id, d: body, a: {name: {content_type, digest}}, r: _revisions}`;
   the AAD binds server id, rev and deleted flag, and the sealed history
   replaces the server's on the way in.
-- **attachments**: bytes sealed under their own key, AAD = server id + name,
-  stored as `application/octet-stream`.
+- **attachments**: 2-byte type length, content type, bytes, sealed under
+  their own key with AAD = server id + name, stored as
+  `application/octet-stream`; a fetched attachment comes back with its
+  real type.
 
 What doesn't open is dropped before the replicator sees it and counted in
 `syncState.rejected` (shown in Settings → Sync). It fails closed: a
@@ -732,7 +737,7 @@ request outside its database, or any write other than `_bulk_docs` with
 `new_edits: false`, is refused instead of sent. On the desktop,
 `initTauriSyncDefaults()` takes the key from `get_sync_info` and, every
 start, sets `offlog_plain_server_to_retire`; `retirePlainServer()`
-(before the first sync in `initApp`) pulls the readable `/offlog` if it
+(after each settled sync, from `markSynced`) pulls the readable `/offlog` if it
 exists (left from before the update, or recreated by a phone on an older
 app), destroys it and clears the flag. A phone gets the key in the pairing
 reply; `clearPairedHost()` and a hand-typed server URL drop it, so a
@@ -1022,9 +1027,10 @@ before a new identity is generated; one that can't be read at all gets a
 session-only identity and is left on disk. A file from before the sync key
 gains one once, together with a new password, so phones that never got the
 key stop syncing instead of writing readable documents. `ensure_database`
-creates `offlog-e` and keeps a SHA-256 fingerprint of the key in its
-`_local/offlog-key`; a different key empties the database, since nothing
-sealed under the old one can be opened, and the app re-uploads. Database
+creates the database named after the key (`encrypted_db_name`), so a new
+key starts an empty one and the app re-uploads into it; nothing is wiped
+under a running replication. A database left from an old key holds only
+ciphertext and stays (NyxDB has no `_all_dbs` to find it). Database
 creation, the pairing
 server and mDNS run once NyxDB accepts connections: after the first 20 s
 the background thread keeps re-checking with a 1 s → 30 s capped backoff

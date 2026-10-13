@@ -35,9 +35,7 @@ const setPairedHostName = vi.fn();
 const setSyncKey = vi.fn();
 vi.mock('../src/config', () => ({
   setSyncKey: (...a: unknown[]) => setSyncKey(...a),
-  getSyncKey: () => '',
   PLAIN_DB: 'offlog',
-  ENCRYPTED_DB: 'offlog-e',
   setSyncUrl: (...a: unknown[]) => setSyncUrl(...a),
   getSyncUrl: () => '',
   setSyncCredentials: (...a: unknown[]) => setSyncCredentials(...a),
@@ -115,15 +113,15 @@ describe('pairWithHost', () => {
     const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(FIXTURE.code), 'PBKDF2', false, ['deriveKey']);
     const aes = await crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 210_000 }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
     const iv = new Uint8Array(12).fill(4);
-    const payload = { port: 25984, user: 'offlog', password: 'pw', uuid: 'test-uuid', key: 'c3luYy1rZXktYnl0ZXM=' };
+    const payload = { port: 25984, user: 'offlog', password: 'pw', uuid: 'test-uuid', key: 'a2V5LWE=' };
     const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aes, new TextEncoder().encode(JSON.stringify(payload))));
     const b64 = (u: Uint8Array) => btoa(String.fromCharCode(...u));
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ iv: b64(iv), ciphertext: b64(ct) }) }));
 
     await pairWithHost(host, FIXTURE.code);
 
-    expect(setSyncKey).toHaveBeenCalledWith('c3luYy1rZXktYnl0ZXM=');
-    expect(setSyncUrl).toHaveBeenCalledWith(`http://${host.address}:25984/offlog-e`);
+    expect(setSyncKey).toHaveBeenCalledWith('a2V5LWE=');
+    expect(setSyncUrl).toHaveBeenCalledWith(`http://${host.address}:25984/offlog-e-e153e859bc5ce847`);
   });
 
   it('rejects with the same "incorrect code" message when the code is wrong, not a raw decrypt error', async () => {

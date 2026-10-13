@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
 import db, { retirePlainServer } from '../src/lib/db';
 
 // After the update, a desktop's readable sync database is pulled from once
@@ -26,5 +26,20 @@ describe('retirePlainServer', () => {
     await retirePlainServer();
     expect((await new PouchDB(name).info()).doc_count).toBe(1);
     expect(localStorage.getItem('offlog_plain_server_to_retire')).toBe(name);
+  });
+});
+
+describe('when it runs', () => {
+  it('after a sync settles, when the server is known to be up', async () => {
+    const { attachSyncHandlers } = await import('../src/lib/db');
+    await new PouchDB(name).put({ _id: 'task:late', type: 'task', title: 'Late' });
+    localStorage.setItem('offlog_sync_key', 'a2V5');
+    localStorage.setItem('offlog_plain_server_to_retire', name);
+    const listeners: Record<string, ((e?: unknown) => void)[]> = {};
+    const handler = { on(ev: string, cb: (e?: unknown) => void) { (listeners[ev] ??= []).push(cb); return handler; } };
+    attachSyncHandlers(handler as never);
+    listeners.paused.forEach(cb => cb(undefined));
+    await vi.waitFor(async () => expect(localStorage.getItem('offlog_plain_server_to_retire')).toBeNull());
+    expect((await db.get<{ title: string }>('task:late')).title).toBe('Late');
   });
 });

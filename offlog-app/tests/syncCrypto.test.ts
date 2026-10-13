@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeAll } from 'vitest';
-import { importSyncKey, encryptId, decryptId, encryptDoc, decryptDoc, type SyncKeys } from '../src/lib/syncCrypto';
+import { importSyncKey, encryptId, decryptId, encryptDoc, decryptDoc, encryptAttachment, decryptAttachment, encryptedDbName, type SyncKeys } from '../src/lib/syncCrypto';
 
 const KEY = btoa(String.fromCharCode(...new Uint8Array(32).map((_, i) => i + 1)));
 const OTHER = btoa(String.fromCharCode(...new Uint8Array(32).fill(9)));
@@ -24,6 +24,21 @@ describe('sync ids', () => {
   it('replication checkpoints and design docs pass through', async () => {
     expect(await encryptId(k, '_local/abc')).toBe('_local/abc');
     expect(await decryptId(k, '_design/idx')).toBe('_design/idx');
+  });
+});
+
+describe('the server database', () => {
+  it('is named from a one-way hash of the key, the same way sync_host.rs names it', async () => {
+    expect(await encryptedDbName('a2V5LWE=')).toBe('offlog-e-e153e859bc5ce847');
+    expect(await encryptedDbName('a2V5LWI=')).not.toBe('offlog-e-e153e859bc5ce847');
+  });
+});
+
+describe('sync attachments', () => {
+  it('come back with the type they were stored as', async () => {
+    const sealed = await encryptAttachment(k, 'x:a', 'att:1', new Uint8Array([1, 2, 3]), 'image/svg+xml');
+    expect(await decryptAttachment(k, 'x:a', 'att:1', sealed)).toEqual({ type: 'image/svg+xml', bytes: new Uint8Array([1, 2, 3]) });
+    expect(await decryptAttachment(k, 'x:a', 'att:2', sealed)).toBeNull();
   });
 });
 

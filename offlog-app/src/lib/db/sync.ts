@@ -57,7 +57,7 @@ function reportRejected(count: number) {
 // On a PC syncing encrypted: anything the readable database holds (from
 // before the update, or a phone still on an older app) comes into this
 // device first, then that database is deleted
-// so no readable copy stays on the server. Retried next launch until done.
+// so no readable copy stays on the server. Retried after each sync until done.
 export async function retirePlainServer(): Promise<void> {
   const url = localStorage.getItem(PLAIN_SERVER_TO_RETIRE_KEY);
   if (!url || !getSyncKey()) return;
@@ -133,7 +133,17 @@ function markSynced() {
   syncState.retryCount = 0;
   localStorage.setItem(LAST_SYNC_KEY, ts);
   scheduleConflictScan();
+  retireAfterSync();
   notify();
+}
+
+// After a sync, not at boot: on the desktop the sync server may still be
+// starting then, and a large readable database must not hold up startup.
+let _retiring = false;
+function retireAfterSync() {
+  if (_retiring || !localStorage.getItem(PLAIN_SERVER_TO_RETIRE_KEY)) return;
+  _retiring = true;
+  retirePlainServer().catch(() => {}).finally(() => { _retiring = false; });
 }
 
 // Live sync pauses after every replicated batch, and a scan reads every
