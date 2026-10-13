@@ -204,18 +204,22 @@ fn shortcut_off_path(app: &tauri::AppHandle) -> Option<std::path::PathBuf> {
 }
 
 #[tauri::command]
+// On only when wanted and actually held: another app can own Ctrl+Alt+O, and
+// the switch must not claim a hotkey that does nothing.
 fn get_global_shortcut_enabled(app: tauri::AppHandle) -> bool {
-    shortcut_off_path(&app).map_or(true, |p| !p.exists())
+    shortcut_off_path(&app).map_or(true, |p| !p.exists()) && app.global_shortcut().is_registered(GLOBAL_SHORTCUT)
 }
 
 #[tauri::command]
 fn set_global_shortcut_enabled(app: tauri::AppHandle, enabled: bool) -> Result<(), String> {
     let path = shortcut_off_path(&app).ok_or("no config folder")?;
     if enabled {
-        let _ = std::fs::remove_file(&path);
+        // Registered first: if another app holds the key, the "off" marker
+        // stays and the preference keeps matching what the switch shows.
         if !app.global_shortcut().is_registered(GLOBAL_SHORTCUT) {
             app.global_shortcut().register(GLOBAL_SHORTCUT).map_err(|e| e.to_string())?;
         }
+        let _ = std::fs::remove_file(&path);
     } else {
         if let Some(dir) = path.parent() { std::fs::create_dir_all(dir).map_err(|e| e.to_string())?; }
         std::fs::write(&path, b"").map_err(|e| e.to_string())?;
