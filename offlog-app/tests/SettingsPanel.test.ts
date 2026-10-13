@@ -40,6 +40,7 @@ vi.mock('../src/config', () => ({
   isHapticsEnabled: () => true, setHapticsEnabled: vi.fn(),
   isPrivacyScreenEnabled: () => false, setPrivacyScreenEnabled: vi.fn(),
   otherHostsDetected: writable([]),
+  syncDataSetAside: writable<string | null>(null),
 }));
 
 const getConflicts = vi.fn().mockResolvedValue([]);
@@ -401,6 +402,15 @@ describe('SettingsPanel sync tab load failures', () => {
     await new Promise(r => setTimeout(r, 0));
 
     expect(showError).toHaveBeenCalledWith('Could not load recent devices. Please try again.');
+  });
+
+  it('says when the PC started its sync data fresh, and where the old data is kept', async () => {
+    const { syncDataSetAside } = await import('../src/config');
+    syncDataSetAside.set('C:/Users/me/AppData/Roaming/com.offlog.app/nyxdb-data.damaged-1791888347');
+    const { getByText } = render(SettingsPanel, { initialCategory: 'sync' });
+    expect(getByText(/couldn.t open its sync data, so it started it fresh/)).toBeTruthy();
+    expect(getByText(/nyxdb-data.damaged-1791888347/)).toBeTruthy();
+    syncDataSetAside.set(null);
   });
 
   it('says how many items from the server were refused', async () => {

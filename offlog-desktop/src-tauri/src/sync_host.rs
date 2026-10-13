@@ -639,10 +639,13 @@ mod tests {
         let data = root.join("nyxdb-data");
         fs::create_dir_all(&data).unwrap();
         fs::write(data.join("db"), b"store").unwrap();
+        fs::create_dir_all(data.join("att").join("offlog-e-1")).unwrap();
+        fs::write(data.join("att").join("offlog-e-1").join("0123abcd"), b"photo").unwrap();
         let moved = set_aside_data_dir(&data, 1700000000).unwrap();
         assert_eq!(moved, root.join("nyxdb-data.damaged-1700000000"));
         assert!(!data.exists());
         assert_eq!(fs::read(moved.join("db")).unwrap(), b"store");
+        assert_eq!(fs::read(moved.join("att").join("offlog-e-1").join("0123abcd")).unwrap(), b"photo");
         fs::remove_dir_all(&root).unwrap();
     }
 }

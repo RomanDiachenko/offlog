@@ -102,6 +102,27 @@ export async function initTauriSyncDefaults(): Promise<void> {
 // early returns an empty list, which is not the same as "no other host".
 export const otherHostsDetected = writable<{ uuid: string; name: string }[]>([]);
 
+// Where the desktop moved its sync server's data after the server could not
+// open it (sync_host.rs DamagedStore), or null. It happens a minute or so
+// into a run, so the event is listened for as well as asked once.
+export const syncDataSetAside = writable<string | null>(null);
+
+export async function watchSyncDataSetAside(): Promise<void> {
+  if (!isTauri()) return;
+  try {
+    const path = await invokeTauri<string | null>('get_sync_data_set_aside');
+    if (path) syncDataSetAside.set(path);
+  } catch {
+    // command unavailable (older build) -- nothing to show.
+  }
+  try {
+    const { listen } = await import('@tauri-apps/api/event');
+    await listen<string>('sync-data-set-aside', e => syncDataSetAside.set(e.payload));
+  } catch {
+    // no event bridge (tests, a non-Tauri host).
+  }
+}
+
 export async function checkForOtherHosts(): Promise<void> {
   if (!isTauri()) return;
   try {

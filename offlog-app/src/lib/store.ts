@@ -6,7 +6,7 @@ import {
   scanConflicts,
 } from './db';
 import { rescheduleAll, initNotificationListeners, checkPermission } from './notifications';
-import { initTauriSyncDefaults, checkForOtherHosts, initDeviceName, isNativePlatform } from '../config';
+import { initTauriSyncDefaults, checkForOtherHosts, watchSyncDataSetAside, initDeviceName, isNativePlatform } from '../config';
 import { watchForStaleHost } from './discovery';
 import { runAutoBackupIfDue } from './autoBackup';
 
@@ -122,6 +122,7 @@ export async function init() {
   // rather than checked once immediately after startSync() above.
   setTimeout(() => { checkForOtherHosts().catch(() => {}); }, 4000);
   setTimeout(() => { checkForOtherHosts().catch(() => {}); }, 10000);
+  watchSyncDataSetAside().catch(() => {});
   subscribe(scheduleReload);
   checkPermission();
   // Listener setup failing (e.g. platform plugin unavailable) shouldn't

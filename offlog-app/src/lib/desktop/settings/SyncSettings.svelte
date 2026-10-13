@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { otherHostsDetected } from '../../../config';
+  import { otherHostsDetected, syncDataSetAside } from '../../../config';
   import { timeAgo } from '../../utils';
   import type { ConflictInfo } from '../../db';
 
@@ -26,6 +26,7 @@
                   </button>
                 </div>
                 <p class="setting-hint" class:setting-hint-warn={connectionStatus.tone === 'warn'} class:success-hint={connectionStatus.tone === 'ok'}>{connectionStatus.text}</p>
+                {#if $syncDataSetAside}<p class="setting-hint setting-hint-warn">This PC couldn't open its sync data, so it started it fresh. Your devices are uploading their copies again, and nothing on them was lost. The old data is kept in {$syncDataSetAside}.</p>{/if}
                 {#if rejected > 0}<p class="setting-hint setting-hint-warn">Refused {rejected} item{rejected === 1 ? '' : 's'} from the sync server that none of your devices wrote. Nothing was changed.</p>{/if}
                 {#if syncEnabled && isTauri && $otherHostsDetected.length}
                   <p class="setting-hint setting-hint-warn">

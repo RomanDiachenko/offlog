@@ -94,6 +94,15 @@ fn get_sync_secret(app: tauri::AppHandle) -> Result<Option<SyncSecret>, String> 
 // treat one empty answer as final.
 struct DetectedOtherHosts(Mutex<Vec<discovery::OtherHost>>);
 
+// Where a damaged NyxDB data folder was moved this run (supervise_nyxdb), for
+// Settings to say so; also sent as the "sync-data-set-aside" event.
+struct SyncDataSetAside(Mutex<Option<String>>);
+
+#[tauri::command]
+fn get_sync_data_set_aside(state: tauri::State<SyncDataSetAside>) -> Option<String> {
+    state.0.lock().ok().and_then(|v| v.clone())
+}
+
 #[tauri::command]
 fn get_detected_other_hosts(state: tauri::State<DetectedOtherHosts>) -> Vec<discovery::OtherHost> {
     state.0.lock().map(|v| v.clone()).unwrap_or_default()
@@ -365,7 +374,14 @@ fn supervise_nyxdb(
         if damaged.record_exit(status.code()) {
             let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
             match sync_host::set_aside_data_dir(data_dir, now) {
-                Ok(to) => log::error!("sync_host: NyxDB can't open its data; moved it to {} and starting fresh, devices upload again on their next sync", to.display()),
+                Ok(to) => {
+                    log::error!("sync_host: NyxDB can't open its data; moved it to {} and starting fresh, devices upload again on their next sync", to.display());
+                    let path = to.display().to_string();
+                    if let Some(state) = app_handle.try_state::<SyncDataSetAside>() {
+                        if let Ok(mut guard) = state.0.lock() { *guard = Some(path.clone()); }
+                    }
+                    let _ = app_handle.emit("sync-data-set-aside", path);
+                }
                 Err(e) => log::error!("sync_host: NyxDB can't open its data, and moving it aside failed: {e}"),
             }
         }
@@ -565,6 +581,7 @@ pub fn run() {
             let data_dir = app_data_dir.join(data_dirname);
             app.manage(NyxdbDataDir(data_dir.clone()));
             app.manage(DetectedOtherHosts(Mutex::new(Vec::new())));
+            app.manage(SyncDataSetAside(Mutex::new(None)));
 
             // info is managed immediately (below) so get_sync_info answers
             // right away with the sidecar's port -- config.ts's
@@ -770,7 +787,7 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_sync_info, get_device_name,is_debug_build, generate_pairing_code, reset_sync_data, show_main_window, show_main_window_at_start, save_window_state, get_global_shortcut_enabled, set_global_shortcut_enabled, send_task_notification, check_desktop_notification_setting, get_detected_other_hosts, store_sync_secret, get_sync_secret])
+        .invoke_handler(tauri::generate_handler![get_sync_info, get_device_name,is_debug_build, generate_pairing_code, reset_sync_data, show_main_window, show_main_window_at_start, save_window_state, get_global_shortcut_enabled, set_global_shortcut_enabled, send_task_notification, check_desktop_notification_setting, get_detected_other_hosts, get_sync_data_set_aside, store_sync_secret, get_sync_secret])
         .build(context)
         .expect("error while building tauri application")
         .run(|app_handle, event| {

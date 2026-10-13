@@ -1069,7 +1069,12 @@ exit in a row (one can be a passing lock), once per session, the data dir is
 renamed to `<name>.damaged-<unix-secs>`, never deleted, and NyxDB restarts on
 a fresh one (`sync_host::DamagedStore`, `set_aside_data_dir`). Every device
 holds a full copy and re-uploads on its next sync; the encrypted database is
-recreated by `ensure_database` as usual.
+recreated by `ensure_database` as usual. The move includes NyxDB's `att/` attachment
+files (one rename of the whole folder). Settings → Sync then says so and
+where the old folder is (`get_sync_data_set_aside`, the
+`sync-data-set-aside` event, `syncDataSetAside` in `config.ts`). Moved-aside
+folders are never deleted by the app; remove them by hand once nothing is
+needed from them.
 Deliberate teardown — `terminate_nyxdb()` (tray Quit, `ExitRequested`) and
 debug `reset_sync_data` — sets `NYXDB_STOPPING` before killing, and the
 supervisor re-checks it under the `NyxdbProcess` lock before respawning,

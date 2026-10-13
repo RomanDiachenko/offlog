@@ -76,3 +76,13 @@ describe('clearPairedHost', () => {
     expect(getSyncKey()).toBe('');
   });
 });
+
+describe('watchSyncDataSetAside', () => {
+  it('shows a set-aside the PC already did before the app asked', async () => {
+    const { watchSyncDataSetAside, syncDataSetAside } = await import('../src/config');
+    const { get } = await import('svelte/store');
+    invoke.mockImplementation(async (cmd: string) => cmd === 'get_sync_data_set_aside' ? 'C:/data/nyxdb-data.damaged-5' : undefined);
+    await watchSyncDataSetAside();
+    expect(get(syncDataSetAside)).toBe('C:/data/nyxdb-data.damaged-5');
+  });
+});

@@ -485,7 +485,8 @@ Verified in the code, not just claimed:
 - **A damaged sync database doesn't stop sync for good.** If the built-in
   sync server can't open its data twice in a row, Offlog moves that folder
   aside (renamed `.damaged-…`, never deleted) and starts a fresh one; your
-  devices upload their full copies again on their next sync.
+  devices upload their full copies again on their next sync. Settings → Sync
+  says it happened and where the old folder is.
 - **The log records pairing outcomes, not secrets.** It notes that a
   pairing succeeded or was rejected — never the code or anything derived
   from it.
