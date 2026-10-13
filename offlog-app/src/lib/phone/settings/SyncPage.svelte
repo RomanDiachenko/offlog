@@ -31,12 +31,19 @@
   let syncError = syncState.error;
   let conflictCount = syncState.conflictCount;
   let rejected = syncState.rejected;
+  // The page stays open across a pairing or a switch to Own server, so the
+  // server and the paired computer are re-read with every sync change too.
+  let pairedName = getPairedHostName();
+  let pairedUuid = getPairedHostUuid();
   function onSyncChange() {
     syncStatus = syncState.status;
     lastSynced = syncState.lastSynced;
     syncError = syncState.error;
     conflictCount = syncState.conflictCount;
     rejected = syncState.rejected;
+    syncUrl = getSyncUrl();
+    pairedName = getPairedHostName();
+    pairedUuid = getPairedHostUuid();
   }
   syncState.listeners.add(onSyncChange);
   onDestroy(() => syncState.listeners.delete(onSyncChange));
@@ -44,11 +51,10 @@
 
   // Every device syncs through the paired computer, so the card shows this
   // device's one link: here ↔ that computer.
-  const pairedName = getPairedHostName();
   // A server typed in under Own server has no paired computer behind it.
-  const ownServer = !!syncUrl && !getPairedHostUuid();
-  const hubName = ownServer ? 'Your server' : pairedName || 'Your computer';
-  const hubInText = ownServer ? 'your server' : pairedName || 'your computer';
+  $: ownServer = !!syncUrl && !pairedUuid;
+  $: hubName = ownServer ? 'Your server' : pairedName || 'Your computer';
+  $: hubInText = ownServer ? 'your server' : pairedName || 'your computer';
   const here = isAndroid ? 'phone' : 'device';
   type Card = { tone: 'ok' | 'idle' | 'bad'; title: string; text: string; act?: 'sync' | 'retry' | 'on' | 'connect' };
   $: card = ((): Card => {

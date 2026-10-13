@@ -223,6 +223,20 @@ describe('phone Sync page', () => {
     expect(queryByText('Try again')).toBeNull();
   });
 
+  // The page stays open across a pairing (Own server → Connect a device), so
+  // what it knows about the computer must follow sync, not the moment it opened.
+  it('a page opened on Own server follows a pairing made while it is open', async () => {
+    (window as { Capacitor?: unknown }).Capacitor = { getPlatform: () => 'android' };
+    m.uuid = null; m.hub = null;
+    const { findByRole, findByText, queryByText } = render(SettingsPage, { page: 'sync' });
+    m.uuid = 'h1'; m.hub = 'Office PC';
+    Object.assign(m.syncState, { status: 'error', error: 'Your computer no longer accepts this device. Pair it again in Settings → Sync.' });
+    m.syncState.listeners.forEach(fn => fn());
+    expect(await findByRole('heading', { name: 'Pair this phone again' })).toBeTruthy();
+    expect(await findByText(/Office PC no longer accepts this phone/)).toBeTruthy();
+    expect(queryByText('Try again')).toBeNull();
+  });
+
   it('says how many items from the server were refused', () => {
     Object.assign(m.syncState, { rejected: 3 });
     const { getByText } = render(SettingsPage, { page: 'sync' });
