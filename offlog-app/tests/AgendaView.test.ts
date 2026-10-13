@@ -46,8 +46,10 @@ vi.mock('../src/lib/store', async () => {
   };
 });
 
+const week = vi.hoisted(() => ({ monday: true }));
 vi.mock('../src/config', () => ({
-  getWeekStartsMonday: () => true,
+  getWeekStartsMonday: () => week.monday,
+  WEEK_START_CHANGED: 'offlog:week-start-changed',
   getDefaultReminderTime: () => '09:00',
   getTimeFormat24h: () => true,
   isNativePlatform: () => false,
@@ -106,6 +108,18 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.useRealTimers(); });
 
 describe('AgendaView due-date grouping', () => {
+  it('an open month follows a change of week start at once', async () => {
+    localStorage.setItem('offlog_agenda_view', 'month');
+    try {
+      const { container } = render(AgendaView);
+      const first = () => container.querySelector('.month-dow')?.textContent;
+      await waitFor(() => expect(first()).toBe('Mon'));
+      week.monday = false;
+      window.dispatchEvent(new Event('offlog:week-start-changed'));
+      await waitFor(() => expect(first()).toBe('Sun'));
+    } finally { week.monday = true; localStorage.removeItem('offlog_agenda_view'); }
+  });
+
   it('splits tasks into Overdue / Today / This week / Later', async () => {
     getAllTasksDue.mockResolvedValueOnce([
       mkTask('task:a', '2026-03-09'),   // Monday — past

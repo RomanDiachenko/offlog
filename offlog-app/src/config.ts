@@ -508,8 +508,12 @@ export function getWeekStartsMonday(): boolean {
   return stored === null ? (localeMonday ??= localeWeekStartsMonday()) : stored === 'true';
 }
 
+// An open Agenda listens for this and re-lays its weeks.
+export const WEEK_START_CHANGED = 'offlog:week-start-changed';
+
 export function setWeekStartsMonday(monday: boolean) {
   localStorage.setItem(WEEK_STARTS_MONDAY_KEY, String(monday));
+  window.dispatchEvent(new Event(WEEK_START_CHANGED));
 }
 
 // Same per-device override pattern as WEEK_STARTS_MONDAY_KEY above,

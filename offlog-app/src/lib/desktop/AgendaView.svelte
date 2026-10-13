@@ -8,7 +8,7 @@
   import { PRIORITY_COLOR as PRIO_COLOR, PRIORITY_LABEL as PRIO_LABEL } from '../constants';
   import { dueLabelLong, dueRelative, dueDateShort, daysSinceWeekStart, localDateStr, fmtDay, dayOf } from '../utils';
   import { today as todayStore } from '../today';
-  import { getWeekStartsMonday } from '../../config';
+  import { getWeekStartsMonday, WEEK_START_CHANGED } from '../../config';
   import CardDetail from './CardDetail.svelte';
   import type { TaskDoc, ProjectDoc } from '../types';
   import { hapticToggle } from '../haptics';
@@ -39,7 +39,12 @@
   let mode: 'list' | 'month' = storedMode === 'month' ? 'month' : 'list';
   function setMode(m: 'list' | 'month') { mode = m; localStorage.setItem(VIEW_KEY, m); }
 
-  const weekStartsMonday = getWeekStartsMonday();
+  let weekStartsMonday = getWeekStartsMonday();
+  onMount(() => {
+    const sync = () => (weekStartsMonday = getWeekStartsMonday());
+    window.addEventListener(WEEK_START_CHANGED, sync);
+    return () => window.removeEventListener(WEEK_START_CHANGED, sync);
+  });
   function toDateStr(d: Date): string {
     return localDateStr(d);
   }
@@ -99,11 +104,12 @@
   // call site would just be hiding it.
   function addCardOnDay(dStr: string | null) { if (dStr) dispatch('addTask', dStr); }
 
-  function endOfWeek(): string {
+  function endOfWeek(monday: boolean): string {
     const d = new Date();
-    d.setDate(d.getDate() + (6 - daysSinceWeekStart(d, weekStartsMonday)));
+    d.setDate(d.getDate() + (6 - daysSinceWeekStart(d, monday)));
     return localDateStr(d);
   }
+  $: weekEnd = endOfWeek(weekStartsMonday);
 
   async function load() { all = await getAllTasksDue(); }
 
@@ -115,8 +121,8 @@
 
   $: overdue   = all.filter(t => t.due_date! < today);
   $: dueToday  = all.filter(t => t.due_date === today);
-  $: thisWeek  = all.filter(t => t.due_date! > today && t.due_date! <= endOfWeek());
-  $: later     = all.filter(t => t.due_date! > endOfWeek());
+  $: thisWeek  = all.filter(t => t.due_date! > today && t.due_date! <= weekEnd);
+  $: later     = all.filter(t => t.due_date! > weekEnd);
 
   function openDetail(t: DueTask) {
     detailOpenSession++;

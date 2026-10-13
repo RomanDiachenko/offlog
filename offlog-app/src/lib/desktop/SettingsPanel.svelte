@@ -246,21 +246,14 @@
     rescheduleAll().catch(() => {});
   }
 
-  // Re-derives Agenda's week math on toggle. AgendaView reads
-  // getWeekStartsMonday() once at mount, so an already-open Agenda needs a
-  // route re-entry/reload to pick this up — an accepted tradeoff for a
-  // rarely-changed display preference, rather than a live-reactive
-  // bridge. Same as the theme mode toggle's page-level effect.
   let weekStartsMonday = getWeekStartsMonday();
   function setWeekStart(monday: boolean) {
     weekStartsMonday = monday;
     setWeekStartsMonday(monday);
   }
 
-  // Same rarely-changed-display-preference tradeoff as weekStartsMonday
-  // above — every clock-time display in the app reads getTimeFormat24h()
-  // fresh via utils.ts's fmtTime(), so a reactive bridge isn't needed for
-  // already-open views; a reopen/reload picks it up.
+  // Every clock-time display reads getTimeFormat24h() fresh via utils.ts's
+  // fmtTime(), so views already open pick it up on their next render.
   let timeFormat24h = getTimeFormat24h();
   function setTimeFormat(is24h: boolean) {
     timeFormat24h = is24h;

@@ -14,7 +14,8 @@ vi.mock('../src/lib/store', async () => {
   const { writable: w } = await import('svelte/store');
   return { showError: vi.fn(), reloadTasks: vi.fn(), projects: w([]), spaces: w([]) };
 });
-vi.mock('../src/config', async (orig) => ({ ...(await orig<object>()), getWeekStartsMonday: () => true }));
+const week = vi.hoisted(() => ({ monday: true }));
+vi.mock('../src/config', async (orig) => ({ ...(await orig<object>()), getWeekStartsMonday: () => week.monday }));
 
 import AgendaScreen from '../src/lib/phone/AgendaScreen.svelte';
 import { actions, stack, toast, tab } from '../src/lib/phone/nav';
@@ -84,6 +85,18 @@ describe('phone Agenda', () => {
     expect(open).toHaveBeenCalledWith(expect.objectContaining({ _id: 'task:Next' }));
     await fireEvent.click(getByLabelText('Finish: Next'));
     await waitFor(() => expect(updateTask).toHaveBeenCalledWith('task:Next', { column_id: 'col:done' }));
+  });
+
+  it('an open month follows a change of week start at once', async () => {
+    const { getByText, container } = render(AgendaScreen);
+    await fireEvent.click(getByText('Month'));
+    const first = () => container.querySelector('.wds .wd')?.textContent;
+    const monFirst = first();
+    try {
+      week.monday = false;
+      window.dispatchEvent(new Event('offlog:week-start-changed'));
+      await waitFor(() => expect(first()).not.toBe(monFirst));
+    } finally { week.monday = true; }
   });
 
   it('a finished task collapses out of its group, and Undo brings the same row back', async () => {

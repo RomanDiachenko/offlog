@@ -6,7 +6,7 @@
   import { showError } from '../store';
   import { localDateStr } from '../utils';
   import { onNewDay } from '../today';
-  import { getWeekStartsMonday } from '../../config';
+  import { getWeekStartsMonday, WEEK_START_CHANGED } from '../../config';
   import { actions, memo, switchTab } from './nav';
   import { shortDate } from './format';
   import { I } from './icons';
@@ -48,7 +48,12 @@
     if (t !== today) { if (selected === today) selected = t; today = t; }
   }
 
-  const mondayFirst = getWeekStartsMonday();
+  let mondayFirst = getWeekStartsMonday();
+  onMount(() => {
+    const sync = () => (mondayFirst = getWeekStartsMonday());
+    window.addEventListener(WEEK_START_CHANGED, sync);
+    return () => window.removeEventListener(WEEK_START_CHANGED, sync);
+  });
   const byDue = (a: Row, b: Row) => (a.due_date ?? '').localeCompare(b.due_date ?? '') || b.priority - a.priority;
 
   $: tomorrow = (() => { const d = new Date(today + 'T12:00:00'); d.setDate(d.getDate() + 1); return localDateStr(d); })();
@@ -82,7 +87,7 @@
   // card, two-letter days, round days.
   const WD_MON = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
   const WD_SUN = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-  const weekdays = mondayFirst ? WD_MON : WD_SUN;
+  $: weekdays = mondayFirst ? WD_MON : WD_SUN;
 
   // The new month slides in from the side it lies on.
   let monthDir = 0;
