@@ -66,6 +66,16 @@ describe('parseQuickAdd() -- dates', () => {
     expect(parseQuickAdd('Dentist Aug 3', [], NOW).due_date).toBe('2026-08-03');
   });
 
+  it('parses a day-first date: "25 dec", "3rd of August 2027"', () => {
+    const r = parseQuickAdd('Gifts 25 dec', [], NOW);
+    expect(r.due_date).toBe('2026-12-25');
+    expect(r.title).toBe('Gifts');
+    expect(parseQuickAdd('Trip 3rd of August 2027', [], NOW).due_date).toBe('2027-08-03');
+    expect(parseQuickAdd('Dentist 3 aug', [], new Date(2026, 9, 1, 9, 0)).due_date).toBe('2027-08-03');
+    // Not a real day: left as text.
+    expect(parseQuickAdd('Plan 31 feb', [], NOW).due_date).toBeNull();
+  });
+
   it('a month/day without a year already behind today means next year', () => {
     const oct1 = new Date(2026, 9, 1, 9, 0);
     expect(parseQuickAdd('Dentist aug 3', [], oct1).due_date).toBe('2027-08-03');

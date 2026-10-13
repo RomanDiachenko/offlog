@@ -347,7 +347,7 @@
       <div class="helpbox" role="note" in:slide={revealIn} out:slide={revealOut}>
         <p>Type it in plain text. These are picked out for you:</p>
         <dl>
-          <dt>Date</dt><dd><code>tomorrow</code>, <code>friday</code>, <code>next fri</code>, <code>in 3 days</code>, <code>aug 3</code></dd>
+          <dt>Date</dt><dd><code>tomorrow</code>, <code>friday</code>, <code>next fri</code>, <code>in 3 days</code>, <code>aug 3</code>, <code>25 dec</code></dd>
           <dt>Time</dt><dd><code>at 5pm</code>, <code>17:30</code> sets a reminder</dd>
           <dt>Priority</dt><dd><code>!high</code>, <code>!low</code>, <code>!!</code>, <code>!!!</code></dd>
           <dt>Tag</dt><dd><code>#errand</code>, repeat for more</dd>

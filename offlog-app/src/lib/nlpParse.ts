@@ -155,6 +155,13 @@ function extractDate(w: Work, today: Date): Date | null {
     if (d) { take(w, m, 'date'); return d; }
   }
 
+  // Day first: "25 Dec", "3rd of August 2027"
+  m = find(w, new RegExp(`\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?(${monthNames})\\.?(?:,?\\s+(\\d{4}))?\\b`, 'i'));
+  if (m) {
+    const d = upcoming(m[3] ? Number(m[3]) : null, MONTH_ALIASES[m[2].toLowerCase()], Number(m[1]), today);
+    if (d) { take(w, m, 'date'); return d; }
+  }
+
   // today / tonight
   m = find(w, /\b(today|tonight|tod)\b/i);
   if (m) { take(w, m, 'date'); return new Date(today); }

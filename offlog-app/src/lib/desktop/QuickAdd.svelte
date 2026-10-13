@@ -172,7 +172,7 @@
     <div id="quickadd-help-panel" class="help-panel" role="note" bind:this={helpPanelEl} in:fade={revealIn} out:fade={revealOut}>
       <div class="help-title">Type it in plain text — Quick Add picks these out automatically:</div>
       <dl class="help-list">
-        <dt>Date</dt><dd><code>tomorrow</code>, <code>friday</code>, <code>next fri</code>, <code>in 3 days</code>, <code>aug 3</code></dd>
+        <dt>Date</dt><dd><code>tomorrow</code>, <code>friday</code>, <code>next fri</code>, <code>in 3 days</code>, <code>aug 3</code>, <code>25 dec</code></dd>
         <dt>Time</dt><dd><code>at 5pm</code>, <code>17:30</code> — sets a reminder</dd>
         <dt>Priority</dt><dd><code>!high</code>, <code>!low</code>, <code>!!</code>, <code>!!!</code></dd>
         <dt>Tag</dt><dd><code>#errand</code> — repeat for more than one</dd>
