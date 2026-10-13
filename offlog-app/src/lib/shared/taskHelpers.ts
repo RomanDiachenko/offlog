@@ -100,14 +100,18 @@ export function base64ToBlob(base64Data: string, contentType: string): Blob {
 const MAX_IMAGE_DIMENSION = 1600;
 const IMAGE_JPEG_QUALITY = 0.8;
 
-// Re-encodes to JPEG regardless of the source image format (jpg/png/webp)
-// -- one predictable output format instead of format-specific quality/
-// compression tuning for each, and JPEG is universally previewable.
-// Downscaling first, not just re-compressing at full resolution, is what
-// actually shrinks a modern phone photo (4000px+) meaningfully.
+// Photos are re-encoded to JPEG (jpg/webp/heic…): downscaling first, not just
+// re-compressing at full resolution, is what actually shrinks a modern phone
+// photo (4000px+). A PNG stays PNG, since JPEG would drop its transparency
+// and blur screenshot text; one already small enough is kept byte for byte.
 export async function downscaleImage(file: File): Promise<{ filename: string; base64Data: string; size: number }> {
+  const png = file.type === 'image/png';
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(bitmap.width, bitmap.height));
+  if (png && scale === 1) {
+    bitmap.close();
+    return { filename: file.name, base64Data: await blobToBase64(file), size: file.size };
+  }
   const w = Math.round(bitmap.width * scale);
   const h = Math.round(bitmap.height * scale);
   const canvas = document.createElement('canvas');
@@ -116,9 +120,9 @@ export async function downscaleImage(file: File): Promise<{ filename: string; ba
   ctx.drawImage(bitmap, 0, 0, w, h);
   bitmap.close();
   const blob: Blob = await new Promise((resolve, reject) => {
-    canvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/jpeg', IMAGE_JPEG_QUALITY);
+    canvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob failed')), png ? 'image/png' : 'image/jpeg', IMAGE_JPEG_QUALITY);
   });
-  return { filename: file.name.replace(/\.[^.]+$/, '') + '.jpg', base64Data: await blobToBase64(blob), size: blob.size };
+  return { filename: png ? file.name : file.name.replace(/\.[^.]+$/, '') + '.jpg', base64Data: await blobToBase64(blob), size: blob.size };
 }
 
 // Hands an attachment to the user on whatever platform is running.

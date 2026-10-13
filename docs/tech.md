@@ -381,8 +381,9 @@ One PouchDB database, `offlog`. The `_id` prefix is the document type.
 - **Attachments**: bytes live in PouchDB's own `_attachments` on the task,
   so they replicate with it. `TaskAttachment` holds only metadata (`key`,
   filename, type, size, date) — `key` is not the filename, since two files
-  can share one. 10 MB per file, 10 per task. Images are downscaled to
-  ~1600px and re-encoded to JPEG before saving.
+  can share one. 10 MB per file, 10 per task. Photos are downscaled to
+  ~1600px and re-encoded to JPEG before saving; a PNG stays PNG (transparency,
+  sharp text), downscaled only when larger and otherwise kept byte for byte.
 
   Opening one is platform work, not a download: a blob URL on an
   `<a download>` only functions in a browser, so Android writes to cache and
