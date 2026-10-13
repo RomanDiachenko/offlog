@@ -35,6 +35,11 @@ describe('phone Search', () => {
     searchAllTasks.mockReset().mockResolvedValue([]);
   });
 
+  it('opening Search puts the cursor in the field', () => {
+    const { getByLabelText } = render(SearchScreen);
+    expect(document.activeElement).toBe(getByLabelText('Search'));
+  });
+
   it('a clear button empties the field and refocuses it', async () => {
     const { getByLabelText, queryByLabelText } = render(SearchScreen);
     const input = getByLabelText('Search') as HTMLInputElement;

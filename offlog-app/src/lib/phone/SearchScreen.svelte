@@ -59,6 +59,9 @@
   $: run(q);
   // Re-run on any write, so a finish, an Undo or a menu action shows at once.
   onMount(() => subscribe(() => run(q)));
+  // Opening the tab goes straight to typing; coming back to results already
+  // shown leaves the keyboard down.
+  onMount(() => { if (!q) input?.focus({ preventScroll: true }); });
   $: ql = q.trim().toLowerCase();
   $: matchedProjects = ql ? $projects.filter(p => p.name.toLowerCase().includes(ql)) : [];
   const colorOf = (spaceId: string) => { const c = $spaces.find(s => s._id === spaceId)?.color; return c ? soften(c) : 'var(--faint)'; };
