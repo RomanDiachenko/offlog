@@ -9,6 +9,7 @@
     getConflicts, resolveConflict, getCustomFieldDefs, type ConflictInfo, type ConflictVersion,
   } from '../../db';
   import { showError, projects } from '../../store';
+  import { getSyncHostRecord, type SyncHostRecord } from '../../db';
   import { confirmAction } from '../../confirm';
   import { getSyncUrl, getDeviceName, setDeviceName, isSyncEnabled, setSyncEnabled, shouldAskDeviceNameForSync, markDeviceNameAskedForSync, isTauri as isTauriCheck, invokeTauri, otherHostsDetected, getPairedHostName, getPairedHostUuid, getDeviceId } from '../../../config';
   import { fmtLastSynced, timeAgo } from '../../utils';
@@ -54,7 +55,7 @@
   // device's one link: here ↔ that computer.
   // A server typed in under Own server has no paired computer behind it.
   $: ownServer = !!syncUrl && !pairedUuid;
-  $: hubName = ownServer ? 'Your server' : pairedName || 'Your computer';
+  $: hubName = ownServer ? 'Your server' : host?.name || pairedName || 'Your computer';
   $: hubInText = ownServer ? 'your server' : pairedName || 'your computer';
   const here = isAndroid ? 'phone' : 'device';
   type Card = { tone: 'ok' | 'idle' | 'bad' | 'attn'; title: string; text: string; act?: 'sync' | 'retry' | 'on' | 'connect' | 'conflicts' };
@@ -94,10 +95,12 @@
     }
   }
   loadDeviceLastSeen();
-  // The card already shows this device and the computer. This device is also
-  // matched by id: after a rename its newest log still carries the old name.
+  // The card already shows this device and the computer. Both are matched by
+  // id too: after a rename a device's newest log still carries the old name.
   const myId = getDeviceId();
-  $: others = deviceLastSeen.filter(d => d.id !== myId && d.device !== deviceName && d.device !== hubName);
+  let host: SyncHostRecord | null = null;
+  getSyncHostRecord().then(h => (host = h), () => {});
+  $: others = deviceLastSeen.filter(d => d.id !== myId && !(host && d.id === host.device_id) && d.device !== deviceName && d.device !== hubName);
   const DAY = 24 * 3600e3;
   const recent = (iso: string) => Date.now() - new Date(iso).getTime() < DAY;
 
@@ -314,7 +317,7 @@
         <span class="ava" aria-hidden="true">{d.device.trim().charAt(0).toUpperCase() || '?'}</span>
         <span class="p-k">
           <span>{d.device}</span>
-          <span class="p-sub seen"><span class="p-dot" class:fresh={recent(d.lastSeen)}></span>{recent(d.lastSeen) ? 'Synced' : 'Last seen'} {timeAgo(d.lastSeen)}</span>
+          <span class="p-sub seen"><span class="p-dot" class:fresh={recent(d.lastSeen)}></span>Last change {timeAgo(d.lastSeen)}</span>
         </span>
       </div>
     {/each}

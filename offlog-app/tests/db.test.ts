@@ -2889,3 +2889,16 @@ describe('space of a project and its tasks', () => {
     expect((await db.get<{ space_id: string }>(t._id!)).space_id).toBe('space:unsorted');
   });
 });
+
+describe('sync host record', () => {
+  it('is written once and rewritten only when the name or device changes', async () => {
+    const { getSyncHostRecord, putSyncHostRecord } = await import('../src/lib/db');
+    expect(await getSyncHostRecord()).toBeNull();
+    await putSyncHostRecord('dev:pc', 'Test PC');
+    const first = (await db.get('meta:sync-host'))._rev;
+    await putSyncHostRecord('dev:pc', 'Test PC');
+    expect((await db.get('meta:sync-host'))._rev).toBe(first);
+    await putSyncHostRecord('dev:pc', 'Studio PC');
+    expect(await getSyncHostRecord()).toEqual({ device_id: 'dev:pc', name: 'Studio PC' });
+  });
+});

@@ -371,6 +371,30 @@ export async function reorderColumns(projectId: string, columns: Column[]): Prom
   return updateProject(projectId, { columns });
 }
 
+// Which device hosts sync, by its Offlog name: the phone knows the PC only by
+// the network name it paired with. Written by the Windows app that hosts
+// sync, only when something changed; bookkeeping, so no History entry (as
+// with tag colors).
+const SYNC_HOST_DOC_ID = 'meta:sync-host';
+export interface SyncHostRecord { device_id: string; name: string }
+
+export async function getSyncHostRecord(): Promise<SyncHostRecord | null> {
+  try {
+    const d = await db.get<SyncHostRecord & { _id: string }>(SYNC_HOST_DOC_ID);
+    return typeof d.device_id === 'string' && typeof d.name === 'string' ? { device_id: d.device_id, name: d.name } : null;
+  } catch { return null; }
+}
+
+export async function putSyncHostRecord(deviceId: string, name: string): Promise<void> {
+  let rev: string | undefined;
+  try {
+    const d = await db.get<SyncHostRecord & { _id: string; _rev: string }>(SYNC_HOST_DOC_ID);
+    if (d.device_id === deviceId && d.name === name) return;
+    rev = d._rev;
+  } catch { /* first write */ }
+  await db.put({ _id: SYNC_HOST_DOC_ID, _rev: rev, type: 'meta', device_id: deviceId, name, updated_at: now(), source: currentSource() });
+}
+
 // Custom fields are global, not per-project: every task shares the same field
 // definitions, configured once from Settings → Organize. Stored as a single
 // fixed-id doc rather than a `field:` range scan — there's only ever one list

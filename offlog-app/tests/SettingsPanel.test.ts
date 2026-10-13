@@ -70,6 +70,7 @@ vi.mock('../src/lib/store', () => ({
   showError: (...a: unknown[]) => showError(...a),
   modalOpen: writable(false),
   projects: writable([]),
+  announceSyncHost: vi.fn(),
 }));
 
 vi.mock('../src/lib/discovery', () => ({

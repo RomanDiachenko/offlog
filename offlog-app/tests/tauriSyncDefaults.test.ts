@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { initTauriSyncDefaults, getSyncUrl, getSyncKey } from '../src/config';
+import { initTauriSyncDefaults, getSyncUrl, getSyncKey, syncsWithOwnSidecar, setSyncUrl } from '../src/config';
 
 // The Windows app keeps following its own sync host (which can move port or
 // change identity) but never overrides a server the user set up by hand.
@@ -31,6 +31,14 @@ describe('initTauriSyncDefaults', () => {
     await initTauriSyncDefaults();
     expect(getSyncUrl()).toBe('http://127.0.0.1:60001/offlog');
     expect(stored().at(-1)).toEqual({ user: 'offlog', pass: 'rotated' });
+  });
+
+  it('knows when this app is the host phones sync with, and when it is not', async () => {
+    expect(syncsWithOwnSidecar()).toBe(false);
+    await initTauriSyncDefaults();
+    expect(syncsWithOwnSidecar()).toBe(true);
+    setSyncUrl('http://10.0.0.9:5984/offlog');
+    expect(syncsWithOwnSidecar()).toBe(false);
   });
 
   it('treats an older install with a loopback URL as following its host', async () => {

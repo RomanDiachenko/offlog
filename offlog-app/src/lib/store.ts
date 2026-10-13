@@ -3,10 +3,10 @@ import type { SpaceDoc, ProjectDoc, TaskDoc } from './types';
 import {
   getSpaces, getProjects, getTasksForProject,
   seedIfEmpty, startSync, subscribe, initIndexes, maybePruneOldLogs, maybePruneOldDeletedTasks,
-  scanConflicts,
+  scanConflicts, putSyncHostRecord,
 } from './db';
 import { rescheduleAll, initNotificationListeners, checkPermission } from './notifications';
-import { initTauriSyncDefaults, checkForOtherHosts, watchSyncDataSetAside, initDeviceName, isNativePlatform } from '../config';
+import { initTauriSyncDefaults, checkForOtherHosts, watchSyncDataSetAside, initDeviceName, isNativePlatform, syncsWithOwnSidecar, getDeviceId, getDeviceName } from '../config';
 import { watchForStaleHost } from './discovery';
 import { runAutoBackupIfDue } from './autoBackup';
 
@@ -84,6 +84,12 @@ function scheduleReload() {
   _reloadTimer = setTimeout(() => { reload().catch(() => {}); }, RELOAD_DEBOUNCE_MS);
 }
 
+// The Windows app hosting sync tells phones its Offlog name. Not something
+// the user did, so a failed write shows nothing; the next start retries.
+export function announceSyncHost() {
+  if (syncsWithOwnSidecar()) putSyncHostRecord(getDeviceId(), getDeviceName()).catch(() => {});
+}
+
 export async function reloadTasks() {
   const taskSeq = ++_taskSeq;
   const tk = await getTasksForProject(get(activeProjectId));
@@ -109,6 +115,7 @@ export async function init() {
   await initTauriSyncDefaults();
   // Before sync starts, so the first synced edits carry the real name.
   await initDeviceName();
+  announceSyncHost();
   await reload();
   startSync().catch(() => {});
   // Not just after the next sync settles (markSynced()/resolveConflict()

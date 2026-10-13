@@ -39,7 +39,9 @@ const cancelSync = vi.fn();
 const getDeviceLastSeen = vi.fn();
 const getConflicts = vi.fn();
 const resolveConflict = vi.fn();
+const getSyncHostRecord = vi.fn();
 vi.mock('../src/lib/db', () => ({
+  getSyncHostRecord: (...a: unknown[]) => getSyncHostRecord(...a),
   syncState: m.syncState,
   syncNow: (...a: unknown[]) => syncNow(...a),
   startSync: (...a: unknown[]) => startSync(...a),
@@ -108,6 +110,7 @@ beforeEach(async () => {
     { device: 'Old name of this phone', id: 'dev:me', lastSeen: new Date(Date.now() - 4 * 86400e3).toISOString() },
   ]);
   getConflicts.mockResolvedValue([]);
+  getSyncHostRecord.mockResolvedValue(null);
   resolveConflict.mockResolvedValue(undefined);
   pairWithHost.mockResolvedValue(undefined);
   (staleHostAlert as Writable<{ uuid: string; name: string } | null>).set(null);
@@ -132,11 +135,11 @@ describe('phone Sync page', () => {
     expect(rows.some(r => r.includes('Pixel') || r.includes('Office PC'))).toBe(false);
     const tab = [...container.querySelectorAll('.dev')].find(r => r.textContent!.includes('Galaxy Tab'))!;
     expect(tab.querySelector('.ava')!.textContent).toBe('G');
-    expect(tab.textContent).toContain('Synced 3h ago');
+    expect(tab.textContent).toContain('Last change 3h ago');
     expect(tab.querySelector('.p-dot.fresh')).toBeTruthy();
     const old = [...container.querySelectorAll('.dev')].find(r => r.textContent!.includes('work phone'))!;
     expect(old.querySelector('.ava')!.textContent).toBe('W');
-    expect(old.textContent).toContain('Last seen 3d ago');
+    expect(old.textContent).toContain('Last change 3d ago');
     expect(old.querySelector('.p-dot.fresh')).toBeNull();
     expect(getByRole('switch').getAttribute('aria-checked')).toBe('true');
     expect(getDeviceLastSeen).toHaveBeenCalledWith();
@@ -219,6 +222,19 @@ describe('phone Sync page', () => {
     await fireEvent.click(getAllByText('Keep this')[0]);
     await waitFor(() => expect(get(nav.toast)?.text).toBe('All conflicts resolved'));
     await waitFor(() => expect(queryByText('Buy paint now')).toBeNull());
+  });
+
+  it('the computer goes by its Offlog name, and is not listed again under its own name', async () => {
+    getSyncHostRecord.mockResolvedValue({ device_id: 'dev:pc', name: 'Test PC' });
+    getDeviceLastSeen.mockResolvedValue([
+      { device: 'Test PC', id: 'dev:pc', lastSeen: new Date().toISOString() },
+      { device: 'Galaxy Tab', id: 'dev:tab', lastSeen: new Date().toISOString() },
+    ]);
+    const { container, findByText } = render(SettingsPage, { page: 'sync' });
+    await findByText('Galaxy Tab');
+    expect(container.querySelector('.card')!.textContent).toContain('Test PC');
+    expect(container.querySelector('.card')!.textContent).not.toContain('Office PC');
+    expect([...container.querySelectorAll('.dev')].map(r => r.textContent!).some(t => t.includes('Test PC'))).toBe(false);
   });
 
   it('an unreachable computer says what to do, and Try again syncs', async () => {

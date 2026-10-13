@@ -325,7 +325,7 @@ One PouchDB database, `offlog`. The `_id` prefix is the document type.
 | `project:` | ProjectDoc | `space_id`, `name`, `columns[]`, `default_view`, `archived`, `saved_filters[]` (List/Board filters by name; `shared/savedFilters.ts` moves a device's old `offlog_saved_filters_<id>` localStorage copy in once) |
 | `task:` | TaskDoc | `project_id`, `column_id`, `title`, `body`, `priority`, `due_date`, `tags`, `deleted`, `archived` |
 | `log:` | LogDoc | `ts`, `source`, `source_id`, `ref`, `action`, then `field`/`from`/`to` or `diffs` |
-| `meta:` | Custom field definitions (one doc, `meta:custom_fields`) | `fields[]` |
+| `meta:` | Custom field definitions (`meta:custom_fields`); the sync host's Offlog name (`meta:sync-host`, written by the Windows app that hosts sync, only on change, no History entry, so phones show the PC by that name) | `fields[]`; `device_id`, `name` |
 | `tag:` | Tag colour override | `tag`, `color` |
 
 ### Rules

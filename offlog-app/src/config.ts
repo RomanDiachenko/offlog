@@ -92,6 +92,13 @@ export async function initTauriSyncDefaults(): Promise<void> {
   }
 }
 
+// This Windows app syncs with its own embedded server, i.e. it is the host
+// phones pair with (not a client of a server set by hand).
+export function syncsWithOwnSidecar(): boolean {
+  const url = getSyncUrl();
+  return isTauri() && !!url && url === localStorage.getItem(SIDECAR_URL_KEY);
+}
+
 // The desktop app's embedded sidecar spawns its own host without checking
 // whether another Offlog host already exists on the LAN, so two PCs on one
 // network become two independent islands. This does not change that (a

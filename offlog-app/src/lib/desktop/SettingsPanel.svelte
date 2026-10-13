@@ -28,7 +28,7 @@
   import { discoveredHosts, isScanning, scanForHosts, stopScan, pairWithHost, type DiscoveredHost } from '../discovery';
   import { checkExactAlarmPermission, rescheduleAll } from '../notifications';
   import { updateState, showUpdateModal, checkForUpdate } from './updateChecker';
-  import { showError, modalOpen } from '../store';
+  import { showError, modalOpen, announceSyncHost } from '../store';
   import { closeOnBack, isTopLayer } from '../modalStack';
   import { trapFocus } from '../focusTrap';
   import { getThemeMode, setThemeMode, getHighContrast, setHighContrast, getReduceMotion, setReduceMotion, getReduceTransparency, setReduceTransparency, type ThemeMode } from '../theme';
@@ -682,7 +682,7 @@
 
   // Renaming this device only affects new writes' `source` field, from the
   // next write on — no reload needed the way changing the sync URL needs one.
-  function saveDeviceName() { setDeviceName(deviceName); deviceName = getDeviceName(); }
+  function saveDeviceName() { setDeviceName(deviceName); deviceName = getDeviceName(); announceSyncHost(); }
 
   let deviceLastSeen: { device: string; lastSeen: string }[] = [];
   let deviceLastSeenLoaded = false;
