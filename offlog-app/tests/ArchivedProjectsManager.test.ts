@@ -27,6 +27,7 @@ vi.mock('../src/lib/store', async () => {
     reloadTasks: (...a: unknown[]) => reloadTasks(...a),
     showError: (...a: unknown[]) => showError(...a),
     activeProjectId: writable(''),
+    spaces: writable([]),
   };
 });
 

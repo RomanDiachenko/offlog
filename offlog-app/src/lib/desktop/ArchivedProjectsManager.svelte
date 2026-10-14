@@ -3,7 +3,8 @@
   import { fade, fly } from 'svelte/transition';
   import { panelIn, panelOut, panelScrimIn, panelScrimOut, exitMs } from '../motion';
   import { getProjects, getArchivedProjects, archiveProject, unarchiveProject, deleteProject, subscribe } from '../db';
-  import { reloadTasks, showError, activeProjectId } from '../store';
+  import { reloadTasks, showError, activeProjectId, spaces } from '../store';
+  import { ICON } from '../shared/iconPaths';
   import { confirmAction } from '../confirm';
   import { closeOnBack, isTopLayer } from '../modalStack';
   import { trapFocus } from '../focusTrap';
@@ -38,6 +39,7 @@
   let activeProjects: ProjectDoc[] = [];
   let archivedProjects: ProjectDoc[] = [];
   let pickerId = '';
+  $: spaceName = (id: string) => $spaces.find(s => s._id === id)?.name ?? '';
   $: pickerOptions = [{ value: '', label: 'Choose a project…' }, ...activeProjects.map(p => ({ value: p._id!, label: p.name }))];
 
   async function load() {
@@ -109,26 +111,31 @@
   <div class="ap-sub">Archiving hides a project and its open tasks — nothing is deleted.</div>
 
   <div class="item-list">
-    <div class="group">
-      <div class="picker-row">
-        <div class="picker-select">
-          <CustomSelect options={pickerOptions} bind:value={pickerId} />
-        </div>
-        <button class="archive-btn" on:click={doArchive} disabled={!pickerId}>Archive</button>
+    <div class="section-label">Archive a project</div>
+    <div class="picker-row">
+      <div class="picker-select">
+        <CustomSelect options={pickerOptions} bind:value={pickerId} />
       </div>
-  
-      {#if archivedProjects.length === 0}
-        <div class="empty">No archived projects yet.</div>
-      {:else}
+      <button class="archive-btn" on:click={doArchive} disabled={!pickerId}>Archive</button>
+    </div>
+
+    <div class="section-label">Archived{archivedProjects.length ? ` (${archivedProjects.length})` : ''}</div>
+    {#if archivedProjects.length === 0}
+      <div class="empty">No archived projects yet.</div>
+    {:else}
+      <div class="group glass">
         {#each archivedProjects as p (p._id)}
           <div class="row">
             <span class="name">{p.name}</span>
+            {#if spaceName(p.space_id)}<span class="space">{spaceName(p.space_id)}</span>{/if}
             <button class="restore-btn" on:click={() => doRestore(p._id)}>Restore</button>
-            <button class="delete-btn" title="Delete project" aria-label="Delete project {p.name}" on:click={() => doDelete(p._id, p.name)}>×</button>
+            <button class="delete-btn" title="Delete project" aria-label="Delete project {p.name}" on:click={() => doDelete(p._id, p.name)}>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.trash}</svg>
+            </button>
           </div>
         {/each}
-      {/if}
-    </div>
+      </div>
+    {/if}
   </div>
 </div>
 {/if}
@@ -151,7 +158,7 @@
   .panel-title { font-size: var(--fs-xl); font-weight: 700; flex: 1; letter-spacing: -.015em; }
 
   .ap-sub {
-    padding: 0 24px 16px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
+    padding: 0 24px 16px; font-size: var(--fs-s); color: var(--faint);
     flex-shrink: 0;
   }
 
@@ -163,40 +170,46 @@
   .close-btn:hover { background: var(--hover); color: var(--text); }
 
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px 24px; }
-  /* One white card of rows, like Settings; an inset line between rows. */
-  .group { background: var(--surface); border-radius: var(--r-l); box-shadow: var(--elev-1); padding: 4px 14px; }
-  .group > .row + .row { box-shadow: inset 0 1px 0 var(--line); }
-  .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; line-height: 1.5; }
+  .section-label { font-size: var(--fs-s); font-weight: 500; color: var(--faint); margin: 0 2px 8px; }
+  /* The archived list: one glass panel of lined rows. */
+  .group { border-radius: var(--r-l); padding: 0 8px 0 14px; }
+  .group > .row + .row { border-top: 1px solid var(--line); }
+  .empty { color: var(--faint); font-size: var(--fs-m); padding: 4px 2px; line-height: 1.5; }
 
+  /* The task window's controls: a round outlined select and a pill button. */
   .picker-row {
     display: flex; align-items: center; gap: 8px;
-    margin-bottom: 14px;
+    margin-bottom: 24px;
   }
   .picker-select { flex: 1; min-width: 0; }
+  .picker-select :global(.custom-select .cs-trigger) { background: none; border-color: var(--glass-edge); border-radius: 999px; height: 32px; padding: 0 12px; font-size: var(--fs-s); }
+  .picker-select :global(.custom-select .cs-trigger:hover) { border-color: var(--glass-edge-hover); }
   .archive-btn {
     flex-shrink: 0; background: var(--text); border: none; cursor: pointer;
-    color: var(--bg); font-size: var(--fs-m); font-weight: 600; padding: .48rem .8rem;
-    border-radius: var(--radius-sm); transition: opacity var(--dur-hover) var(--ease-hover);
+    color: var(--bg); font-size: var(--fs-s); font-weight: 600; height: 32px; padding: 0 14px;
+    border-radius: 999px; transition: opacity var(--dur-hover) var(--ease-hover);
   }
   .archive-btn:hover:not(:disabled) { opacity: .88; }
   .archive-btn:disabled { opacity: .45; cursor: default; }
 
   .row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 0;
+    display: flex; align-items: center; gap: 8px;
+    min-height: 48px;
   }
-  .name { flex: 1; font-size: var(--fs-m); color: var(--text); }
+  .name { font-size: var(--fs-m); font-weight: 500; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .space { flex: 1; min-width: 0; font-size: var(--fs-s); color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .restore-btn {
-    flex-shrink: 0; background: none; border: none; cursor: pointer;
-    color: var(--accent); font-size: var(--fs-s); font-weight: 600; padding: .3rem .5rem;
-    border-radius: var(--r-s);
+    flex-shrink: 0; margin-left: auto; background: none; border: 1px solid var(--glass-edge); cursor: pointer;
+    color: var(--text); font-size: var(--fs-s); font-weight: 600; height: 28px; padding: 0 12px;
+    border-radius: 999px; transition: border-color var(--dur-hover) var(--ease-hover);
   }
-  .restore-btn:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .restore-btn:hover { border-color: var(--glass-edge-hover); }
 
   .delete-btn {
-    flex-shrink: 0; background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: var(--fs-xl); padding: .15rem .5rem; border-radius: var(--r-s);
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; background: none; border: none; cursor: pointer;
+    color: var(--faint); padding: 0; border-radius: 999px;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .delete-btn:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); color: color-mix(in srgb, var(--danger) 82%, var(--text)); }
