@@ -120,6 +120,19 @@ describe('AgendaView due-date grouping', () => {
     } finally { week.monday = true; localStorage.removeItem('offlog_agenda_view'); }
   });
 
+  it('the month fills the view until a day is open', async () => {
+    localStorage.setItem('offlog_agenda_view', 'month');
+    try {
+      const { container } = render(AgendaView);
+      const scroll = () => container.querySelector('.month-scroll')!;
+      await waitFor(() => expect(scroll().classList.contains('fill')).toBe(true));
+      await fireEvent.click(container.querySelectorAll('.month-cell')[10]);
+      expect(scroll().classList.contains('fill')).toBe(false);
+      await fireEvent.click(container.querySelectorAll('.month-cell')[10]);
+      expect(scroll().classList.contains('fill')).toBe(true);
+    } finally { localStorage.removeItem('offlog_agenda_view'); }
+  });
+
   it('splits tasks into Overdue / Today / This week / Later', async () => {
     getAllTasksDue.mockResolvedValueOnce([
       mkTask('task:a', '2026-03-09'),   // Monday — past

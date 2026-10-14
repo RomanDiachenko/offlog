@@ -195,8 +195,8 @@
         <button class="month-today-btn" on:click={goToTodayMonth}>Today</button>
       {/if}
     </div>
-    <div class="month-scroll">
-      <div class="month-grid">
+    <div class="month-scroll" class:fill={!selectedDay}>
+      <div class="month-grid glass flat">
         {#each orderedDayNames as dow}<div class="month-dow">{dow}</div>{/each}
         {#each monthGridDays as day (day.toISOString())}
           {@const dStr = toDateStr(day)}
@@ -230,7 +230,7 @@
         {/each}
       </div>
       {#if selectedDay}
-        <div class="month-day-panel" in:slide={revealIn} out:slide={revealOut}>
+        <div class="month-day-panel glass flat" in:slide={revealIn} out:slide={revealOut}>
           <div class="month-day-panel-head">
             <span>{fmtDay(dayOf(selectedDay), { weekday: true })}</span>
             <button class="month-day-close" on:click={() => selectedDay = null} aria-label="Close">×</button>
@@ -272,7 +272,7 @@
     {:else}
 
       {#if overdue.length}
-        <section>
+        <section class="glass flat">
           <div class="group-label overdue-label">Overdue <span class="badge-count">{overdue.length}</span></div>
           {#each overdue as t (t._id)}
             <div
@@ -296,7 +296,7 @@
       {/if}
 
       {#if dueToday.length}
-        <section>
+        <section class="glass flat">
           <div class="group-label today-label">Today <span class="badge-count">{dueToday.length}</span></div>
           {#each dueToday as t (t._id)}
             <div
@@ -319,7 +319,7 @@
       {/if}
 
       {#if thisWeek.length}
-        <section>
+        <section class="glass flat">
           <div class="group-label week-label">This week <span class="badge-count">{thisWeek.length}</span></div>
           {#each thisWeek as t (t._id)}
             <div
@@ -343,7 +343,7 @@
       {/if}
 
       {#if later.length}
-        <section>
+        <section class="glass flat">
           <div class="group-label later-label">Later <span class="badge-count">{later.length}</span></div>
           {#each later as t (t._id)}
             <div
@@ -435,7 +435,7 @@
   /* Shared by any calendar-style nav bar (currently just Month's) --
      prev/next arrows plus a centered period label. */
   .cal-nav-btn {
-    background: var(--field-bg); border: 1px solid transparent; border-radius: var(--r-s); cursor: pointer;
+    background: none; border: 1px solid var(--glass-edge); border-radius: 999px; cursor: pointer;
     color: var(--muted); font-size: var(--fs-xl); line-height: 1; padding: 3px 10px;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
@@ -455,14 +455,13 @@
        child pulled out of a `justify-content: center` flex row, omitting
        it leaves the browser to use the ambiguous "static position"
        fallback and the button can drift out of .month-nav entirely.
-       right:9% must match .month-scroll's side padding (also 9%) so this
-       button's right edge lines up with the calendar grid's right edge
-       below; a fixed px value only coincides at one window width.
+       right: 38px is .month-scroll's right padding plus its 10px scrollbar
+       gutter, so this button's right edge lines up with the grid's.
        top is 50% + 4px, not plain 50%: .month-nav's padding is asymmetric
        (12px top, 4px bottom) and `top` percentages resolve against the
        full padded box, so plain 50% sits 4px above where
        .month-nav-center's flex-centered content actually falls. */
-    position: absolute; top: calc(50% + 4px); right: 9%; transform: translateY(-50%);
+    position: absolute; top: calc(50% + 4px); right: 38px; transform: translateY(-50%);
     background: var(--field-bg); border: 1px solid transparent; border-radius: var(--r-s);
     color: var(--accent); font-size: var(--fs-s); font-weight: 600;
     padding: 4px 12px; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover);
@@ -472,12 +471,12 @@
   /* flex:1 + overflow-y:auto belong on this scroll container, not the grid
      itself — the grid sizes to its own content (6 rows max), and
      stretching a short grid to fill leftover flex space leaves a blank gap
-     before the day panel below it.
-     Percentage side gutter, not a fixed max-width on the grid: a hard px
-     cap looks cramped on a small window and leaves a dead gutter on a big
-     one, whereas a percentage keeps calendar-to-breathing-room
-     proportional at any window size. */
-  .month-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 0 9% 16px; }
+     before the day panel below it. With no day open (.fill) the weeks
+     share the whole height instead. Same side edges as the header; the
+     stable gutter keeps the right edge still when the day panel scrolls. */
+  .month-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-gutter: stable; padding: 0 28px 16px; }
+  .month-scroll.fill { display: flex; flex-direction: column; }
+  .month-scroll.fill .month-grid { flex: 1; grid-auto-rows: minmax(78px, 1fr); }
   /* grid-auto-rows keeps every week row the same fixed height regardless
      of content — with normal grid "stretch to tallest cell" behavior the
      whole calendar appears to resize while browsing between months. A
@@ -492,24 +491,24 @@
        hugging its own small content. */
     display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
     grid-template-rows: auto; grid-auto-rows: 78px;
-    border: 1px solid var(--border); border-radius: var(--r-m); overflow: hidden;
+    border-radius: var(--r-l); overflow: hidden;
     margin: 12px 0;
   }
   .month-dow {
     font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase; letter-spacing: .06em;
     color: var(--faint); text-align: center; padding: 6px 4px;
-    background: var(--col-bg); border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--line);
   }
   .month-cell {
     display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
     height: 100%; overflow: hidden; padding: 5px 6px; text-align: left;
-    background: var(--surface); border: none; cursor: pointer;
-    border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    background: none; border: none; cursor: pointer;
+    border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
     transition: background var(--dur-hover) var(--ease-hover);
   }
   .month-cell:hover { background: var(--hover); }
   .month-cell:nth-child(7n) { border-right: none; }
-  .month-cell.out-month { background: var(--bg); color: var(--faint); }
+  .month-cell.out-month { background: color-mix(in srgb, var(--text) 2.5%, transparent); color: var(--faint); }
   .month-cell.out-month .month-daynum { color: var(--faint); }
   /* Same markers as the phone's Month: today is a ring on the number, the
      selected day a solid dot, its cell the Fluid selected fill. */
@@ -548,9 +547,7 @@
   }
   .month-more { font-size: var(--fs-2xs); color: var(--faint); }
 
-  .month-day-panel {
-    padding: 22px 0 4px;
-  }
+  .month-day-panel { border-radius: var(--r-l); padding: 12px 16px; margin-top: 4px; }
   .month-day-panel-head {
     display: flex; align-items: center; justify-content: space-between;
     font-size: var(--fs-m); font-weight: 700; color: var(--text); margin-bottom: 10px;
@@ -591,13 +588,14 @@
 
   .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; }
 
-  section { margin-bottom: 24px; }
+  /* One glass panel per group, its tasks lined rows inside. */
+  section { border-radius: var(--r-l); padding: 12px 16px 4px; margin-bottom: 16px; }
 
   .group-label {
     font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
     letter-spacing: .08em; font-weight: 700;
     display: flex; align-items: center; gap: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 4px;
   }
   .overdue-label { color: var(--overdue-ink); }
   .today-label   { color: var(--accent); }
@@ -625,12 +623,10 @@
     /* Flex, not a grid: rows without a date keep priority at the right edge. */
     display: flex;
     align-items: center; gap: 12px;
-    padding: 10px 14px; border-radius: var(--r-l);
-    background: var(--surface); box-shadow: var(--elev-1);
-    margin-bottom: 6px; cursor: pointer;
-    transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
+    min-height: 44px; padding: 0 2px; border-top: 1px solid var(--line);
+    cursor: pointer; transition: background var(--dur-hover) var(--ease-hover);
   }
-  .task-row:hover { box-shadow: var(--elev-2); }
+  .task-row:hover { background: var(--hover); }
   .row-prio { font-size: var(--fs-s); font-weight: 700; white-space: nowrap; }
 
   /* Same round done circle as ListView.svelte's. */
@@ -642,17 +638,15 @@
   }
   .circle:hover { border-color: var(--accent); }
 
-  /* Title + project stacked (same primary/secondary pattern as
-     DashboardView's .task-body) so project context survives at every
-     width, with no breakpoint needed. */
-  .task-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  /* Title, then the project on the same line: one short row per task. */
+  .task-body { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 10px; }
   .task-title {
     font-size: var(--fs-m); font-weight: 500; color: var(--text);
     min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
   .proj-badge {
-    font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
+    flex-shrink: 1; min-width: 0; font-size: var(--fs-s); color: var(--faint);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
@@ -672,7 +666,7 @@
 
   /* Small — collapse chip to short form */
   @media (max-width: 440px) {
-    .task-row  { padding: 9px 10px; gap: 8px; }
+    .task-row  { gap: 8px; }
     .task-title { font-size: var(--fs-m); }
     .due-chip  { font-size: var(--fs-2xs); padding: 2px 6px; }
   }
