@@ -17,13 +17,13 @@
 
 .phone-shell svg.i, .psheet svg.i { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 
-/* Section label: uppercase, with an optional count badge. */
-.phone-shell .p-sec, .psheet .p-sec { font-size: var(--p-fs-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin: 18px 4px 8px; display: flex; gap: 8px; align-items: center; }
+/* Section label: sentence case, as on desktop, with an optional count. */
+.phone-shell .p-sec, .psheet .p-sec { font-size: var(--p-fs-s); font-weight: 600; color: var(--faint); margin: 18px 4px 8px; display: flex; gap: 8px; align-items: center; }
 .phone-shell .p-sec.late { color: var(--overdue-ink); }
-.phone-shell .p-n, .psheet .p-n { background: var(--col-bg); color: var(--muted); border-radius: 999px; padding: 0 7px; font-size: var(--p-fs-xs); letter-spacing: 0; font-weight: 700; }
+.phone-shell .p-n, .psheet .p-n { color: var(--faint); font-size: var(--p-fs-s); font-weight: 500; font-variant-numeric: tabular-nums; }
 
-/* A grouped panel of rows. */
-.phone-shell .p-group, .psheet .p-group { background: var(--surface); border-radius: 14px; box-shadow: var(--p-shadow); overflow: hidden; margin-bottom: 14px; }
+/* A grouped panel of rows: the desktop's glass edge and top highlight. */
+.phone-shell .p-group, .psheet .p-group { background: var(--glass-solid); border: 1px solid var(--glass-edge); border-radius: 14px; box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow); overflow: hidden; margin-bottom: 14px; }
 .phone-shell .p-row, .psheet .p-row {
   width: 100%; display: flex; align-items: center; gap: 14px; padding: 13px 16px; min-height: 52px;
   font: inherit; font-size: var(--p-fs-l); color: var(--text); background: none; border: 0; text-align: left; cursor: pointer;
@@ -61,32 +61,33 @@
 .phone-shell .p-cpick, .psheet .p-cpick { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 14px; }
 .phone-shell .p-chip, .psheet .p-chip {
   flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: var(--p-fs-s); font-weight: 600;
-  padding: 7px 12px; border-radius: 10px; border: 0; cursor: pointer; background: var(--surface); color: var(--muted);
-  box-shadow: var(--p-shadow);
+  padding: 7px 13px; border-radius: 999px; border: 1px solid var(--glass-edge); cursor: pointer; background: none; color: var(--muted);
   transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
 }
-.phone-shell .p-chip.on, .psheet .p-chip.on { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
+/* The desktop's chosen pill: lifted, with the ring, no outline of its own. */
+.phone-shell .p-chip.on, .psheet .p-chip.on { background: var(--surface); border-color: transparent; color: var(--text); box-shadow: var(--sel-ring); }
 .phone-shell .p-chip svg.i, .psheet .p-chip svg.i { width: 16px; height: 16px; }
 
 /* Segmented control. The selected background is one sliding indicator, not
    a per-button fill: set --n (segment count) and --i (selected index) on the
    .p-seg element. Its step is its own width plus the 2px gap. */
-.phone-shell .p-seg, .psheet .p-seg { position: relative; isolation: isolate; display: flex; background: var(--col-bg); border-radius: 12px; padding: 3px; gap: 2px; margin: 0 0 14px; }
+/* No track: the choices sit on the page, the chosen one is the lifted pill. */
+.phone-shell .p-seg, .psheet .p-seg { position: relative; isolation: isolate; display: flex; border-radius: 999px; padding: 3px; gap: 2px; margin: 0 0 14px; }
 .phone-shell .p-seg::before, .psheet .p-seg::before {
-  content: ''; position: absolute; z-index: -1; top: 3px; bottom: 3px; left: 3px; border-radius: 9px;
+  content: ''; position: absolute; z-index: -1; top: 3px; bottom: 3px; left: 3px; border-radius: 999px;
   width: calc((100% - 6px - (var(--n, 1) - 1) * 2px) / var(--n, 1));
   background: var(--surface); box-shadow: var(--sel-ring);
   transform: translateX(calc(var(--i, 0) * (100% + 2px)));
   transition: transform var(--dur-medium) var(--ease-standard);
 }
-.phone-shell .p-seg button, .psheet .p-seg button { flex: 1; padding: 7px 0; border-radius: 9px; font: inherit; font-size: var(--p-fs-s); font-weight: 600; color: var(--muted); background: none; border: 0; cursor: pointer;
+.phone-shell .p-seg button, .psheet .p-seg button { flex: 1; padding: 7px 0; border-radius: 999px; font: inherit; font-size: var(--p-fs-s); font-weight: 600; color: var(--muted); background: none; border: 0; cursor: pointer;
   transition: color var(--dur-medium) var(--ease-standard), background var(--dur-hover) var(--ease-hover); }
 .phone-shell .p-seg button.on, .psheet .p-seg button.on { color: var(--text); }
 
-/* Date / status pills. */
-.phone-shell .p-pill, .psheet .p-pill { font-size: var(--p-fs-xs); font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--col-bg); color: var(--muted); white-space: nowrap; }
-.phone-shell .p-pill.today, .psheet .p-pill.today { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent-ink); }
-.phone-shell .p-pill.late, .psheet .p-pill.late { background: var(--overdue-bg); color: var(--overdue-ink); }
+/* Dates as plain words, as on desktop: no box; only overdue takes a colour. */
+.phone-shell .p-pill, .psheet .p-pill { font-size: var(--p-fs-s); font-weight: 500; color: var(--muted); white-space: nowrap; }
+.phone-shell .p-pill.today, .psheet .p-pill.today { color: var(--text); font-weight: 600; }
+.phone-shell .p-pill.late, .psheet .p-pill.late { color: var(--overdue-ink); font-weight: 600; }
 
 /* Icon button and text button. */
 .phone-shell .p-ib, .psheet .p-ib { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted); flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover); }
@@ -97,12 +98,12 @@
 .phone-shell .p-tbtn.danger, .psheet .p-tbtn.danger { color: var(--danger); }
 
 /* Primary full-width button and text field (mostly in sheets). */
-.phone-shell .p-go, .psheet .p-go { width: 100%; background: var(--text); color: var(--bg); border: 0; border-radius: 12px; padding: 13px; font: inherit; font-size: var(--p-fs-l); font-weight: 700; cursor: pointer; transition: filter var(--dur-hover) var(--ease-hover), opacity var(--dur-hover) var(--ease-hover); }
+.phone-shell .p-go, .psheet .p-go { width: 100%; background: var(--text); color: var(--bg); border: 0; border-radius: 999px; padding: 13px; font: inherit; font-size: var(--p-fs-l); font-weight: 700; cursor: pointer; transition: filter var(--dur-hover) var(--ease-hover), opacity var(--dur-hover) var(--ease-hover); }
 .phone-shell .p-go:disabled, .psheet .p-go:disabled { opacity: .4; cursor: default; }
 .phone-shell .p-go.danger, .psheet .p-go.danger { background: var(--danger); }
 .phone-shell .p-fld, .psheet .p-fld { width: 100%; box-sizing: border-box; border: 0; outline: none; background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--border); border-radius: 12px; padding: 12px 14px; font: inherit; font-size: var(--p-fs-l); margin: 0 0 14px; }
 .phone-shell .p-fld:focus, .psheet .p-fld:focus { box-shadow: 0 0 0 2px var(--accent); }
-.phone-shell .p-lab, .psheet .p-lab { font-size: var(--p-fs-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin: 4px 4px 8px; }
+.phone-shell .p-lab, .psheet .p-lab { font-size: var(--p-fs-s); font-weight: 600; color: var(--faint); margin: 4px 4px 8px; }
 .phone-shell .p-say, .psheet .p-say { font-size: var(--p-fs-m); color: var(--muted); margin: 0 4px 14px; line-height: 1.5; }
 .phone-shell .p-empty, .psheet .p-empty { text-align: center; color: var(--faint); padding: 28px 0; font-size: var(--p-fs-m); margin: 0; }
 .phone-shell .p-dot, .psheet .p-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }

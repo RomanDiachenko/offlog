@@ -641,13 +641,14 @@
   .note :global(.md-editor), div.note:focus-within :global(.md-editor) { border: 0; border-radius: 0; background: none; min-height: 0; }
   .note :global(.cm-content) { font-size: var(--p-fs-m); padding: 4px 0; }
   /* 5px padding: room inside the scroll clip for the selected glow. */
-  .stbar { display: flex; gap: 3px; overflow-x: auto; scrollbar-width: none; margin: 0 0 12px; padding: 5px; border-radius: 14px; background: var(--col-bg); scroll-behavior: smooth; }
+  /* The desktop task window's status pills: no track around them. */
+  .stbar { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin: 0 -10px 12px; padding: 5px 10px; scroll-behavior: smooth; }
   .stbar::-webkit-scrollbar { display: none; }
   .stbar.fade-end {
     -webkit-mask-image: linear-gradient(to right, black calc(100% - 48px), transparent);
     mask-image: linear-gradient(to right, black calc(100% - 48px), transparent);
   }
-  .stbar button { flex: 1 0 auto; min-width: 72px; padding: 8px 12px; border: 0; border-radius: 9px; background: none; cursor: pointer; white-space: nowrap;
+  .stbar button { flex: 0 0 auto; padding: 8px 14px; border: 0; border-radius: 999px; background: none; cursor: pointer; white-space: nowrap;
     font: inherit; font-size: var(--p-fs-s); font-weight: 600; color: var(--muted); transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover); }
   .stbar button.on { background: var(--surface); color: var(--text); box-shadow: var(--sel-ring); }
   /* Related rows: the line starts at the text, after the icon. */

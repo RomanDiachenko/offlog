@@ -129,15 +129,15 @@
   .chev { display: flex; color: var(--faint); margin-left: 2px; }
   .p-v + .chev { margin-left: 0; }
   .p-row > .p-k + .chev { margin-left: auto; }
-  .glance { background: var(--surface); border-radius: 16px; box-shadow: var(--p-shadow); padding: 16px; margin: 2px 0 14px; }
+  .glance { background: var(--glass-solid); border: 1px solid var(--glass-edge); border-radius: 16px; box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow); padding: 16px; margin: 2px 0 14px; }
   .head { display: flex; align-items: center; gap: 12px; }
   .head svg { width: 36px; height: 36px; flex-shrink: 0; fill: var(--accent); }
   .who { flex: 1; min-width: 0; }
   .who b { display: block; font-size: var(--p-fs-l); }
   .who > span { font-size: var(--p-fs-s); color: var(--faint); }
   .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
-  .tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; padding: 10px 12px; border: 0; border-radius: 12px; cursor: pointer; text-align: left; font: inherit; color: var(--text); background: color-mix(in srgb, var(--text) 6%, var(--surface)); }
-  .tile:active { background: color-mix(in srgb, var(--text) 12%, var(--surface)); }
+  .tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; padding: 10px 12px; border: 1px solid var(--glass-edge); border-radius: 12px; cursor: pointer; text-align: left; font: inherit; color: var(--text); background: none; }
+  .tile:active { background: var(--hover); }
   .tile small { font-size: var(--p-fs-xs); color: var(--muted); }
   .tile strong { font-size: var(--p-fs-m); font-weight: 600; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tile strong.ok { color: var(--success-ink); }

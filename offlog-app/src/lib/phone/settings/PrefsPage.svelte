@@ -648,7 +648,7 @@
     box-shadow: var(--p-shadow);
   }
   .pset :global(.reveal-wrap) { display: flex; flex-direction: column; gap: 14px; }
-  .pset :global(.setting-section-title) { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+  .pset :global(.setting-section-title) { font-size: 13px; font-weight: 600; color: var(--faint); }
   .pset :global(.setting-row) { display: flex; align-items: center; gap: 12px; min-height: 44px; flex-wrap: wrap; }
   .pset :global(.setting-row:has(> .toggle-btn)) { cursor: pointer; margin: 0 -16px; padding: 0 16px; min-height: 52px; transition: background var(--dur-hover) var(--ease-hover); }
   .pset :global(.setting-row:has(> .toggle-btn):active) { background: var(--col-bg); }
@@ -673,7 +673,7 @@
   .pset :global(.setting-hint.compact-hint) { margin-top: -6px; }
   .pset :global(.setting-hint-error) { color: var(--danger); }
   .pset :global(.setting-hint-warn) { color: var(--due-soon-ink); background: var(--due-soon-bg); padding: 10px 12px; border-radius: 10px; font-weight: 500; }
-  .pset :global(.field-label) { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+  .pset :global(.field-label) { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: var(--faint); }
   .pset :global(.field-label input) {
     font: inherit; font-size: 16px; text-transform: none; letter-spacing: 0; font-weight: 400;
     padding: 12px 14px; border: 0; border-radius: 12px; background: var(--bg); color: var(--text);

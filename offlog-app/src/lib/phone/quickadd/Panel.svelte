@@ -27,7 +27,7 @@
   /* Sized by content up to what the parent column leaves; only the body scrolls. */
   .qp { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; }
   .head { flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 0 4px 4px; }
-  .head span { font-size: var(--p-fs-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+  .head span { font-size: var(--p-fs-s); font-weight: 600; color: var(--faint); }
   .body { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
   .body > :global(.p-group:last-child) { margin-bottom: 0; }
 </style>

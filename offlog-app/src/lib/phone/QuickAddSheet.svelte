@@ -430,7 +430,7 @@
   .helpbox { overflow-y: auto; overscroll-behavior: contain; background: var(--surface); border-radius: 12px; padding: 10px 12px; font-size: var(--p-fs-s); color: var(--muted); }
   .helpbox p { margin: 0 0 8px; }
   .helpbox dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 10px; margin: 0; }
-  .helpbox dt { color: var(--faint); font-size: var(--p-fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+  .helpbox dt { color: var(--faint); font-size: var(--p-fs-s); font-weight: 600; }
   .helpbox dd { margin: 0; color: var(--text); }
   .helpbox code { font-family: var(--mono); font-size: var(--p-fs-xs); background: var(--col-bg); padding: 1px 5px; border-radius: 4px; color: var(--accent); }
   .pick { display: flex; flex-direction: column; }

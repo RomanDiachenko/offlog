@@ -102,7 +102,7 @@
 
 <div class="pills" class:fade-end={fadeEnd} bind:this={pills} on:scroll={updateFade} role="tablist" aria-label="Statuses">
   {#each cols as c, i (c.id)}
-    <button role="tab" aria-selected={i === ci} class:on={i === ci} class:last={cols.length > 1 && i === cols.length - 1} on:click={() => go(i)}>{c.name} <i>{counts[c.id]}</i></button>
+    <button role="tab" aria-selected={i === ci} class:on={i === ci} on:click={() => go(i)}>{c.name} <i>{counts[c.id]}</i></button>
   {/each}
 </div>
 
@@ -146,16 +146,13 @@
   }
   .pills button {
     position: relative; flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 8px 13px; min-height: 36px; border-radius: 999px; border: 0; cursor: pointer;
-    font: inherit; font-size: var(--p-fs-s); font-weight: 600; background: var(--surface); color: var(--muted);
-    box-shadow: var(--p-shadow);
+    font: inherit; font-size: var(--p-fs-s); font-weight: 600; background: none; color: var(--muted);
+    box-shadow: inset 0 0 0 1px var(--glass-edge);
     transition: background var(--dur-small) var(--ease-standard), color var(--dur-small) var(--ease-standard);
   }
   .pills button::before { content: ''; position: absolute; left: 0; right: 0; top: -4px; bottom: -4px; }
-  .pills button.on { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
+  .pills button.on { background: var(--surface); color: var(--text); box-shadow: var(--sel-ring); }
   .pills button:not(.on):active { background: var(--col-bg); }
-  /* The last status is the one that means done. */
-  .pills button.last { background: color-mix(in srgb, var(--success) 14%, var(--surface)); }
-  .pills button.last.on { background: color-mix(in srgb, var(--success) 30%, var(--surface)); color: var(--text); box-shadow: var(--sel-ring); }
   .pills i { font-style: normal; font-size: var(--p-fs-xs); opacity: .75; }
   /* pan-y: the browser keeps vertical scrolling, horizontal moves come here. */
   .body { min-height: 45vh; touch-action: pan-y; }
