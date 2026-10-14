@@ -24,7 +24,6 @@ export const ICON = {
   palette: '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M14 7.5l-4 9"/>',
   listView: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.1"/><circle cx="4.5" cy="12" r="1.1"/><circle cx="4.5" cy="18" r="1.1"/>',
   steps: '<path d="M3.5 6.2l1.6 1.6L8.2 4.7M3.5 12.7l1.6 1.6 3.1-3.1M3.5 19.2l1.6 1.6 3.1-3.1M11.5 6.3h8.5M11.5 12.8h8.5M11.5 19.3h8.5"/>',
-  restore: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/>',
   backup: '<ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/>',
   backUpNow: '<path d="M12 3v11M7.5 9.5L12 14l4.5-4.5M5 15v4a2 2 0 002 2h10a2 2 0 002-2v-4"/>',
   restoreFile: '<path d="M12 14V3M7.5 7.5L12 3l4.5 4.5M5 15v4a2 2 0 002 2h10a2 2 0 002-2v-4"/>',

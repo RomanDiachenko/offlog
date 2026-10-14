@@ -385,14 +385,17 @@ export async function getSyncHostRecord(): Promise<SyncHostRecord | null> {
   } catch { return null; }
 }
 
+// The host writing is the truth, so any other version (a phone carrying the
+// record of the PC it paired with before) is removed rather than left as a
+// conflict to resolve by hand.
 export async function putSyncHostRecord(deviceId: string, name: string): Promise<void> {
-  let rev: string | undefined;
-  try {
-    const d = await db.get<SyncHostRecord & { _id: string; _rev: string }>(SYNC_HOST_DOC_ID);
-    if (d.device_id === deviceId && d.name === name) return;
-    rev = d._rev;
-  } catch { /* first write */ }
-  await db.put({ _id: SYNC_HOST_DOC_ID, _rev: rev, type: 'meta', device_id: deviceId, name, updated_at: now(), source: currentSource() });
+  let current: (SyncHostRecord & { _rev: string; _conflicts?: string[] }) | null = null;
+  try { current = await db.get(SYNC_HOST_DOC_ID, { conflicts: true }); } catch { /* first write */ }
+  if (!current || current.device_id !== deviceId || current.name !== name) {
+    await db.put({ _id: SYNC_HOST_DOC_ID, _rev: current?._rev, type: 'meta', device_id: deviceId, name, updated_at: now(), source: currentSource() });
+  }
+  // Every losing revision needs its own remove (CLAUDE.md).
+  for (const rev of current?._conflicts ?? []) await db.remove(SYNC_HOST_DOC_ID, rev).catch(() => {});
 }
 
 // Saved filters: one doc per project and name, so two devices saving

@@ -2960,4 +2960,19 @@ describe('sync host record', () => {
     await putSyncHostRecord('dev:pc', 'Studio PC');
     expect(await getSyncHostRecord()).toEqual({ device_id: 'dev:pc', name: 'Studio PC' });
   });
+
+  // A phone that moved from PC A to PC B carries A's record; B's write
+  // must leave one version, B's, not a conflict for Settings to show.
+  it('the host writing it clears a competing version from another PC', async () => {
+    const { getSyncHostRecord, putSyncHostRecord } = await import('../src/lib/db');
+    const base = { _id: 'meta:sync-host', type: 'meta' };
+    await db.bulkDocs([
+      { ...base, _rev: '1-aaaa', device_id: 'dev:a', name: 'PC A' },
+      { ...base, _rev: '1-bbbb', device_id: 'dev:b', name: 'PC B' },
+    ] as never[], { new_edits: false });
+    await putSyncHostRecord('dev:b', 'PC B');
+    const doc = await db.get('meta:sync-host', { conflicts: true });
+    expect(doc._conflicts ?? []).toEqual([]);
+    expect(await getSyncHostRecord()).toEqual({ device_id: 'dev:b', name: 'PC B' });
+  });
 });
