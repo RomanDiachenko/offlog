@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ICON } from '../shared/iconPaths';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { slide } from 'svelte/transition';
   import { toastIn, toastOut, revealIn, revealOut } from '../motion';
   import { flip } from 'svelte/animate';
@@ -307,6 +307,20 @@
   // that's wider than the viewport. Title track is `titleColWidth`px
   // (computed above), not `max-content`, so every row shares the exact
   // same track sizes and columns line up instead of drifting per row.
+  // The search box ends where the last column ends. Measured against the
+  // header's own left edge, so a horizontally scrolled grid gives the same width.
+  // Takes the template only so it re-runs whenever the columns change.
+  let panelEl: HTMLElement, searchEl: HTMLElement, headEl: HTMLElement;
+  let searchWidth: number | null = null;
+  async function fitSearch(_template: string) {
+    await tick();
+    const last = headEl?.lastElementChild;
+    if (!last || !searchEl) return;
+    const w = last.getBoundingClientRect().right - headEl.getBoundingClientRect().left
+      - (searchEl.getBoundingClientRect().left - panelEl.getBoundingClientRect().left);
+    searchWidth = w > 0 ? Math.round(w) : null;
+  }
+  $: fitSearch(gridTemplate);
   $: gridTemplate = (selectionMode ? '20px ' : '') + `24px ${titleColWidth}px` + visibleOrder.map(k => ` ${colWidth(k)}`).join('');
 
   // Checkboxes appear only once "Select" mode is explicitly turned on
@@ -509,9 +523,9 @@
        horizontal scrolling, neither of which is acceptable here.
        The funnel button carries a count badge so active filters stay
        visible even though the controls themselves are collapsed. -->
-  <div class="list-panel">
+  <div class="list-panel" bind:this={panelEl}>
   <div class="toolbar">
-      <div class="search-box">
+      <div class="search-box" bind:this={searchEl} style:width={searchWidth ? `${searchWidth}px` : null}>
         <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
           <circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="14" y2="14"/>
         </svg>
@@ -586,7 +600,7 @@
   <!-- Data grid -->
   <div class="grid-scroll grid-scroll--main">
     <div class="grid-card grid-card--flush">
-      <div class="grid-head" style="grid-template-columns:{gridTemplate}">
+      <div class="grid-head" bind:this={headEl} style="grid-template-columns:{gridTemplate}">
         {#if selectionMode}
           {@const allSelected = sorted.length > 0 && selected.size === sorted.length}
           <button
@@ -781,7 +795,7 @@
     display: flex; align-items: center; gap: 7px;
     background: none; border: 1px solid var(--glass-edge);
     border-radius: 999px; height: 32px; box-sizing: border-box; padding: 0 12px;
-    flex: 1 1 auto; min-width: 110px; max-width: 280px;
+    flex: 0 1 auto; width: 280px; min-width: 110px;
   }
   /* The input drops its own outline, so the box carries the focus ring. */
   .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
