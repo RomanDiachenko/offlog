@@ -304,9 +304,16 @@ body {
   --glass-fill:  color-mix(in srgb, var(--surface) 38%, transparent);
   --glass-solid: color-mix(in srgb, var(--surface) 96%, var(--bg));
   --glass-edge:  color-mix(in srgb, var(--text) 9%, transparent);
+  --glass-edge-hover: color-mix(in srgb, var(--text) 18%, transparent);
+  /* Barely there: grounds a panel on the page without reading as a shadow. */
+  --glass-shadow: 0 1px 2px rgba(0,0,0,.035), 0 2px 6px rgba(0,0,0,.025);
   --glass-hi:    color-mix(in srgb, var(--surface) 70%, transparent);
   --glass-blur:  blur(10px) saturate(115%);
   --glow:        color-mix(in srgb, var(--accent) 14%, transparent);
+  /* The light glass sits in: one even wash over the whole window, almost no
+     colour, so every glass panel (sidebar, headers) shows the same ground.
+     Without it, blur has nothing to show and glass reads flat. */
+  --ambient: linear-gradient(160deg, color-mix(in srgb, var(--accent) 6%, transparent) 0%, transparent 45%, color-mix(in srgb, var(--accent) 5%, transparent) 100%);
   --sel-fill:    color-mix(in srgb, var(--text) 8%, transparent);
   --sel-ring:    0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 8px var(--glow);
   /* Header controls (desktop): a 34px rail on --rail-bg holding 26px
@@ -336,8 +343,11 @@ body {
 body.dark {
   --glass-fill: color-mix(in srgb, var(--surface) 50%, transparent);
   --glass-edge: color-mix(in srgb, var(--text) 10%, transparent);
+  --glass-edge-hover: color-mix(in srgb, var(--text) 20%, transparent);
+  --glass-shadow: 0 1px 2px rgba(0,0,0,.16), 0 2px 6px rgba(0,0,0,.10);
   --glass-hi:   color-mix(in srgb, var(--text) 7%, transparent);
   --glow:       color-mix(in srgb, var(--accent) 18%, transparent);
+  --ambient: linear-gradient(160deg, color-mix(in srgb, var(--accent) 9%, transparent) 0%, transparent 45%, color-mix(in srgb, var(--accent) 7%, transparent) 100%);
   --elev-1: 0 0 0 1px color-mix(in srgb, var(--text) 7%, transparent), 0 1px 2px rgba(0,0,0,.3);
   --elev-2: 0 0 0 1px color-mix(in srgb, var(--text) 6%, transparent), 0 4px 14px rgba(0,0,0,.35);
   --elev-3: 0 0 0 1px color-mix(in srgb, var(--text) 6%, transparent), 0 12px 36px rgba(0,0,0,.5);
@@ -350,13 +360,14 @@ body.dark {
    query nothing). Blur reads the pixels behind this element only: never put
    it under a parent with opacity, filter or clip-path, and never animate the
    blur or nest glass in glass. */
+/* The edge and the top highlight separate a panel from the page; the
+   shadow is only a hint (--glass-shadow). Hover brightens the edge
+   (--glass-edge-hover), never grows the shadow. */
 .glass {
   background: var(--glass-solid);
   border: 1px solid var(--glass-edge);
-  box-shadow: inset 0 1px 0 var(--glass-hi), var(--elev-2);
+  box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow);
 }
-/* A menu or popover floats over content, one level higher than a bar. */
-.glass.pop { box-shadow: inset 0 1px 0 var(--glass-hi), var(--elev-3); }
 @supports (backdrop-filter: blur(1px)) {
   @media (prefers-reduced-transparency: no-preference) {
     body:not(.reduce-transparency):not(.high-contrast) .glass { background: var(--glass-fill); backdrop-filter: var(--glass-blur); }
@@ -374,14 +385,9 @@ body.high-contrast .glass { background: var(--surface); border: 2px solid var(--
   body:not(.reduce-transparency):not(.high-contrast) .glass, body .glass { background: var(--surface); backdrop-filter: none; border: 2px solid var(--border-strong); }
 }
 
-/* A desktop view's top: a floating .glass panel (.fluid-panel) on a stage
-   lit faintly by --space (the space's colour, else the accent). */
-.fluid-stage {
-  flex-shrink: 0; padding: 14px 28px 6px;
-  background:
-    radial-gradient(60% 140% at 12% 0%, color-mix(in srgb, var(--space, var(--accent)) 8%, transparent), transparent 70%),
-    radial-gradient(45% 120% at 88% 10%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 70%);
-}
+/* A desktop view's top: a floating .glass panel (.fluid-panel). Its 14px top
+   is the sidebar's margin too (Sidebar.svelte), so the two tops line up. */
+.fluid-stage { flex-shrink: 0; padding: 14px 28px 6px; }
 .fluid-panel { border-radius: var(--r-xl); padding: 12px 18px; }
 /* Above a body that scrolls (with scrollbar-gutter: stable), the panel's
    right edge clears the 10px scrollbar so it lines up with the content. */

@@ -138,7 +138,7 @@
     <div class="loading"><span class="spinner"></span>Loading…</div>
   {:else}
     <div class="dash-body">
-      <div class="brief" role="button" tabindex="0" on:click={() => dispatch('focus')} on:keydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); dispatch('focus'); } }}>
+      <div class="brief glass" role="button" tabindex="0" on:click={() => dispatch('focus')} on:keydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); dispatch('focus'); } }}>
         {#if focusLock}
           {@const doneCount = focusLockedTasks.filter(isFocusTaskDone).length}
           <div class="brief-head">
@@ -170,7 +170,7 @@
               {@const done = stats.total - stats.open}
               {@const space = data.allSpaces.find(s => s._id === proj.space_id)}
               <div
-                class="proj-card"
+                class="proj-card glass"
                 role="button"
                 tabindex="0"
                 on:click={() => dispatch('openProject', proj._id)}
@@ -210,7 +210,7 @@
               <div class="task-list">
                 {#each data.todayTasks.slice(0, TASK_CAP) as t (t._id)}
                   <div
-                    class="task-row"
+                    class="task-row glass"
                     role="button"
                     tabindex="0"
                     on:click={() => openTask(t)}
@@ -236,7 +236,7 @@
               <div class="task-list">
                 {#each (pinnedExpanded ? pinnedRest : pinnedRest.slice(0, TASK_CAP)) as t (t._id)}
                   <div
-                    class="task-row"
+                    class="task-row glass"
                     role="button"
                     tabindex="0"
                     on:click={() => openTask(t)}
@@ -264,7 +264,7 @@
               <div class="task-list">
                 {#each data.overdueTasks.slice(0, TASK_CAP) as t (t._id)}
                   <div
-                    class="task-row"
+                    class="task-row glass"
                     role="button"
                     tabindex="0"
                     on:click={() => openTask(t)}
@@ -351,13 +351,16 @@
   }
 
   /* "Daily Brief" card, full-width above the two-column layout. */
+  /* .brief, .proj-card and .task-row are .glass (app.css): fill, edge and
+     highlight come from there, with its solid fallbacks. Hover brightens the
+     edge, never a shadow or a solid fill. */
   .brief {
-    background: var(--surface); border: 1px solid transparent; border-radius: var(--r-l);
+    border-radius: var(--r-l);
     padding: 12px 18px; margin-bottom: 22px; cursor: pointer;
     display: flex; flex-direction: column; gap: 8px;
-    transition: border-color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover); box-shadow: var(--elev-1);
+    transition: border-color var(--dur-hover) var(--ease-hover);
   }
-  .brief:hover { box-shadow: var(--elev-2); }
+  .brief:hover { border-color: var(--glass-edge-hover); }
   .brief-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .brief-label {
     font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
@@ -423,12 +426,12 @@
        .proj-name's min-height below. */
   }
   .proj-card {
-    background: var(--surface); border: 1px solid transparent; border-radius: var(--r-l);
+    border-radius: var(--r-l);
     padding: 14px 16px 16px; cursor: pointer;
     transition: border-color var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover), transform var(--dur-hover) var(--ease-hover);
-    display: flex; flex-direction: column; gap: 6px; box-shadow: var(--elev-1);
+    display: flex; flex-direction: column; gap: 6px;
   }
-  .proj-card:hover { box-shadow: var(--elev-2); transform: translateY(-1px); }
+  .proj-card:hover { border-color: var(--glass-edge-hover); transform: translateY(-1px); }
 
   /* Fixed height: a pin count must not push the title down on some cards. */
   .proj-card-top { display: flex; align-items: center; gap: 6px; height: 16px; }
@@ -460,10 +463,10 @@
   .task-list { display: flex; flex-direction: column; gap: 6px; }
   .task-row {
     display: flex; align-items: stretch; gap: 9px;
-    padding: 10px 12px; background: var(--surface); border-radius: var(--r-l); box-shadow: var(--elev-1);
-    cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
+    padding: 10px 12px; border-radius: var(--r-l);
+    cursor: pointer; transition: border-color var(--dur-hover) var(--ease-hover);
   }
-  .task-row:hover { background: var(--hover); }
+  .task-row:hover { border-color: var(--glass-edge-hover); }
   /* align-self:stretch, not a fixed height — titles wrap rather than
      truncate, so row height varies; stretching keeps this a full edge
      accent at any row height. */

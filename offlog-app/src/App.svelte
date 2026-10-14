@@ -643,7 +643,7 @@
         </div>
       {:else if Desktop && $activeProject}
       <div class="view-fade" in:fade={viewIn} out:fade={viewOut}>
-        <div class="fluid-stage" style:--space={activeSpace ? soften(activeSpace.color) : 'var(--accent)'}>
+        <div class="fluid-stage">
         <header class="board-header fluid fluid-panel glass">
           <button class="hamburger" on:click={() => sidebarOpen = true} aria-label="Menu">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">{@html ICON.menu}</svg>
@@ -866,6 +866,7 @@
   .layout {
     display: flex;
     height: 100dvh;
+    background: var(--ambient), var(--bg);
     padding-top: env(safe-area-inset-top, 0px);
     box-sizing: border-box;
     overflow: hidden;
@@ -876,7 +877,7 @@
      unmounted (sveltejs/svelte#6642). Stacked in one cell they simply
      overlap, which is what a crossfade needs. */
   .main {
-    flex: 1; min-width: 0; overflow: hidden; background: var(--bg);
+    flex: 1; min-width: 0; overflow: hidden;
     display: grid; grid-template-rows: 1fr; grid-template-columns: 1fr;
   }
   /* Wraps each top-level view (Dashboard/Board/List/Agenda/Focus/empty-

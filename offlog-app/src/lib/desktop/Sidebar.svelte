@@ -487,7 +487,7 @@
 <svelte:window on:mousemove={onResizeMove} on:mouseup={onResizeEnd} />
 
 <aside
-  class="sidebar"
+  class="sidebar glass"
   class:mobile-open={open}
   class:collapsed={effectiveCollapsed}
   class:resizing
@@ -793,11 +793,12 @@
      cascade regardless of which side uses a var(). */
   .sidebar {
     width: var(--sidebar-w, 224px); flex-shrink: 0; position: relative;
-    background: var(--sidebar-bg); border-right: 1px solid var(--border);
     display: flex; flex-direction: column;
     padding: 1.1rem .75rem; gap: .35rem; overflow: hidden;
-    /* Follows the page theme via --sidebar-bg (light/dark in app.css) —
-       never pin this dark regardless of theme. */
+    /* A floating .glass panel over the page's ambient light; its fill,
+       edge and the solid fallbacks come from .glass in app.css. */
+    /* 14px: the same top as a view's header panel (.fluid-stage). */
+    margin: 14px 0 14px 14px; border-radius: var(--r-xl);
     /* Width transition animates collapse/expand. Suppressed during an
        actual drag (.resizing) so live resizing stays 1:1 with the cursor
        instead of lagging behind it. */
@@ -815,6 +816,7 @@
     .sidebar {
       position: fixed; top: 0; left: 0; bottom: 0; z-index: 200;
       width: 280px;
+      margin: 0; border-radius: 0 var(--r-xl) var(--r-xl) 0;
       padding-top: calc(1.1rem + env(safe-area-inset-top, 0px));
       transform: translateX(-100%);
       /* The base rule is the CLOSED state, so it carries the LEAVING curve
