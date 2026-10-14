@@ -104,12 +104,13 @@
   // call site would just be hiding it.
   function addCardOnDay(dStr: string | null) { if (dStr) dispatch('addTask', dStr); }
 
-  function endOfWeek(monday: boolean): string {
-    const d = new Date();
+  // From `today`, not the clock, so a view left open into a new week moves on with it.
+  function endOfWeek(monday: boolean, day: string): string {
+    const d = new Date(`${day}T12:00:00`);
     d.setDate(d.getDate() + (6 - daysSinceWeekStart(d, monday)));
     return localDateStr(d);
   }
-  $: weekEnd = endOfWeek(weekStartsMonday);
+  $: weekEnd = endOfWeek(weekStartsMonday, today);
 
   async function load() { all = await getAllTasksDue(); }
 

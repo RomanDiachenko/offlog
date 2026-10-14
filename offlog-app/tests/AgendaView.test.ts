@@ -172,6 +172,19 @@ describe('AgendaView due-date grouping', () => {
     expect(groupCount(container, /This week/i)).toBe(1);
     expect(groupCount(container, /Later/)).toBe(1);
   });
+
+  // The app sits in the tray past Sunday night: next week becomes this week.
+  it('a view left open into a new week moves This week on with it', async () => {
+    getAllTasksDue.mockResolvedValue([mkTask('task:fri', '2026-03-20')]);
+    const { container } = render(AgendaView);
+    await waitFor(() => expect(groupCount(container, /Later/)).toBe(1));
+
+    vi.setSystemTime(new Date('2026-03-16T10:00:00'));
+    window.dispatchEvent(new Event('focus'));
+
+    await waitFor(() => expect(groupCount(container, /This week/i)).toBe(1));
+    expect(groupCount(container, /Later/)).toBeNull();
+  });
 });
 
 describe('AgendaView mark done', () => {
