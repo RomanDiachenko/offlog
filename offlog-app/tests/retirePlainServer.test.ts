@@ -20,6 +20,17 @@ describe('retirePlainServer', () => {
     expect(localStorage.getItem('offlog_plain_server_to_retire')).toBeNull();
   });
 
+  it('keeps the old database when the pull could not write everything', async () => {
+    await new PouchDB(name).put({ _id: 'task:unsaved', type: 'task', title: 'x' });
+    localStorage.setItem('offlog_sync_key', 'a2V5');
+    localStorage.setItem('offlog_plain_server_to_retire', name);
+    const pull = vi.spyOn(db.replicate, 'from').mockResolvedValueOnce({ ok: false, doc_write_failures: 1 } as never);
+    await retirePlainServer();
+    pull.mockRestore();
+    expect((await new PouchDB(name).info()).doc_count).toBe(1);
+    expect(localStorage.getItem('offlog_plain_server_to_retire')).toBe(name);
+  });
+
   it('does nothing without a sync key', async () => {
     await new PouchDB(name).put({ _id: 'task:stays', type: 'task', title: 'x' });
     localStorage.setItem('offlog_plain_server_to_retire', name);

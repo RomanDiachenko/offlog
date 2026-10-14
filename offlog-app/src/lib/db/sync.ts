@@ -70,13 +70,19 @@ export async function retirePlainServer(): Promise<void> {
   if (!url || !getSyncKey()) return;
   const { user, pass } = await getSyncCredentials();
   const plain = new PouchDB(url, { auth: { username: user, password: pass }, skip_setup: true } as PouchDB.Configuration.RemoteDatabaseConfiguration);
+  // Closed on every early return: PouchDB keeps each instance until then, and
+  // this runs again after every settled sync until it succeeds.
+  const giveUp = () => { plain.close().catch(() => {}); };
   try {
-    await db.replicate.from(plain);
+    // A pull can resolve with documents it failed to write; deleting the
+    // server then would lose them.
+    const res = await db.replicate.from(plain);
     invalidateTaskCache();
+    if (!res.ok || res.doc_write_failures) return giveUp();
   } catch (e) {
-    if ((e as SyncError).status !== 404) return;
+    if ((e as SyncError).status !== 404) return giveUp();
   }
-  try { await plain.destroy(); } catch (e) { if ((e as SyncError).status !== 404) return; }
+  try { await plain.destroy(); } catch (e) { if ((e as SyncError).status !== 404) return giveUp(); }
   localStorage.removeItem(PLAIN_SERVER_TO_RETIRE_KEY);
 }
 
