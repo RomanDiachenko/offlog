@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../shared/iconPaths';
   import { createEventDispatcher, onMount } from 'svelte';
   import { fade, fly } from 'svelte/transition';
   import { panelIn, panelOut, panelScrimIn, panelScrimOut, exitMs } from '../motion';
@@ -139,7 +140,7 @@
               <button class="name-btn" on:click={() => startEdit(tag)}>{tag}</button>
             {/if}
             <span class="count">{count}</span>
-            <button class="delete-btn" on:click={() => remove(tag, count)} title="Delete tag" aria-label="Delete tag {tag}">×</button>
+            <button class="delete-btn" on:click={() => remove(tag, count)} title="Delete tag" aria-label="Delete tag {tag}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.trash}</svg></button>
           </div>
           {#if openPicker === tag}
             <div class="swatch-row">
@@ -181,7 +182,7 @@
   .panel-title { font-size: var(--fs-xl); font-weight: 700; flex: 1; letter-spacing: -.015em; }
 
   .tg-sub {
-    padding: 0 24px 16px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
+    padding: 0 24px 16px; font-size: var(--fs-s); color: var(--faint);
     flex-shrink: 0;
   }
 
@@ -194,35 +195,36 @@
 
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px 24px; }
   /* One white card of rows, like Settings; an inset line between rows. */
-  .group { background: var(--surface); border-radius: var(--r-l); box-shadow: var(--elev-1); padding: 4px 14px; }
-  .group > .row + .row { box-shadow: inset 0 1px 0 var(--line); }
+  /* One glass panel of lined rows, as in Archived projects. */
+  .group { background: var(--glass-solid); border: 1px solid var(--glass-edge); border-radius: var(--r-l); box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow); padding: 0 8px 0 14px; }
+  .group > .row + .row { border-top: 1px solid var(--line); }
   .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; line-height: 1.5; }
 
   .row {
     display: flex; align-items: center; gap: 10px;
-    padding: 9px 0;
+    min-height: 48px; padding: 6px 0;
   }
 
   .name-btn {
     flex: 1; text-align: left; background: none; border: none; cursor: pointer;
-    font-family: var(--mono); font-size: var(--fs-m); color: var(--text); padding: .3rem .4rem; border-radius: var(--r-s);
+    font-size: var(--fs-m); color: var(--text); padding: .3rem .4rem; border-radius: var(--r-s);
     transition: background var(--dur-hover) var(--ease-hover);
   }
   .name-btn:hover { background: var(--hover); }
 
   .name-input {
-    flex: 1; font-family: var(--mono); font-size: var(--fs-m); padding: .3rem .4rem; border-radius: var(--r-s);
-    border: 1.5px solid var(--accent); background: var(--bg); color: var(--text);
+    flex: 1; font-size: var(--fs-m); height: 32px; padding: 0 12px; border-radius: 999px;
+    border: 1px solid var(--accent); background: none; color: var(--text);
   }
 
   .count {
-    font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
-    background: var(--col-bg); padding: 2px 8px; border-radius: var(--r-s); flex-shrink: 0;
+    font-size: var(--fs-s); color: var(--faint); flex-shrink: 0; font-variant-numeric: tabular-nums;
   }
 
   .delete-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: var(--fs-xl); padding: .15rem .5rem; border-radius: var(--r-s);
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; background: none; border: none; cursor: pointer;
+    color: var(--faint); padding: 0; border-radius: 999px;
     flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .delete-btn:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); color: color-mix(in srgb, var(--danger) 82%, var(--text)); }

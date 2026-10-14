@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../shared/iconPaths';
   import { createEventDispatcher, onMount } from 'svelte';
   import { fade, fly } from 'svelte/transition';
   import { panelIn, panelOut, panelScrimIn, panelScrimOut, exitMs } from '../motion';
@@ -149,7 +150,7 @@
                 <span class="name">{field.name}</span>
                 <span class="type">{typeLabel(field.type)}{#if field.type === 'select' && field.options?.length} · {field.options.join(', ')}{/if}</span>
               </button>
-              <button class="delete-btn" on:click={() => remove(field)} title="Remove field" aria-label="Remove field {field.name}">×</button>
+              <button class="delete-btn" on:click={() => remove(field)} title="Remove field" aria-label="Remove field {field.name}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.trash}</svg></button>
             </div>
           {/if}
         {/each}
@@ -188,7 +189,7 @@
   .panel-title { font-size: var(--fs-xl); font-weight: 700; flex: 1; letter-spacing: -.015em; }
 
   .cf-sub {
-    padding: 0 24px 16px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
+    padding: 0 24px 16px; font-size: var(--fs-s); color: var(--faint);
     flex-shrink: 0; line-height: 1.5;
   }
 
@@ -201,17 +202,18 @@
 
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px; }
   /* One white card of rows, like Settings; an inset line between rows. */
-  .group { background: var(--surface); border-radius: var(--r-l); box-shadow: var(--elev-1); padding: 4px 14px; }
-  .group > .row + .row { box-shadow: inset 0 1px 0 var(--line); }
+  /* One glass panel of lined rows, as in Archived projects. */
+  .group { background: var(--glass-solid); border: 1px solid var(--glass-edge); border-radius: var(--r-l); box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow); padding: 0 8px 0 14px; }
+  .group > .row + .row { border-top: 1px solid var(--line); }
   .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; line-height: 1.5; }
 
   .row {
     display: flex; align-items: center; gap: 10px;
-    padding: 9px 0;
+    min-height: 48px; padding: 6px 0;
   }
   .row-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
   .name { font-size: var(--fs-m); color: var(--text); font-weight: 500; }
-  .type { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); }
+  .type { font-size: var(--fs-s); color: var(--faint); }
 
   .row-edit-trigger {
     background: none; border: none; padding: 2px 4px; margin: -2px -4px; border-radius: var(--r-s);
@@ -222,31 +224,33 @@
   .row-editing { flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 0; }
   .row-edit-actions { display: flex; gap: 6px; width: 100%; justify-content: flex-end; }
   .edit-cancel-btn, .edit-save-btn {
-    padding: .4rem .75rem; border-radius: var(--radius-sm); font-size: var(--fs-s); font-weight: 500; cursor: pointer;
-    border: 1px solid transparent; background: var(--field-bg); color: var(--text);
+    height: 32px; padding: 0 14px; border-radius: 999px; font-size: var(--fs-s); font-weight: 600; cursor: pointer;
+    border: 1px solid var(--glass-edge); background: none; color: var(--text);
   }
   .edit-save-btn { background: var(--text); border-color: var(--text); color: var(--bg); }
   .edit-save-btn:disabled { opacity: .5; cursor: not-allowed; }
 
   .delete-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: var(--fs-xl); padding: .15rem .5rem; border-radius: var(--r-s);
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; background: none; border: none; cursor: pointer;
+    color: var(--faint); padding: 0; border-radius: 999px;
     flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .delete-btn:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); color: color-mix(in srgb, var(--danger) 82%, var(--text)); }
 
   .add-form {
     display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
-    padding: 14px 24px 24px; border-top: 1px solid var(--border); flex-shrink: 0;
+    padding: 14px 24px 24px; border-top: 1px solid var(--line); flex-shrink: 0;
   }
   .name-input {
-    padding: .45rem .6rem; border: 1px solid transparent; border-radius: var(--radius-sm);
-    background: var(--field-bg); color: var(--text); font-size: var(--fs-m); flex: 1; min-width: 90px;
+    height: 34px; padding: 0 14px; border: 1px solid var(--glass-edge); border-radius: 999px;
+    background: none; color: var(--text); font-size: var(--fs-m); flex: 1; min-width: 90px;
   }
   .type-select { flex: 1; min-width: 90px; }
+  .add-form :global(.custom-select .cs-trigger), .row-editing :global(.custom-select .cs-trigger) { background: none; border-color: var(--glass-edge); border-radius: 999px; min-height: 34px; padding: 0 14px; }
   .add-btn {
-    padding: .45rem .8rem; border-radius: var(--radius-sm); border: 1px solid var(--text);
-    background: var(--text); color: var(--bg); font-size: var(--fs-m); font-weight: 500; cursor: pointer;
+    height: 34px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--text);
+    background: var(--text); color: var(--bg); font-size: var(--fs-s); font-weight: 600; cursor: pointer;
     white-space: nowrap;
   }
   .add-btn:disabled { opacity: .5; cursor: not-allowed; }

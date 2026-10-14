@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ICON } from '../shared/iconPaths';
   import { soften } from '../tagColors';
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import { fade, fly } from 'svelte/transition';
@@ -217,7 +218,7 @@
           </div>
   
           {#if s._id !== 'space:unsorted'}
-            <button class="delete-btn" on:click={() => remove(s)} title="Delete space" aria-label="Delete space">×</button>
+            <button class="delete-btn" on:click={() => remove(s)} title="Delete space" aria-label="Delete space"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.trash}</svg></button>
           {/if}
         </div>
         {#if editingId === s._id && editDupHint}<p class="dup-name-hint">{editDupHint}</p>{/if}
@@ -289,12 +290,13 @@
 
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px 24px; }
   /* One white card of rows, like Settings; an inset line between rows. */
-  .group { background: var(--surface); border-radius: var(--r-l); box-shadow: var(--elev-1); padding: 4px 14px; }
-  .group > .row + .row { box-shadow: inset 0 1px 0 var(--line); }
+  /* One glass panel of lined rows, as in Archived projects. */
+  .group { background: var(--glass-solid); border: 1px solid var(--glass-edge); border-radius: var(--r-l); box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow); padding: 0 8px 0 14px; }
+  .group > .row + .row { border-top: 1px solid var(--line); }
 
   .row {
     display: flex; align-items: center; gap: 10px;
-    padding: 9px 0;
+    min-height: 48px; padding: 6px 0;
   }
 
   .swatch-wrap { position: relative; width: 20px; height: 20px; flex-shrink: 0; cursor: pointer; }
@@ -333,8 +335,8 @@
   .name-btn:hover { background: var(--hover); }
 
   .name-input {
-    flex: 1; font-size: var(--fs-m); padding: .3rem .4rem; border-radius: var(--r-s);
-    border: 1.5px solid var(--accent); background: var(--bg); color: var(--text);
+    flex: 1; font-size: var(--fs-m); height: 32px; padding: 0 12px; border-radius: 999px;
+    border: 1px solid var(--accent); background: none; color: var(--text);
   }
   .dup-name-hint { font-size: var(--fs-xs); color: var(--due-soon-ink); margin: -4px 0 8px; line-height: 1.3; }
 
@@ -348,17 +350,19 @@
   .reorder-btns button:disabled { opacity: .3; cursor: default; }
 
   .delete-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--faint); font-size: var(--fs-xl); padding: .15rem .5rem; border-radius: var(--r-s);
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; background: none; border: none; cursor: pointer;
+    color: var(--faint); padding: 0; border-radius: 999px;
     flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .delete-btn:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); color: color-mix(in srgb, var(--danger) 82%, var(--text)); }
 
   .add-btn {
-    background: none; border: none; cursor: pointer; color: var(--accent);
-    font-size: var(--fs-m); font-weight: 500; padding: .6rem .4rem; text-align: left;
+    align-self: flex-start; margin: 10px 0 14px; background: none; border: 1px solid var(--glass-edge); cursor: pointer; color: var(--text);
+    font-size: var(--fs-s); font-weight: 600; height: 32px; padding: 0 14px; border-radius: 999px;
+    transition: border-color var(--dur-hover) var(--ease-hover);
   }
-  .add-btn:hover { text-decoration: underline; }
+  .add-btn:hover { border-color: var(--glass-edge-hover); }
 
   .new-row .swatch-wrap { margin-left: 0; }
 </style>

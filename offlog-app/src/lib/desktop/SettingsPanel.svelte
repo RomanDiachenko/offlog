@@ -1663,8 +1663,8 @@
      hole there even though it looks right in light mode. */
   .detail-content :global(.setting-group) {
     display: flex; flex-direction: column; gap: .6rem;
-    background: var(--surface); box-shadow: var(--elev-1);
-    border: 1px solid transparent; border-radius: var(--r-l);
+    background: var(--glass-solid); border: 1px solid var(--glass-edge); border-radius: var(--r-l);
+    box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow);
     padding: .95rem 1.05rem;
   }
   /* A setting reads as one unit: its description sits tight under the label,
@@ -1732,7 +1732,7 @@
      Import, Run Maintenance) — consistent accent treatment instead of
      each modal inventing its own "important button" look. */
   .btn-primary {
-    padding: .35rem .8rem; border-radius: var(--radius-sm);
+    height: 32px; padding: 0 14px; border-radius: 999px;
     border: 1px solid var(--text); cursor: pointer;
     background: var(--text); color: var(--bg); font-size: var(--fs-s); font-weight: 600;
     white-space: nowrap;
@@ -1745,22 +1745,20 @@
     font-size: var(--fs-s); font-weight: 600; color: var(--muted);
   }
   .field-label input, .detail-content :global(.field-label input) {
-    padding: .5rem .6rem; border: 1px solid transparent; border-radius: var(--radius-sm);
-    background: var(--field-bg); color: var(--text); font-size: var(--fs-l);
+    height: 36px; padding: 0 14px; border: 1px solid var(--glass-edge); border-radius: 999px;
+    background: none; color: var(--text); font-size: var(--fs-m);
   }
   .field-label input:focus, .detail-content :global(.field-label input:focus) { outline: none; border-color: var(--accent); }
   .field-label input:disabled, .detail-content :global(.field-label input:disabled) { opacity: .5; cursor: default; }
 
-  /* No overflow clip on the track: it would cut off the selected glow. */
-  .detail-content :global(.theme-segment) {
-    display: flex; background: var(--col-bg); border-radius: var(--r-m); padding: 3px; gap: 2px; flex-shrink: 0;
-  }
+  /* The task window's pills: no track, the chosen one lifted with the ring. */
+  .detail-content :global(.theme-segment) { display: flex; gap: 4px; flex-shrink: 0; }
   .detail-content :global(.theme-seg-btn) {
-    padding: .3rem .75rem; border: none; border-radius: var(--r-s); background: transparent; color: var(--muted);
-    font-size: var(--fs-s); font-weight: 500; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
+    height: 28px; padding: 0 10px; border: none; border-radius: 999px; background: transparent; color: var(--muted);
+    font-size: var(--fs-s); font-weight: 600; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
-  .detail-content :global(.theme-seg-btn:hover) { background: var(--hover); color: var(--text); }
-  .detail-content :global(.theme-seg-btn.active) { background: var(--surface); color: var(--text); font-weight: 600; }
+  .detail-content :global(.theme-seg-btn:hover) { background: var(--rail-hover); color: var(--text); }
+  .detail-content :global(.theme-seg-btn.active) { background: var(--surface); color: var(--text); box-shadow: var(--sel-ring); }
 
   .detail-content :global(.toggle-btn) {
     width: 42px; height: 24px; border-radius: var(--r-l); border: none; cursor: pointer;
@@ -1776,12 +1774,12 @@
   .detail-content :global(.toggle-btn.on .toggle-knob) { left: 21px; }
 
   .export-btn, .detail-content :global(.export-btn) {
-    padding: .35rem .8rem; border-radius: var(--radius-sm);
-    border: 1px solid transparent; cursor: pointer;
-    background: var(--field-bg); color: var(--text); font-size: var(--fs-s); font-weight: 500;
-    white-space: nowrap;
+    height: 32px; padding: 0 14px; border-radius: 999px;
+    border: 1px solid var(--glass-edge); cursor: pointer;
+    background: none; color: var(--text); font-size: var(--fs-s); font-weight: 600;
+    white-space: nowrap; transition: border-color var(--dur-hover) var(--ease-hover);
   }
-  .export-btn:hover, .detail-content :global(.export-btn:hover) { background: var(--hover); }
+  .export-btn:hover, .detail-content :global(.export-btn:hover) { border-color: var(--glass-edge-hover); }
   .export-btn:disabled, .detail-content :global(.export-btn:disabled) { opacity: .5; cursor: default; }
   /* Matches TrashView's forever-delete button -- an irreversible action
      needs the same visual weight wherever it appears, not just where it
@@ -1793,15 +1791,23 @@
     background: color-mix(in srgb, var(--danger) 12%, transparent);
   }
 
+  /* A row that opens a page: plain, like the group's other rows; the hover
+     fill reaches a little past the text on both sides. */
   .detail-content :global(.link-row) {
     display: flex; align-items: center; gap: .75rem;
-    background: var(--field-bg); border: 1px solid transparent; border-radius: var(--radius-sm);
-    padding: .75rem .9rem; cursor: pointer; text-align: left; width: 100%;
-    transition: background var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
+    background: none; border: none; border-radius: var(--r-m);
+    min-height: 40px; padding: 0 .5rem; margin: 0 -.5rem; width: calc(100% + 1rem);
+    cursor: pointer; text-align: left;
+    transition: background var(--dur-hover) var(--ease-hover);
   }
-  .detail-content :global(.link-row:hover) { background: var(--hover); border-color: var(--border-strong); }
-  .detail-content :global(.link-row-title) { flex: 1; font-size: var(--fs-m); font-weight: 600; color: var(--text); }
-  .detail-content :global(.link-row-compact) { padding: .5rem .9rem; }
+  .detail-content :global(.link-row:hover) { background: var(--hover); }
+  /* Its description sits tight under it; a line starts the next one. */
+  .detail-content :global(.link-row + .setting-hint) { margin-top: -.55rem; }
+  .detail-content :global(.setting-hint:has(+ .link-row)) { border-bottom: 1px solid var(--line); padding-bottom: .6rem; }
+  /* Drop-downs: the same round outline as the fields. */
+  .detail-content :global(.custom-select .cs-trigger) { background: none; border-color: var(--glass-edge); border-radius: 999px; min-height: 36px; padding: 0 14px; }
+  .detail-content :global(.custom-select .cs-trigger:hover) { border-color: var(--glass-edge-hover); }
+  .detail-content :global(.link-row-title) { flex: 1; font-size: var(--fs-m); font-weight: 500; color: var(--text); }
   .detail-content :global(.link-row-compact .link-row-title) { font-weight: 500; }
   .detail-content :global(.link-row svg) { flex-shrink: 0; opacity: .5; }
   .detail-content :global(.link-row .nav-badge) { flex-shrink: 0; }
@@ -1870,9 +1876,9 @@
     padding: .9rem 1.25rem; flex-shrink: 0;
   }
   .settings-actions button {
-    padding: .45rem .95rem; border-radius: var(--radius-sm);
-    border: 1px solid transparent; cursor: pointer;
-    background: var(--field-bg); color: var(--text); font-size: var(--fs-m); font-weight: 500;
+    height: 34px; padding: 0 16px; border-radius: 999px;
+    border: 1px solid var(--glass-edge); cursor: pointer;
+    background: none; color: var(--text); font-size: var(--fs-m); font-weight: 600;
   }
   .save-btn { background: var(--text) !important; color: var(--bg) !important; border-color: var(--text) !important; }
 
