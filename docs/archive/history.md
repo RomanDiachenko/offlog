@@ -25,6 +25,7 @@ decisions.md.
 
 | Release | Summary |
 |---|---|
+| v6.10.0 | A massive, multi-agent human/product-usability audit across every app surface (18 dimensions, adversarially verified) drove most of this release: 23 confirmed findings fixed, from a stuck-forever search spinner to a misleading data-loss confirm dialog. The largest single change reverses Attachments/Related/Blocked-by from immediate-write to batched-into-Save, matching every other field on the card. |
 | v6.9.0 | Notes gets real live markdown; Card Detail's tag colors, spacing, and recurrence controls get a round of retouches; and a sixth feature audit — the Settings menu, walked live rather than read as code — turns up an Escape-key bug that could lose a PIN mid-entry, a footer that lied about what Cancel/Save did, and a long tail of smaller UX gaps across Sync, Notifications, App Lock, and Backup & Storage. |
 | v6.8.0 | Five feature audits — sync conflicts, the trash/undo/retention lifecycle, attachments, recurrence, and what only breaks after weeks. Each walked the feature as a user rather than as a test suite. Twelve defects, one of them data-losing on every shipping platform. |
 | v6.7.0 | Two threads: motion, which had never actually run, and the maintenance tool, which was slow, vague, and in one case destructive. |

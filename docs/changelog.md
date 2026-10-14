@@ -17,6 +17,84 @@ exceeds 10 releases, move the oldest into the archive.
 
 ---
 
+## [7.0.0] — 2026-10-14
+
+End-to-end encrypted sync between the PC and its phones, the fixes from a
+two-platform audit and the 31st maintenance pass, and one visual language on
+every screen. **Major** because an older install can no longer sync: the PC
+moves to an encrypted database under a new password, and pairing turns away
+an app too old to read the key. Each phone updates and pairs again, once.
+Backups stay readable both ways.
+
+### Added
+- **End-to-end encrypted sync** with the PC: a sync key (AES-256-GCM) made on
+  the PC and handed over in pairing; `db/encryptedFetch.ts` seals what leaves
+  for the server and opens what comes back, so NyxDB stores only sealed
+  documents, attachments and checkpoints. The readable `offlog` database is
+  pulled in and deleted after the first settled sync (`retirePlainServer`).
+  Pairing protocol `v: 2`; an older app gets 426 and the PC says so.
+- Desktop recovers when NyxDB can't open its store: the folder is set aside
+  (newest two kept), sync starts fresh and Settings → Sync says where it went.
+- Saved List/Board filters sync, one `meta:filter:<project>:<name>` doc each
+  (`shared/savedFilters.ts`; a deletion stays as `deleted: true`); each
+  device's old localStorage copy moves in once.
+- Search finds archived tasks (last, marked) and they restore from the task.
+- Daily safety copies are listed in Backup settings and open in the restore
+  preview (`listAutoBackups`, `readAutoBackup`; Tauri `fs:allow-read-text-file`
+  scoped to auto-backups).
+- App lock "Immediately". Phone: steps edit in place and reorder by
+  hold-and-drag; List selection can archive or delete with one Undo; quick add
+  reads day-first dates ("25 dec") and its reminder starts on the due day.
+- Desktop: links in notes open in the browser (`open_web_link`, http(s) only).
+- Phones show the PC by its Offlog name (`meta:sync-host`).
+- Run maintenance refiles tasks left in their project's old space
+  (`wrong_space`).
+
+### Changed
+- **One style on every desktop screen**, from the task window: every choice
+  is the same pill (the chosen one lifted with the glow, no grey track);
+  fields, selects and buttons are round outlines; lists are one glass panel of
+  lined rows; labels in sentence case, never capitals or the code font; dates
+  and counts as plain text, only overdue in colour. Applies to the task
+  window, Board, List, Agenda (Month now fills the view until a day is
+  open), Focus, menus (frosted `.glass.pop`), Settings and its panels,
+  Recycle bin, History, Quick add, Search and the home screen. The phone's
+  shared styles follow (`phone/phone.css`).
+- Glass that nothing moves behind is `.glass.flat` (no blur): view headers
+  and Board columns.
+- Light mode's Medium and High priority colours read 4.5:1 on white.
+- CSV export opens right in Excel, keeps formula-like titles as text and
+  covers archived projects, space, reminder and notes.
+- A PNG attachment stays PNG.
+
+### Fixed
+- Reminders: firing no longer clears `reminder_at`, so the phone still rings
+  (a persistent per-device fired set instead).
+- Saved filters were first stored on the project doc and could conflict with
+  another device's status edit (caught before release).
+- The Board's Filters menu opened off its button and under the Board (a
+  blurred header became its containing block).
+- Agenda's "This week" froze at the week it was opened.
+- Undo: a phone Duplicate's Undo raised a second Deleted toast; a bulk change
+  failing partway gave no Undo for the part done; a desktop Undo toast under
+  the pointer never timed out once the window hid.
+- The old readable server was deleted even after a pull with write failures.
+- Restore: the preview claimed newer changes survive (restored items go back
+  to the backup's version); it no longer calls History entries unrecognized;
+  a finished restore says how much it restored.
+- Scrollbars swelled into a wide slab on hover.
+- Plus the PC and phone audit: links in phone notes, project archive/delete
+  leaving its screen, conflict sheets naming statuses, `#tag` search, Select
+  options stored once, Escape and Enter handling, focus returning to the
+  opener, and the copy, plural and accessibility fixes listed in git.
+
+### Security
+- Tasks, notes and attachments on the PC's sync server are sealed with a key
+  only paired devices hold (security.md section on encrypted sync, with its
+  limits: plain HTTP, sizes and timing visible).
+- `open_web_link` accepts only http(s) addresses under 2048 characters.
+- npm audit 0.
+
 ## [6.12.2] — 2026-10-11
 
 A sync fix: every edit synced through the desktop's NyxDB showed up as a
@@ -366,82 +444,9 @@ directly in a test: the failure path OOM'd a Node worker in ~5 minutes).
   browser devtools console — this exact bug was undiagnosable from the log
   file alone before this fix.
 
-## [6.10.0] — 2026-08-28
-
-A massive, multi-agent human/product-usability audit across every app
-surface (18 dimensions, adversarially verified) drove most of this release:
-23 confirmed findings fixed, from a stuck-forever search spinner to a
-misleading data-loss confirm dialog. The largest single change reverses
-Attachments/Related/Blocked-by from immediate-write to batched-into-Save,
-matching every other field on the card.
-
-### Added
-- `getCustomFieldUsageCount()` — the custom-field delete confirm now states
-  how many tasks would lose their value, same as tag delete already did.
-- A real desktop notification-permission check
-  (`check_desktop_notification_setting`, via `ToastNotificationManager`) —
-  Settings no longer claims reminders are "Enabled" when Windows has
-  actually blocked Offlog's toasts.
-
-### Changed
-- **Attachments, Related, and Blocked-by are batched into Save**, not
-  immediate-write. Picking a file or linking a task now only edits the
-  card locally; Cancel/Escape discards it like every other field, and Save
-  replays the diff as real writes. A blocked-by cycle is now caught at
-  Save time instead of at pick time.
-- The 5 stacked Settings mini-modals (Connect a device, Resolve conflicts,
-  Maintenance, Restore from backup, Save your recovery code) now trap
-  keyboard focus and carry `role="dialog"`; `focusTrap.ts` stops
-  propagation on the Tab it handles so a nested trap can't leak to the one
-  behind it.
-- Notification-permission functions (`requestPermission`,
-  `checkExactAlarmPermission`, `requestExactAlarmPermission`) now catch
-  their own plugin-call rejections instead of leaving every call site
-  responsible for it.
-- Restore-from-backup's preview now says explicitly that it isn't a full
-  revert — anything created, changed, or deleted since the backup stays as
-  it is.
-- The PC-side pairing code now visibly expires after 5 minutes instead of
-  sitting there dead with no cue once its real TTL passes.
-- Time Travel's entries now sit inside a real `role="list"` with a
-  labeled count, instead of orphan `role="listitem"`s with no list
-  ancestor.
-
-### Fixed
-- A search failure left the spinner running forever with no error and no
-  way out — now caught and surfaced.
-- Custom field delete claimed values were "kept but hidden"; the code
-  actually erased them from every task. Copy (and a stale code comment)
-  now say what really happens.
-- Closing a card any way but Save silently discarded every edit; some
-  fields saved immediately while others didn't, with no warning either
-  way — see batching change above.
-- Archiving the currently-open project left the board silently blank
-  instead of clearing `activeProjectId`.
-- Renaming a tag onto an existing name silently merged the two on blur,
-  less guarded than plain delete.
-- The activity log rendered raw `blocked_by changed` instead of a human
-  label.
-- Android hardware/gesture Back exited the app instead of closing the
-  open sidebar drawer.
-- PIN-lock shake and checklist-check-pop animations used literal
-  durations, so Reduce Motion never reached them.
-- Storage-full attachment failures looked like any other generic error,
-  with "try again" as actively wrong advice.
-- Kanban's quick-add-card and + Status forms silently closed on an empty
-  submit, as if Cancel had been clicked — they now just stay open.
-- A corrupt/invalid backup file surfaced a raw `JSON.parse` `SyntaxError`
-  instead of a plain-language message; "Choose backup file" also stayed
-  clickable while a previous import was still running.
-- Various accessibility gaps: collapsed sidebar nav buttons and Kanban
-  column archive/remove buttons had no `aria-label`; GlobalSearch's arrow
-  navigation didn't scroll the selection into view or announce it via
-  `aria-activedescendant`.
-- 25th maintenance pass: a handful of dead/unused exports, a `MaintStatus`
-  naming collision between two modules, a stale `windows`-crate comment.
-
 ---
 
+[7.0.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.12.2...v7.0.0
 [6.12.2]: https://github.com/hrach-gevorgyan/offlog/compare/v6.12.1...v6.12.2
 [6.12.1]: https://github.com/hrach-gevorgyan/offlog/compare/v6.12.0...v6.12.1
 [6.12.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.11.0...v6.12.0
@@ -451,4 +456,3 @@ matching every other field on the card.
 [6.10.3]: https://github.com/hrach-gevorgyan/offlog/compare/v6.10.2...v6.10.3
 [6.10.2]: https://github.com/hrach-gevorgyan/offlog/compare/v6.10.1...v6.10.2
 [6.10.1]: https://github.com/hrach-gevorgyan/offlog/compare/v6.10.0...v6.10.1
-[6.10.0]: https://github.com/hrach-gevorgyan/offlog/compare/v6.9.0...v6.10.0

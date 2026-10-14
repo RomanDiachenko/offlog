@@ -2,7 +2,7 @@
   "name": "offlog-app",
   "private": true,
   "license": "MIT",
-  "version": "6.12.2",
+  "version": "7.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

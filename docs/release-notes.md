@@ -31,6 +31,32 @@ for (const m of s.matchAll(/## (v[\d.]+)\n+### In short\n([\s\S]*?)\n\n/g))
 
 ---
 
+## v7.0.0
+
+### In short
+
+Sync between your phone and PC is now end-to-end encrypted. Update the PC app and every phone, then pair each phone again once. A cleaner, calmer look on every screen, saved filters that sync, archived tasks in search, and many fixes.
+
+### New
+- Sync with your PC is end-to-end encrypted: only your own devices can read your tasks. After updating, pair each phone again once.
+- Saved filters sync between your devices.
+- Search also finds archived tasks, and you can restore them from the task.
+- Daily safety copies are listed in Backup settings and can be restored.
+- App lock can lock immediately when you leave the app.
+- Steps can be edited in place and reordered by holding and dragging.
+- Select several tasks in List and archive or delete them at once, with Undo.
+- Quick add understands dates like "25 dec".
+- Links in notes open in your browser.
+- On the PC, one calm style on every screen: the same round buttons and choices, plain lists and soft glass.
+
+### Fixed
+- Reminders ring on the phone even when the PC is on.
+- The Agenda's "This week" stays right when the app stays open into a new week.
+- Undo works after duplicating a task and after a bulk change that stopped partway.
+- The Filters menu opens under its button.
+- The restore warning now says plainly that restored items go back to the backup's version.
+- Many smaller fixes to wording, keyboard use and accessibility.
+
 ## v6.12.2
 
 ### In short
