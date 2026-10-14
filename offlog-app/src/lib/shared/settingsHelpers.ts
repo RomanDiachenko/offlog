@@ -83,6 +83,7 @@ const ISSUE_LABELS: Record<string, [string, string]> = {
   dangling_link:         ['task linked to a task that no longer exists', 'tasks linked to tasks that no longer exist'],
   unarchived_in_archived:['active task inside an archived project', 'active tasks inside an archived project'],
   attachment_mismatch:   ['task whose attachment list does not match its files', 'tasks whose attachment lists do not match their files'],
+  wrong_space:           ['task filed under a different space than its project', 'tasks filed under a different space than their project'],
 };
 
 // Everything except no_columns has a safe automatic fix -- inventing statuses

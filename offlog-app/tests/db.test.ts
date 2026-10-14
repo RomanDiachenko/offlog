@@ -1254,6 +1254,23 @@ describe('runMaintenanceSteps', () => {
     expect((await db.get<any>(task._id)).archived).toBe(true);
   });
 
+  // A project move whose task rewrite collided: the project is in the new
+  // space, the task still in the old one.
+  it('finds and refiles a task left in its project\'s old space', async () => {
+    await seedSpace();
+    const work = await createSpace('Work', '#3B82F6');
+    const project = await createProject('space:unsorted', 'Moved');
+    const task = await createTask(project._id, 'space:unsorted', project.columns[0].id, 'Left behind');
+    await db.put({ ...(await db.get<any>(project._id)), space_id: work._id });
+
+    const { issues } = await checkIntegrity();
+    expect(issues.filter(i => i.type === 'wrong_space').map(i => i.docId)).toEqual([task._id]);
+
+    await repairDatabase();
+    expect((await db.get<any>(task._id)).space_id).toBe(work._id);
+    expect((await checkIntegrity()).issues.filter(i => i.type === 'wrong_space')).toEqual([]);
+  });
+
   it('finds and drops an attachment row whose file is gone', async () => {
     await seedSpace();
     const project = await createProject('space:unsorted', 'Files');

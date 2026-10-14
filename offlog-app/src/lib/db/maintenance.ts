@@ -290,7 +290,7 @@ async function knownFieldIds(): Promise<Set<string>> {
 // Repairs that act on a reference to something missing. During a sync the
 // "missing" project, status, field or linked task may simply not have
 // arrived yet, so these wait until it settles.
-const WAITS_FOR_SYNC = new Set<IntegrityIssue['type']>(['orphaned_project', 'orphaned_task', 'invalid_column', 'orphaned_custom_value', 'dangling_link']);
+const WAITS_FOR_SYNC = new Set<IntegrityIssue['type']>(['orphaned_project', 'orphaned_task', 'invalid_column', 'orphaned_custom_value', 'dangling_link', 'wrong_space']);
 
 // CSV export — every non-deleted task, one row each. Status/Priority resolve
 // to display names, not raw column_id / 1-2-3: CSV is a one-way, human-facing
@@ -326,7 +326,7 @@ export async function exportTasksCSV(): Promise<string> {
 
 export interface IntegrityIssue {
   type: 'orphaned_project' | 'orphaned_task' | 'invalid_column' | 'no_columns' | 'conflict'
-      | 'orphaned_custom_value' | 'dangling_link' | 'unarchived_in_archived' | 'attachment_mismatch';
+      | 'orphaned_custom_value' | 'dangling_link' | 'unarchived_in_archived' | 'attachment_mismatch' | 'wrong_space';
   docId: string;
   description: string;
 }
@@ -375,6 +375,12 @@ export async function checkIntegrity(): Promise<{ issues: IntegrityIssue[]; chec
     const proj = projectById.get(t.project_id);
     if (proj && proj.columns?.length && !proj.columns.some(c => c.id === t.column_id)) {
       issues.push({ type: 'invalid_column', docId: t._id!, description: `Task "${t.title}" points to a missing status in "${proj.name}"` });
+    }
+    // Moving a project rewrites its tasks' space after the project itself; a
+    // write that collided, or a task another device added meanwhile, keeps
+    // the old one and shows under the wrong space.
+    if (proj && t.space_id !== proj.space_id) {
+      issues.push({ type: 'wrong_space', docId: t._id!, description: `Task "${t.title}" is filed under a different space than its project "${proj.name}"` });
     }
 
     // A custom field can be deleted while tasks still carry values keyed to
@@ -498,6 +504,11 @@ export async function repairDatabase(known?: IntegrityIssue[]): Promise<{ fixed:
         // un-archiving the project would never bring this task back, so the
         // repair would quietly make the hiding permanent.
         await db.put({ ...doc, archived: true, archivedWithProject: true, updated_at: now(), source: currentSource() });
+        fixed++;
+      } else if (issue.type === 'wrong_space') {
+        const doc = await db.get<TaskDoc>(issue.docId);
+        const proj = await db.get<ProjectDoc>(doc.project_id);
+        await db.put({ ...doc, space_id: proj.space_id, updated_at: now(), source: currentSource() });
         fixed++;
       } else if (issue.type === 'attachment_mismatch') {
         const doc = await db.get<TaskDoc & { _attachments?: Record<string, unknown> }>(issue.docId);
