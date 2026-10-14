@@ -377,15 +377,42 @@ impl DamagedStore {
     }
 }
 
+/// How many set-aside folders are kept; each is a full copy of the store.
+const KEEP_SET_ASIDE: usize = 2;
+
 /// Renames a damaged NyxDB data folder to `<name>.damaged-<unix-secs>` beside
 /// it, so NyxDB starts on a fresh one and every device uploads its full copy
-/// again on its next sync. Never deletes: the old folder may still hold
-/// something worth recovering by hand.
+/// again on its next sync. The newest `KEEP_SET_ASIDE` stay, as they may hold
+/// something worth recovering by hand; older ones are removed, or a disk that
+/// keeps failing would gain a full copy on every start.
 pub fn set_aside_data_dir(data_dir: &Path, now_secs: u64) -> std::io::Result<PathBuf> {
     let name = data_dir.file_name().and_then(|n| n.to_str()).unwrap_or("nyxdb-data");
     let target = data_dir.with_file_name(format!("{name}.damaged-{now_secs}"));
     fs::rename(data_dir, &target)?;
+    if let Some(parent) = target.parent() {
+        prune_set_aside(parent, name);
+    }
     Ok(target)
+}
+
+/// Removes all but the newest `KEEP_SET_ASIDE` `<name>.damaged-<secs>`
+/// folders. Best effort: a folder that can't be removed is left.
+fn prune_set_aside(parent: &Path, name: &str) {
+    let prefix = format!("{name}.damaged-");
+    let Ok(entries) = fs::read_dir(parent) else { return };
+    let mut aside: Vec<(u64, PathBuf)> = entries
+        .flatten()
+        .filter_map(|e| {
+            let secs = e.file_name().to_str()?.strip_prefix(&prefix)?.parse::<u64>().ok()?;
+            e.path().is_dir().then(|| (secs, e.path()))
+        })
+        .collect();
+    aside.sort_by(|a, b| b.0.cmp(&a.0));
+    for (_, old) in aside.into_iter().skip(KEEP_SET_ASIDE) {
+        if let Err(e) = fs::remove_dir_all(&old) {
+            log::warn!("sync_host: could not remove the old set-aside folder {}: {e}", old.display());
+        }
+    }
 }
 
 /// Creates the database devices sync to, end-to-end encrypted, named after
@@ -646,6 +673,24 @@ mod tests {
         assert!(!data.exists());
         assert_eq!(fs::read(moved.join("db")).unwrap(), b"store");
         assert_eq!(fs::read(moved.join("att").join("offlog-e-1").join("0123abcd")).unwrap(), b"photo");
+        fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn only_the_newest_two_set_aside_folders_are_kept() {
+        let root = std::env::temp_dir().join(format!("offlog-aside-keep-{}", std::process::id()));
+        let data = root.join("nyxdb-data");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(root.join("nyxdb-data.damaged-100")).unwrap();
+        fs::create_dir_all(root.join("nyxdb-data.damaged-200")).unwrap();
+        fs::create_dir_all(root.join("nyxdb-data-dev.damaged-50")).unwrap();
+        fs::create_dir_all(&data).unwrap();
+        set_aside_data_dir(&data, 300).unwrap();
+        assert!(!root.join("nyxdb-data.damaged-100").exists());
+        assert!(root.join("nyxdb-data.damaged-200").exists());
+        assert!(root.join("nyxdb-data.damaged-300").exists());
+        // Another store's folders are not this one's to remove.
+        assert!(root.join("nyxdb-data-dev.damaged-50").exists());
         fs::remove_dir_all(&root).unwrap();
     }
 }
