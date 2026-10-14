@@ -55,7 +55,7 @@ the same data gets its own layout, with Home, Today, Agenda and Search tabs.
   <tr>
     <td width="50%" align="center">
       <img src="docs/images/screenshot-list-desktop.png" alt="List view">
-      <br><sub><b>List</b> — saved filters, Shift+click for a multi-column sort</sub>
+      <br><sub><b>List</b> — saved filters that sync, and a sort on several columns</sub>
     </td>
     <td width="50%" align="center">
       <img src="docs/images/screenshot-focus-desktop.png" alt="Focus view">
@@ -64,8 +64,8 @@ the same data gets its own layout, with Home, Today, Agenda and Search tabs.
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="docs/images/screenshot-carddetail-desktop.png" alt="Task detail panel over the Agenda calendar view">
-      <br><sub><b>Task detail</b> — full editor over Agenda's month calendar</sub>
+      <img src="docs/images/screenshot-carddetail-desktop.png" alt="Task detail window over the Board">
+      <br><sub><b>Task detail</b> — status, date, priority and tags in one window, the rest under More details</sub>
     </td>
     <td width="50%" align="center">
       <img src="docs/images/screenshot-search-desktop.png" alt="Global search / command palette">
