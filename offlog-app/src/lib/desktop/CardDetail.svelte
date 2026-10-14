@@ -5,9 +5,9 @@
   import { scrimIn, scrimOut, centredIn, centredOut, popIn, popOut, revealIn, revealOut, exitMs } from '../motion';
   import type { TaskDoc, ProjectDoc, CustomFieldDef, TaskAttachment } from '../types';
   import { updateTask, deleteTask, getAllTags, archiveTask, unarchiveTask, duplicateTask, skipRecurrence, getCustomFieldDefs, findTasksByTitleInProject, findSimilarNotes, getRelatedTasks, searchTasksForLinking, linkRelatedTask, unlinkRelatedTask, getBlockingTasks, linkBlockedBy, unlinkBlockedBy, isBlockerResolved, addAttachment, deleteAttachment, getAttachmentBlob, ATTACHMENT_MAX_PER_TASK, getTagColorOverrides, ensureFreshTagColor } from '../db';
-  import { ATTACHMENT_MAX_BYTES, isAttachmentExtensionAllowed, isAttachmentImage, attachmentExtension, attachmentMimeType } from '../attachments';
   import { resolveTagColor, soften } from '../tagColors';
   import { PRIORITY_COLOR } from '../constants';
+  import { ATTACHMENT_MAX_BYTES, isAttachmentExtensionAllowed, isAttachmentImage, attachmentExtension, attachmentMimeType } from '../attachments';
   import { reloadTasks, showError, modalOpen, projects } from '../store';
   import { confirmAction } from '../confirm';
   import { closeOnBack, isTopLayer } from '../modalStack';
@@ -951,7 +951,7 @@
      transition on the overlay/panel itself. */
   .overlay {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,.45);
+    background: rgba(0,0,0,.32);
     display: flex; align-items: center; justify-content: center;
     padding: env(safe-area-inset-top, 0px) 1rem env(safe-area-inset-bottom, 0px);
     /* Above every panel that can open a card while staying visible itself
@@ -962,6 +962,7 @@
        button opens one on top of itself. */
     z-index: 600;
   }
+  /* Solid, not see-through: over the scrim, see-through glass turns grey. */
   .panel {
     background: var(--surface);
     width: min(480px, 92vw);
@@ -970,11 +971,13 @@
     padding: 1.1rem 1.25rem;
     gap: .55rem;
     border: 1px solid var(--glass-edge); border-radius: var(--radius);
-    box-shadow: var(--elev-3);
+    box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow);
     overflow-y: auto;
   }
   .panel-header { display: flex; gap: .15rem; align-items: flex-start; }
   .panel-header .title-input { margin-right: .4rem; }
+  /* Centred on the title's first line, however many lines it wraps to. */
+  .panel-header .menu-wrap, .panel-header .close-btn { margin-top: 1px; }
   .title-input {
     flex: 1; font-size: var(--fs-t); font-weight: 700; letter-spacing: -.01em;
     border: none; border-bottom: 1.5px solid transparent;
@@ -1013,7 +1016,7 @@
      dead space landing after "1 month" where the eye reads it as a
      mistake, not a stopping point. */
   /* The block padding gives the selected chip's glow room inside the scroll clip. */
-  .due-shortcuts { display: flex; gap: 6px; flex-wrap: nowrap; margin-left: auto; overflow-x: auto; min-width: 0; padding: 6px 4px; margin-block: -6px; scrollbar-width: none; }
+  .due-shortcuts { display: flex; gap: 6px; flex-wrap: nowrap; margin-left: auto; overflow-x: auto; min-width: 0; padding: 10px; margin-block: -10px; margin-right: -10px; scrollbar-width: none; }
   .due-shortcuts::-webkit-scrollbar { display: none; }
   @media (max-width: 480px) {
     .due-date-row { flex-direction: column; align-items: stretch; }
@@ -1021,14 +1024,14 @@
     .due-shortcuts { margin-left: 0; }
   }
   .due-shortcut {
-    background: var(--col-bg); color: var(--muted); border: none;
-    border-radius: 999px; font-size: var(--fs-xs); font-weight: 600; letter-spacing: normal;
+    background: none; color: var(--muted); border: 0;
+    border-radius: 999px; font-size: var(--fs-s); font-weight: 600; letter-spacing: normal;
     text-transform: none; font-family: 'Hanken Grotesk', sans-serif;
-    padding: 5px 12px; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
+    height: 28px; padding: 0 10px; cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
     white-space: nowrap; flex-shrink: 0;
   }
-  .due-shortcut:hover { background: var(--hover); color: var(--text); }
-  .due-shortcut.active { background: var(--sel-fill); color: var(--text); box-shadow: var(--sel-ring); }
+  .due-shortcut:hover { background: var(--rail-hover); color: var(--text); }
+  .due-shortcut.active { background: var(--surface); color: var(--text); box-shadow: var(--sel-ring); }
 
   .extras-panel :global(.reminder-hint) {
     font-size: var(--fs-xs); color: var(--faint); line-height: 1.35;
@@ -1146,11 +1149,13 @@
   }
   .tags-field { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .22rem; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  /* The phone task screen's status bar: a track, the current status lifted. */
+  /* Every choice in this window (status, date, priority) is the same pill.
+     The bar scrolls, so it clips: its padding keeps the chosen pill's ring
+     inside, the negative margin keeps the pills on the window's left edge. */
   /* position: relative makes it the pills' offsetParent, which the
      centring in statusScroll() measures from. */
   .status-bar {
-    position: relative; display: flex; gap: 3px; padding: 4px; border-radius: var(--r-l); background: var(--rail-bg);
+    position: relative; display: flex; gap: 4px; padding: 10px; margin: -7px -10px;
     overflow-x: auto; scrollbar-width: none;
   }
   .status-bar::-webkit-scrollbar { display: none; }
@@ -1158,24 +1163,26 @@
   .status-bar.fade-start { -webkit-mask-image: linear-gradient(to left, black calc(100% - 48px), transparent); mask-image: linear-gradient(to left, black calc(100% - 48px), transparent); }
   .status-bar.fade-start.fade-end { -webkit-mask-image: linear-gradient(to right, transparent, black 48px, black calc(100% - 48px), transparent); mask-image: linear-gradient(to right, transparent, black 48px, black calc(100% - 48px), transparent); }
   .st {
-    flex: 1 0 auto; padding: 6px 12px; border: 0; border-radius: var(--r-m); background: none; cursor: pointer;
+    flex: 0 0 auto; height: 28px; padding: 0 10px; border: 0; border-radius: 999px; background: none; cursor: pointer;
     font: inherit; font-size: var(--fs-s); font-weight: 600; color: var(--muted); white-space: nowrap;
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .st:hover { color: var(--text); background: var(--rail-hover); }
   .st.on, .st.on:hover { background: var(--surface); color: var(--text); box-shadow: var(--sel-ring); }
   /* One soft group of rows; fields inside it drop their own fill. */
-  .rows { background: var(--field-bg); border-radius: var(--r-l); }
-  .row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; }
-  .row + .row { background-image: linear-gradient(var(--line), var(--line)); background-size: calc(100% - 36px) 1px; background-position: 36px 0; background-repeat: no-repeat; }
+  .notes-field :global(.md-editor) { background: none; border-color: var(--glass-edge); border-radius: var(--r-l); }
+  .rows { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .row { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 0; }
+  .row + .row { background-image: linear-gradient(var(--line), var(--line)); background-size: 100% 1px; background-position: 0 0; background-repeat: no-repeat; }
   .row-tags { align-items: flex-start; }
   .row-tags .row-ic { margin-top: 9px; }
+  .rows .tags-input-row { padding: 2px 0 0; min-height: 0; }
   .row-ic { display: flex; width: 16px; justify-content: center; color: var(--faint); flex-shrink: 0; }
   .rows :global(.cs-trigger), .rows :global(.cal-trigger), .rows .tags-input-row { background: transparent; }
   /* Priority: three small pills, only as wide as their words. */
   .prio-seg { display: flex; gap: 4px; }
   .prio-opt {
-    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 0; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: 0; border-radius: 999px;
     background: none; cursor: pointer; font: inherit; font-size: var(--fs-s); font-weight: 600; color: var(--muted);
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
@@ -1228,36 +1235,19 @@
     cursor: text;
   }
   .tags-input-row:focus-within { border-color: var(--accent); }
-  /* Background is per-tag (resolveTagColor(), same hash/override every tag
-     chip elsewhere in the app already uses) set inline, at a 45% mix --
-     raised from 32% once TAG_PALETTE grew to 24: at 24 hues the average
-     gap between neighbours is ~15 degrees, and mixing toward white
-     compresses non-hue differences hard (measured: two reds 125 RGB
-     units apart pre-mix land only 40 apart post-mix at 32%), so pastel
-     and "24 distinct colors" are in real tension. Raising the tint only
-     helps a little (worst-pair distance 8->14 across the full 32-60%
-     range checked) since it can't widen a hue gap that's just too
-     narrow -- amber/yellow at 7 degrees apart stays the closest pair at
-     any tint. 45% was chosen as a real half-step, not a fix: contrast
-     stays comfortably safe (worst case ~6.6:1 against var(--text), full
-     unmixed hue still fails WCAG AA for red/blue/violet). Text stays
-     var(--text) rather than the raw hash color for the same
-     reason -- matches KanbanBoard's card-tag. */
-  /* A small rounded rectangle, not a full pill -- Notion's and GitHub's
-     label chips both use this shape; the capsule/999px radius is a
-     Material "filter chip" convention (an interactive toggle), not a
-     static tag-label one. */
+  /* The same pill as the choices above; its background is the tag's own
+     colour (resolveTagColor), set inline. */
   .tag-chip {
     display: inline-flex; align-items: center; gap: 2px;
-    background: var(--col-bg); color: var(--text); border-radius: var(--radius-sm);
-    font-size: var(--fs-s); font-weight: 500; padding: 0 2px 0 7px;
+    border: 0; color: var(--text); border-radius: 999px;
+    font-size: var(--fs-s); font-weight: 600; height: 28px; padding: 0 2px 0 10px;
   }
   /* 24x24 hit box, not a 24px glyph: the × glyph stays small and the chip
      keeps its height. Below 24 this fails WCAG 2.2's minimum target size
      (2.5.8). */
   .tag-remove {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 24px; height: 24px; border-radius: 4px;
+    width: 24px; height: 24px; border-radius: 999px;
     cursor: pointer; font-size: var(--fs-l); line-height: 1; color: var(--muted);
     background: none; border: none;
     /* Box-centered math already puts it dead center of its own 24x24 --
@@ -1293,11 +1283,11 @@
 
   .section-toggle {
     display: flex; align-items: center; gap: 8px;
-    background: var(--col-bg); border: 1px solid transparent; border-radius: 8px;
+    background: none; border: 1px solid var(--glass-edge); border-radius: var(--r-l);
     cursor: pointer; padding: .55rem .65rem; width: 100%; text-align: left;
-    transition: background var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
+    transition: border-color var(--dur-hover) var(--ease-hover);
   }
-  .section-toggle:hover { background: var(--hover); border-color: var(--border-strong); }
+  .section-toggle:hover { border-color: var(--glass-edge-hover); }
   /* EXTRAS stays put on the left at its own width; the summary claims the
      rest of the row and right-aligns, ending flush with the chevron
      instead of trailing right after the label on the left. */
@@ -1325,25 +1315,18 @@
   /* .detail-block (the mandatory, always-visible Due date field) stays
      plain -- no card treatment, matching Status/Priority/Tags above. */
 
-  /* Extras has no outer background/border of its own; each of the five
-     blocks inside is its own small card, so the grouping is visible
-     rather than implied by a caption + hairline. The faint 1px
-     border-left anchors the indent -- a bare margin-left with no visual
-     anchor reads as a misalignment glitch. */
-  /* One soft group of icon rows (the phone task screen's language); a row
-     opens in place, and an inset line starts the next. */
+  /* The same lined rows as the fields above; a row opens in place. */
   .extras-panel {
     display: flex; flex-direction: column;
-    background: var(--field-bg); border-radius: var(--r-l); padding: 2px 0;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
   }
-  .extras-panel :global(.extra-block) { padding: 0 12px; }
   .extras-panel :global(.extra-block + .extra-block) {
-    background-image: linear-gradient(var(--line), var(--line)); background-size: calc(100% - 50px) 1px; background-position: 38px 0; background-repeat: no-repeat;
+    background-image: linear-gradient(var(--line), var(--line)); background-size: 100% 1px; background-position: 0 0; background-repeat: no-repeat;
   }
   .extras-panel :global(.extra-block-toggle) {
     display: flex; align-items: center; gap: 10px; width: 100%;
     background: none; border: none; cursor: pointer; text-align: left;
-    padding: .6rem 0; color: var(--text);
+    min-height: 44px; padding: 0; color: var(--text);
   }
   .extras-panel :global(.xb-ic) { display: flex; width: 16px; justify-content: center; color: var(--faint); flex-shrink: 0; }
   .extras-panel :global(.extra-block-toggle .field-label) {
