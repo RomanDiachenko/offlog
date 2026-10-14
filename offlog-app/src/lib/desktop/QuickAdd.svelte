@@ -234,7 +234,7 @@
     position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
     width: min(480px, 95vw); z-index: 501;
     background: var(--surface); border: 1px solid var(--glass-edge);
-    border-radius: var(--r-l); box-shadow: var(--elev-3);
+    border-radius: var(--r-xl); box-shadow: inset 0 1px 0 var(--glass-hi), var(--elev-3);
     padding: 16px 18px; display: flex; flex-direction: column; gap: 12px;
   }
 
@@ -242,17 +242,17 @@
   .panel-title { font-size: var(--fs-l); color: var(--text); font-weight: 700; }
 
   .help-btn {
-    width: 18px; height: 18px; border-radius: 50%; border: 1px solid transparent;
-    background: var(--field-bg); color: var(--muted); font-size: var(--fs-xs); font-weight: 700;
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--glass-edge);
+    background: none; color: var(--muted); font-size: var(--fs-xs); font-weight: 700;
     line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
-  .help-btn:hover, .help-btn.active { color: var(--text); background: var(--rail-hover); }
+  .help-btn:hover, .help-btn.active { color: var(--text); border-color: var(--glass-edge-hover); }
 
-  .help-panel { border-radius: var(--radius-sm); background: var(--field-bg); padding: 10px 12px; font-size: var(--fs-s); }
+  .help-panel { border-radius: var(--r-l); border: 1px solid var(--glass-edge); padding: 10px 14px; font-size: var(--fs-s); }
   .help-title { color: var(--muted); margin-bottom: 8px; line-height: 1.4; }
   .help-list { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 0; }
-  .help-list dt { color: var(--muted); font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase; letter-spacing: .03em; align-self: baseline; }
+  .help-list dt { color: var(--muted); font-size: var(--fs-xs); align-self: baseline; }
   .help-list dd { margin: 0; color: var(--text); }
   .help-list code {
     font-family: var(--mono); font-size: var(--fs-xs); background: var(--col-bg);
@@ -261,13 +261,13 @@
   .help-example { margin-top: 10px; color: var(--muted); font-style: italic; font-size: var(--fs-xs); }
 
   .title-input {
-    width: 100%; border: 1px solid transparent; border-radius: var(--radius-sm);
-    padding: .55rem .7rem; font-size: var(--fs-l); font-family: inherit;
-    background: var(--field-bg); color: var(--text); outline: none;
+    width: 100%; border: 1px solid var(--glass-edge); border-radius: 999px;
+    height: 42px; padding: 0 16px; font-size: var(--fs-l); font-family: inherit;
+    background: none; color: var(--text); outline: none;
     transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
     box-sizing: border-box;
   }
-  .title-input:focus { background: var(--surface); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 45%, transparent), var(--sel-ring); }
+  .title-input:focus { border-color: transparent; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 45%, transparent), var(--sel-ring); }
   .title-input::placeholder { color: var(--faint); }
 
   /* Live preview of what nlpParse.ts picked out of the title -- only
@@ -284,20 +284,23 @@
   .row { display: flex; align-items: center; gap: 10px; }
 
   .proj-select-wrap { flex: 1; min-width: 0; }
+  /* The task window's controls: round outlined select and buttons. */
+  .proj-select-wrap :global(.custom-select .cs-trigger) { background: none; border-color: var(--glass-edge); border-radius: 999px; min-height: 34px; padding: 0 14px; font-size: var(--fs-s); }
+  .proj-select-wrap :global(.custom-select .cs-trigger:hover) { border-color: var(--glass-edge-hover); }
 
   .actions { display: flex; gap: 7px; flex-shrink: 0; }
 
   .cancel-btn {
-    padding: .42rem .85rem; border-radius: var(--radius-sm);
-    border: 1px solid transparent; cursor: pointer;
-    background: var(--field-bg); color: var(--muted); font-size: var(--fs-m); font-weight: 500;
+    height: 34px; padding: 0 16px; border-radius: 999px;
+    border: 1px solid var(--glass-edge); cursor: pointer;
+    background: none; color: var(--text); font-size: var(--fs-s); font-weight: 600;
   }
-  .cancel-btn:hover { color: var(--text); }
+  .cancel-btn:hover { border-color: var(--glass-edge-hover); }
 
   .add-btn {
-    padding: .42rem .85rem; border-radius: var(--radius-sm);
+    height: 34px; padding: 0 16px; border-radius: 999px;
     border: none; cursor: pointer;
-    background: var(--text); color: var(--bg); font-size: var(--fs-m); font-weight: 600;
+    background: var(--text); color: var(--bg); font-size: var(--fs-s); font-weight: 600;
     transition: opacity var(--dur-hover) var(--ease-hover);
   }
   .add-btn:disabled { opacity: .45; cursor: default; }
