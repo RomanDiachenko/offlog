@@ -379,6 +379,10 @@ body.dark {
     body:not(.reduce-transparency):not(.high-contrast) .glass .glass.glass-inner { background: color-mix(in srgb, var(--surface) 55%, transparent); }
     /* .solid: glass that is opaque anyway (phone sheets over the scrim), so no blur to pay for. */
     body:not(.reduce-transparency):not(.high-contrast) .glass.solid { backdrop-filter: none; }
+    /* A view's header panel holds fixed popovers (Filters). A blur would make
+       it their containing block, shifting them off their button and under
+       the Board; nothing scrolls behind the header, so it blurs nothing. */
+    body:not(.reduce-transparency):not(.high-contrast) .glass.fluid-panel { backdrop-filter: none; }
   }
 }
 /* More contrast, from the OS or Settings: solid, with a strong edge. The
