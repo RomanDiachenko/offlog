@@ -47,6 +47,8 @@
       showError('Could not update some tasks. Please try again.');
       await reloadTasks().catch(() => {});
       sheet?.close();
+      // The ones already changed can still be put back.
+      if (done.length) showToast(`Updated ${done.length} ${done.length === 1 ? 'task' : 'tasks'}`, () => restore(done));
       return;
     }
     dispatch('done', { clear });
@@ -66,14 +68,19 @@
       showError(fail);
       await reloadTasks().catch(() => {});
       sheet?.close();
+      // The ones already archived or deleted can still be put back.
+      if (done.length) offer();
       return;
     }
     dispatch('done', { clear: true });
     sheet?.close();
-    showToast(`${verb} ${done.length} ${done.length === 1 ? 'task' : 'tasks'}`, async () => {
-      try { for (const id of done) await back(id); await reloadTasks(); }
-      catch { showError('Could not undo. Please try again.'); }
-    });
+    offer();
+    function offer() {
+      showToast(`${verb} ${done.length} ${done.length === 1 ? 'task' : 'tasks'}`, async () => {
+        try { for (const id of done) await back(id); await reloadTasks(); }
+        catch { showError('Could not undo. Please try again.'); }
+      });
+    }
   }
   const archiveAll = () => whole(archiveTask, unarchiveTask, 'Archived', 'Could not archive some tasks. Please try again.');
   const deleteAll = () => whole(id => updateTask(id, { deleted: true }), undoDelete, 'Deleted', 'Could not delete some tasks. Please try again.');

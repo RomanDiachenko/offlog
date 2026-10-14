@@ -233,6 +233,22 @@ describe('phone Project screen — list', () => {
     await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not archive some tasks. Please try again.'));
   });
 
+  it('a bulk archive that fails partway still offers Undo for the ones it did', async () => {
+    const r = list();
+    await fireEvent.click(r.getByText('Select'));
+    await fireEvent.click(r.getByRole('checkbox', { name: 'a' }));
+    await fireEvent.click(r.getByRole('checkbox', { name: 'c' }));
+    await fireEvent.click(r.getByLabelText('More for selected tasks'));
+    await waitFor(() => r.getByRole('dialog', { name: '2 tasks' }));
+    archiveTask.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('boom'));
+    await fireEvent.click(r.getByText('Archive', { selector: '.psheet .p-row' }));
+    await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not archive some tasks. Please try again.'));
+    await waitFor(() => expect(get(toast)?.text).toBe('Archived 1 task'));
+    await get(toast)!.undo!();
+    expect(unarchiveTask.mock.calls).toEqual([['task:a']]);
+    toast.set(null);
+  });
+
   it('holding a row enters Select mode with that row picked; a tap still opens it', async () => {
     const open = vi.spyOn(actions, 'openTask').mockImplementation(() => {});
     const r = list();

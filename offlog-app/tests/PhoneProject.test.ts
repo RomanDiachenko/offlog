@@ -473,7 +473,8 @@ describe('phone Project screen — card menu', () => {
     await waitFor(() => expect(r.queryByRole('dialog')).toBeNull());
     await waitFor(() => expect(get(toast)?.text).toBe('Duplicated'));
     await get(toast)!.undo!();
-    expect(deleteTask).toHaveBeenCalledWith('task:copy');
+    expect(updateTask).toHaveBeenCalledWith('task:copy', { deleted: true });
+    expect(deleteTask).not.toHaveBeenCalled();
     duplicateTask.mockRejectedValue(new Error('boom'));
     await openMenu(r, 'b');
     await fireEvent.click(r.getByText('Duplicate'));

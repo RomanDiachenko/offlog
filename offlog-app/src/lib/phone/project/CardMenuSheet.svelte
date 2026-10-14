@@ -64,7 +64,8 @@
     let copyId = '';
     run(async () => { copyId = (await duplicateTask(task._id))._id!; }, 'Could not duplicate this task. Please try again.',
       'Duplicated', async () => {
-        try { await deleteTask(copyId); await reloadTasks(); }
+        // updateTask, not deleteTask: that one offers its own Undo, a second toast.
+        try { await updateTask(copyId, { deleted: true }); await reloadTasks(); }
         catch { showError('Could not undo. Please try again.'); }
       });
   }
