@@ -262,11 +262,14 @@ export function analyzeImport(docs: ImportedDoc[]): { toCreate: number; toSkip: 
 export async function exportProjectDocs(projectId: string): Promise<Array<ProjectDoc | TaskDoc | ImportedDoc>> {
   const project = await db.get<ProjectDoc>(projectId);
   const fields = await db.get(CUSTOM_FIELDS_ID).then(d => [d as ImportedDoc], () => []);
+  const prefix = `meta:filter:${projectId}:`;
+  const filters = (await db.allDocs({ startkey: prefix, endkey: prefix + '￰', include_docs: true }))
+    .rows.flatMap(r => r.doc && !(r.doc as ImportedDoc).deleted ? [r.doc as ImportedDoc] : []);
   const ids = (await getAllTasksRaw()).filter(t => t.project_id === projectId && !t.deleted).map(t => t._id!);
-  if (!ids.length) return [project, ...fields];
+  if (!ids.length) return [project, ...fields, ...filters];
   const r = await db.allDocs<TaskDoc>({ keys: ids, include_docs: true, attachments: true, binary: false });
   const tasks = r.rows.flatMap(row => 'doc' in row && row.doc && !row.doc.deleted ? [row.doc] : []);
-  return [project, ...fields, ...tasks];
+  return [project, ...fields, ...filters, ...tasks];
 }
 
 // Field ids from every revision of the definitions doc, not only the winner:

@@ -3,7 +3,7 @@
 // "done" rule (updateTask needs the project's last column; deleteProject
 // cascades into tasks), so they deliberately live in one module.
 import { getDefaultReminderTime } from '../../config';
-import type { SpaceDoc, ProjectDoc, TaskDoc, Column, CustomFieldDef, TaskAttachment, Source } from '../types';
+import type { SpaceDoc, ProjectDoc, TaskDoc, Column, CustomFieldDef, TaskAttachment, Source, SavedFilterDoc } from '../types';
 import { wordSet, wordSetSimilarity, localDateStr, advanceDate } from '../utils';
 import { ATTACHMENT_MAX_BYTES, isAttachmentExtensionAllowed, attachmentExtension, attachmentMimeType } from '../attachments';
 import { db, currentSource, DEFAULT_COLS, getAllTasksRaw, invalidateTaskCache, now, nanoid, logChange, queueTaskWrite, bulkWrite } from './core';
@@ -395,6 +395,32 @@ export async function putSyncHostRecord(deviceId: string, name: string): Promise
   await db.put({ _id: SYNC_HOST_DOC_ID, _rev: rev, type: 'meta', device_id: deviceId, name, updated_at: now(), source: currentSource() });
 }
 
+// Saved filters: one doc per project and name, so two devices saving
+// different filters never touch the same doc. Deleting keeps the doc with
+// deleted: true, so a copy another device still holds locally from before
+// filters synced is not moved back in.
+const filterPrefix = (projectId: string) => `meta:filter:${projectId}:`;
+export interface SavedFilterRecord { name: string; deleted: boolean; filter: SavedFilterDoc }
+
+export async function getSavedFilterRecords(projectId: string): Promise<SavedFilterRecord[]> {
+  const prefix = filterPrefix(projectId);
+  const r = await db.allDocs<SavedFilterDoc & { deleted?: boolean }>({ startkey: prefix, endkey: prefix + '￰', include_docs: true });
+  return r.rows.flatMap(row => {
+    const d = row.doc;
+    if (!d || typeof d.name !== 'string') return [];
+    const { _id, _rev, type, deleted, updated_at, source, project_id, ...filter } = d as typeof d & Record<string, unknown>;
+    return [{ name: d.name, deleted: !!deleted, filter: filter as SavedFilterDoc }];
+  });
+}
+
+// Same name replaces, and brings back one deleted earlier.
+export async function putSavedFilterRecord(projectId: string, filter: SavedFilterDoc, deleted = false): Promise<void> {
+  const _id = filterPrefix(projectId) + filter.name;
+  let rev: string | undefined;
+  try { rev = (await db.get(_id))._rev; } catch { /* first write */ }
+  await db.put({ ...filter, _id, _rev: rev, type: 'meta', project_id: projectId, deleted, updated_at: now(), source: currentSource() });
+}
+
 // Custom fields are global, not per-project: every task shares the same field
 // definitions, configured once from Settings → Organize. Stored as a single
 // fixed-id doc rather than a `field:` range scan — there's only ever one list
@@ -504,6 +530,10 @@ export async function deleteProject(id: string): Promise<void> {
   const projectTasks = all.filter(d => d.project_id === id);
   if (projectTasks.length) await bulkWrite(projectTasks.map(tombstone));
   invalidateTaskCache();
+  // Its saved filters go with it: nothing else can show them.
+  const prefix = filterPrefix(id);
+  const filters = await db.allDocs({ startkey: prefix, endkey: prefix + '￰' });
+  if (filters.rows.length) await bulkWrite(filters.rows.map(r => tombstone({ _id: r.id, _rev: r.value.rev })));
   await db.remove(doc);
   // Logged after the doc is already gone, so this ref won't resolve to a live
   // project if clicked through -- same as any other deleted-item log row.

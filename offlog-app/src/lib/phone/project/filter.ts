@@ -1,8 +1,8 @@
 // A project screen's filter: the same five inputs the desktop FilterBar
 // feeds into utils.filterTasks, so both apps agree on what a filter means.
 import { filterTasks, type CustomFieldFilter } from '../../utils';
-import type { TaskDoc, ProjectDoc, SavedFilterDoc } from '../../types';
-import { savedFiltersOf, putSavedFilter, removeSavedFilter } from '../../shared/savedFilters';
+import type { TaskDoc, SavedFilterDoc } from '../../types';
+import { getSavedFilters, putSavedFilter, removeSavedFilter } from '../../shared/savedFilters';
 import { computeDropPosition } from '../../db';
 
 export interface Filter { search: string; col: string; prio: number; tag: string; fields: CustomFieldFilter[] }
@@ -21,7 +21,7 @@ export function activeCount(f: Filter): number {
   return (f.col ? 1 : 0) + (f.prio ? 1 : 0) + (f.tag ? 1 : 0) + f.fields.filter(x => x.fieldId && x.value).length;
 }
 
-// Saved filters are the project's own (shared/savedFilters.ts), in the
+// Saved filters are shared with the desktop (shared/savedFilters.ts), in the
 // desktop's field names; these convert them to and from this screen's Filter.
 export interface SavedFilter { name: string; filter: Filter }
 const toFilter = (s: SavedFilterDoc): SavedFilter => ({
@@ -29,8 +29,8 @@ const toFilter = (s: SavedFilterDoc): SavedFilter => ({
   filter: { search: s.search ?? '', col: s.filterCol ?? '', prio: s.filterPrio ?? 0, tag: s.filterTag ?? '', fields: s.customFieldFilters ?? [] },
 });
 
-export function loadSaved(project: ProjectDoc): SavedFilter[] {
-  return savedFiltersOf(project).map(toFilter);
+export async function loadSaved(projectId: string): Promise<SavedFilter[]> {
+  return (await getSavedFilters(projectId)).map(toFilter);
 }
 
 // Same name replaces, as on the desktop. Throws on a failed write.

@@ -16,9 +16,6 @@ export function fmtConflictValue(field: string, v: unknown, fieldNames: Record<s
     return `${fmtDay(d, { weekday: true })} ${fmtTime(d)}`;
   }
   if (field === 'column_id' && typeof v === 'string') return statusNames[v] ?? 'a removed status';
-  if (field === 'saved_filters' && Array.isArray(v)) {
-    return v.map(f => (f as { name?: string })?.name ?? '?').join(', ') || '—';
-  }
   if (field === 'columns' && Array.isArray(v)) {
     return v.map(c => (c as { name?: string })?.name ?? '?').join(' → ') || '—';
   }
@@ -55,6 +52,6 @@ const CONFLICT_FIELD_LABELS: Record<string, string> = {
   column_id: 'Status', checklist: 'Checklist', custom_values: 'Fields',
   related: 'Related', blocked_by: 'Blocked by', pinned: 'Pinned',
   archived: 'Archived', deleted: 'In Recycle bin', position: 'Order',
-  columns: 'Statuses', saved_filters: 'Saved filters', color: 'Color', icon: 'Icon', default_view: 'Default view',
+  columns: 'Statuses', color: 'Color', icon: 'Icon', default_view: 'Default view',
 };
 export const conflictFieldLabel = (f: string) => CONFLICT_FIELD_LABELS[f] ?? f;

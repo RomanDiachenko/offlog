@@ -325,10 +325,10 @@ One PouchDB database, `offlog`. The `_id` prefix is the document type.
 | Prefix | Type | Key fields |
 |---|---|---|
 | `space:` | SpaceDoc | `name`, `color`, `icon`, `position` |
-| `project:` | ProjectDoc | `space_id`, `name`, `columns[]`, `default_view`, `archived`, `saved_filters[]` (List/Board filters by name; `shared/savedFilters.ts` moves a device's old `offlog_saved_filters_<id>` localStorage copy in once) |
+| `project:` | ProjectDoc | `space_id`, `name`, `columns[]`, `default_view`, `archived` |
 | `task:` | TaskDoc | `project_id`, `column_id`, `title`, `body`, `priority`, `due_date`, `tags`, `deleted`, `archived` |
 | `log:` | LogDoc | `ts`, `source`, `source_id`, `ref`, `action`, then `field`/`from`/`to` or `diffs` |
-| `meta:` | Custom field definitions (`meta:custom_fields`); the sync host's Offlog name (`meta:sync-host`, written by the Windows app that hosts sync, only on change, no History entry, so phones show the PC by that name) | `fields[]`; `device_id`, `name` |
+| `meta:` | Custom field definitions (`meta:custom_fields`); the sync host's Offlog name (`meta:sync-host`, written by the Windows app that hosts sync, only on change, no History entry, so phones show the PC by that name); saved List/Board filters, one doc each (`meta:filter:<projectId>:<name>`, never a field on the project so a filter save can't collide with a status edit; deleting sets `deleted: true` so a device's old `offlog_saved_filters_<id>` localStorage copy, moved in once by `shared/savedFilters.ts`, can't bring it back; `deleteProject` removes them) | `fields[]`; `device_id`, `name`; `project_id`, `name`, `deleted`, the filter's fields |
 | `tag:` | Tag colour override | `tag`, `color` |
 
 ### Rules

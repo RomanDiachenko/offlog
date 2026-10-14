@@ -23,6 +23,7 @@ import db, {
   skipRecurrence,
   getDeviceLastSeen,
   subscribe,
+  getSavedFilterRecords, putSavedFilterRecord, exportProjectDocs,
 } from '../src/lib/db';
 import { findDuplicateChecklistItems, wordSet, wordSetSimilarity, localDateStr } from '../src/lib/utils';
 import type { SpaceDoc } from '../src/lib/types';
@@ -171,6 +172,33 @@ describe('project + task CRUD', () => {
     await deleteProject(project._id);
     const remaining = await getProjects('space:unsorted');
     expect(remaining).toHaveLength(0);
+  });
+
+  it('saved filters are their own records: replace by name, delete as a mark, never the project doc', async () => {
+    await seedSpace();
+    const project = await createProject('space:unsorted', 'Filtered');
+    const rev = (await db.get(project._id))._rev;
+    const base = { search: '', filterCol: '', filterPrio: 0, filterTag: '' };
+    await putSavedFilterRecord(project._id, { ...base, name: 'Hot', search: 'a' });
+    await putSavedFilterRecord(project._id, { ...base, name: 'Hot', search: 'b' });
+    await putSavedFilterRecord(project._id, { ...base, name: 'Old' }, true);
+    const recs = await getSavedFilterRecords(project._id);
+    expect(recs.map(r => [r.name, r.deleted, r.filter.search])).toEqual([['Hot', false, 'b'], ['Old', true, '']]);
+    expect((await db.get(project._id))._rev).toBe(rev);
+    // A project export carries its live filters, not the deleted ones.
+    const exported = await exportProjectDocs(project._id);
+    expect(exported.filter(d => (d as { _id: string })._id.startsWith('meta:filter:')).map(d => (d as { name: string }).name)).toEqual(['Hot']);
+    // Another project's filters are not mixed in.
+    const other = await createProject('space:unsorted', 'Other');
+    expect(await getSavedFilterRecords(other._id)).toEqual([]);
+  });
+
+  it('deleting a project removes its saved filters too', async () => {
+    await seedSpace();
+    const project = await createProject('space:unsorted', 'Doomed');
+    await putSavedFilterRecord(project._id, { name: 'Hot', search: '', filterCol: '', filterPrio: 0, filterTag: '' });
+    await deleteProject(project._id);
+    expect(await getSavedFilterRecords(project._id)).toEqual([]);
   });
 
   it('removeColumn reassigns its tasks to the first remaining status', async () => {

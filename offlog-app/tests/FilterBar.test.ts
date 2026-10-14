@@ -1,17 +1,20 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, cleanup, waitFor } from '@testing-library/svelte';
-import type { CustomFieldDef, ProjectDoc, TaskDoc } from '../src/lib/types';
+import type { CustomFieldDef, ProjectDoc, SavedFilterDoc, TaskDoc } from '../src/lib/types';
 
 // FilterBar's state is the bound filter props plus the project's saved
-// filters; updateProject is faked over one in-memory project doc, which the
-// saved-filter tests read back.
-const db = vi.hoisted(() => ({ project: null as ProjectDoc | null, fail: false }));
+// filters, faked over an in-memory map of filter records (name → record),
+// which the saved-filter tests read back. No test ever writes the project.
+type Rec = { name: string; deleted: boolean; filter: SavedFilterDoc };
+const db = vi.hoisted(() => ({ records: new Map<string, Rec>(), fail: false, projectWrites: 0 }));
 vi.mock('../src/lib/db', () => ({
-  updateProject: vi.fn(async (_id: string, fn: (p: ProjectDoc) => Partial<ProjectDoc>) => {
+  getSavedFilterRecords: vi.fn(async () => [...db.records.values()]),
+  putSavedFilterRecord: vi.fn(async (_id: string, filter: SavedFilterDoc, deleted = false) => {
     if (db.fail) throw new Error('write failed');
-    db.project = { ...db.project!, ...fn(db.project!) };
-    return db.project;
+    db.records.set(filter.name, { name: filter.name, deleted, filter });
   }),
+  updateProject: vi.fn(async () => { db.projectWrites++; }),
+  subscribe: vi.fn(() => () => {}),
 }));
 const showError = vi.hoisted(() => vi.fn());
 vi.mock('../src/lib/store', () => ({ showError }));
@@ -49,11 +52,16 @@ function mkTask(custom: Record<string, string>, id = 'task:1'): TaskDoc {
 const SAVED_KEY = 'offlog_saved_filters_project:1';
 
 function mount(props: Record<string, unknown> = {}, project: ProjectDoc = mkProject()) {
-  db.project = project;
   return render(FilterBar, { props: { project, ...props } });
 }
-const withSaved = (saved: ProjectDoc['saved_filters']) => ({ ...mkProject(), saved_filters: saved });
-const savedNames = () => (db.project!.saved_filters ?? []).map(f => f.name);
+function withSaved(saved: SavedFilterDoc[], deleted: string[] = []): ProjectDoc {
+  for (const f of saved) db.records.set(f.name, { name: f.name, deleted: false, filter: f });
+  for (const n of deleted) db.records.set(n, { name: n, deleted: true, filter: { name: n, search: '', filterCol: '', filterPrio: 0, filterTag: '' } });
+  return mkProject();
+}
+const live = () => [...db.records.values()].filter(r => !r.deleted);
+const savedNames = () => live().map(r => r.name);
+const saved = (name: string) => db.records.get(name)?.filter;
 
 const countBadge = (c: HTMLElement) => c.querySelector('.filter-count') as HTMLElement | null;
 const filterButton = (c: HTMLElement) => c.querySelector('.action-btn') as HTMLButtonElement;
@@ -80,6 +88,8 @@ beforeEach(() => {
   localStorage.clear();
   vi.clearAllMocks();
   db.fail = false;
+  db.records.clear();
+  db.projectWrites = 0;
 });
 afterEach(cleanup);
 
@@ -238,7 +248,7 @@ describe('FilterBar custom-field filter rows', () => {
 });
 
 describe('FilterBar saved filters', () => {
-  it('saves the whole current filter set under the typed name, on the project', async () => {
+  it('saves the whole current filter set under the typed name, as its own record', async () => {
     const { container } = mount({
       search: 'draft', filterCol: 'col:done', filterTag: 'urgent', filterPrio: 3,
       allTags: ['urgent'], customFields: FIELDS,
@@ -249,11 +259,14 @@ describe('FilterBar saved filters', () => {
     await fireEvent.input(container.querySelector('.filter-name-input') as HTMLInputElement, { target: { value: '  Hot work  ' } });
     await fireEvent.click(container.querySelector('.filter-save-btn') as HTMLButtonElement);
 
-    await waitFor(() => expect(db.project!.saved_filters).toEqual([{
+    await waitFor(() => expect(live().map(r => r.filter)).toEqual([{
       name: 'Hot work', search: 'draft', filterCol: 'col:done', filterPrio: 3, filterTag: 'urgent',
       customFieldFilters: [{ fieldId: 'field:aaa', value: 'Acme' }],
     }]));
     expect(localStorage.getItem(SAVED_KEY)).toBeNull();
+    // Never the project doc: a filter save must not collide with another
+    // device's status or name edit.
+    expect(db.projectWrites).toBe(0);
   });
 
   it('saving the same name again replaces it rather than duplicating', async () => {
@@ -263,8 +276,8 @@ describe('FilterBar saved filters', () => {
     await fireEvent.input(container.querySelector('.filter-name-input') as HTMLInputElement, { target: { value: 'Hot work' } });
     await fireEvent.click(container.querySelector('.filter-save-btn') as HTMLButtonElement);
 
-    await waitFor(() => expect(db.project!.saved_filters![0].search).toBe('new'));
-    expect(db.project!.saved_filters).toHaveLength(1);
+    await waitFor(() => expect(saved('Hot work')?.search).toBe('new'));
+    expect(live()).toHaveLength(1);
   });
 
   it('a failed save says so', async () => {
@@ -303,7 +316,7 @@ describe('FilterBar saved filters', () => {
     expect(container.querySelectorAll('.field-filter-row')).toHaveLength(0);
   });
 
-  it('deleting a saved filter removes it from the project; a failure says so', async () => {
+  it('deleting a saved filter marks it deleted; a failure says so', async () => {
     const { container } = mount({}, withSaved([
       { name: 'Keep', search: 'a', filterCol: '', filterPrio: 0, filterTag: '' },
       { name: 'Drop', search: 'b', filterCol: '', filterPrio: 0, filterTag: '' },
@@ -312,20 +325,21 @@ describe('FilterBar saved filters', () => {
 
     await fireEvent.click(container.querySelector('[aria-label="Delete filter Drop"]') as HTMLButtonElement);
     await waitFor(() => expect(savedNames()).toEqual(['Keep']));
+    expect(db.records.get('Drop')?.deleted).toBe(true);
 
     db.fail = true;
     await fireEvent.click(container.querySelector('[aria-label="Delete filter Keep"]') as HTMLButtonElement);
     await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not delete the filter. Please try again.'));
   });
 
-  it('filters this device saved before they synced move into the project once', async () => {
+  it('filters this device saved before they synced move into records once', async () => {
     localStorage.setItem(SAVED_KEY, JSON.stringify([
       { name: 'Local', search: 'l', filterCol: '', filterPrio: 0, filterTag: '' },
       { name: 'Both', search: 'local copy', filterCol: '', filterPrio: 0, filterTag: '' },
     ]));
     const { container } = mount({}, withSaved([{ name: 'Both', search: 'synced', filterCol: '', filterPrio: 0, filterTag: '' }]));
     await waitFor(() => expect(savedNames()).toEqual(['Both', 'Local']));
-    expect(db.project!.saved_filters![0].search).toBe('synced');
+    expect(saved('Both')?.search).toBe('synced');
     expect(localStorage.getItem(SAVED_KEY)).toBeNull();
     await openMenu(container);
     expect(container.querySelector('[aria-label="Delete filter Local"]')).not.toBeNull();
@@ -338,14 +352,25 @@ describe('FilterBar saved filters', () => {
     await fireEvent.input(container.querySelector('.filter-name-input') as HTMLInputElement, { target: { value: '   ' } });
     await fireEvent.keyDown(container.querySelector('.filter-name-input') as HTMLInputElement, { key: 'Enter' });
 
-    expect(db.project!.saved_filters).toBeUndefined();
+    expect(db.records.size).toBe(0);
+  });
+
+  // Another device deleted it; this device's copy from before filters
+  // synced must not bring it back.
+  it('a filter deleted elsewhere stays deleted when this device moves its old copy in', async () => {
+    localStorage.setItem(SAVED_KEY, JSON.stringify([{ name: 'Gone', search: 'old', filterCol: '', filterPrio: 0, filterTag: '' }]));
+    const { container } = mount({}, withSaved([], ['Gone']));
+    await waitFor(() => expect(localStorage.getItem(SAVED_KEY)).toBeNull());
+    expect(savedNames()).toEqual([]);
+    await openMenu(container);
+    expect(container.querySelector('[aria-label="Delete filter Gone"]')).toBeNull();
   });
 
   // A corrupt leftover from before saved filters synced must not take the
   // whole popover down.
-  it('survives a corrupt saved-filters value, local or synced', async () => {
+  it('survives a corrupt saved-filters value on this device', async () => {
     localStorage.setItem(SAVED_KEY, 'not json');
-    const { container } = mount({}, { ...mkProject(), saved_filters: 'junk' as never });
+    const { container } = mount({}, mkProject());
     await openMenu(container);
     expect(container.querySelector('.filter-empty')).not.toBeNull();
   });

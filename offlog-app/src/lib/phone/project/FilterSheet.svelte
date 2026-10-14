@@ -21,8 +21,11 @@
   const dispatch = createEventDispatcher<{ apply: Filter; close: void }>();
   let sheet: Sheet;
   let draft: Filter = { ...filter, fields: filter.fields.map(f => ({ ...f })) };
-  let saved = loadSaved(project);
-  onMount(() => { moveLocalSavedFilters(project._id); });
+  let saved: Awaited<ReturnType<typeof loadSaved>> = [];
+  onMount(async () => {
+    await moveLocalSavedFilters(project._id);
+    try { saved = await loadSaved(project._id); } catch { /* shows none; nothing the user did failed */ }
+  });
   let name = '';
 
   const PRIOS: (1 | 2 | 3)[] = [3, 2, 1];

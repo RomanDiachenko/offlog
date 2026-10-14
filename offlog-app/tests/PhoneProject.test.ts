@@ -16,6 +16,8 @@ const getArchivedTasksForProject = vi.fn();
 const findProjectsByName = vi.fn();
 const unarchiveTask = vi.fn();
 const getBlockingTasks = vi.fn();
+const getSavedFilterRecords = vi.fn().mockResolvedValue([]);
+const putSavedFilterRecord = vi.fn();
 vi.mock('../src/lib/db', () => {
   const posBetween = (b: number | null, a: number | null) => (b === null && a === null ? 1024 : b === null ? a! / 2 : a === null ? b + 1024 : (a + b) / 2);
   return {
@@ -32,6 +34,8 @@ vi.mock('../src/lib/db', () => {
     findProjectsByName: (...a: unknown[]) => findProjectsByName(...a),
     getTaskIdsBlocked: vi.fn().mockResolvedValue(new Set(['task:b'])),
     getBlockingTasks: (...a: unknown[]) => getBlockingTasks(...a),
+    getSavedFilterRecords: (...a: unknown[]) => getSavedFilterRecords(...a),
+    putSavedFilterRecord: (...a: unknown[]) => putSavedFilterRecord(...a),
     isBlockerResolved: (b: { column_id: string; project_id: string }, last: Record<string, string>) => b.column_id === last[b.project_id],
     getTaskIdsWithRelatedLinks: vi.fn().mockResolvedValue(new Set()),
     getTagColorOverrides: vi.fn().mockResolvedValue({}),
@@ -535,7 +539,7 @@ describe('phone Project screen — filter', () => {
   });
 
   it('a filter that could not be saved says so', async () => {
-    updateProject.mockRejectedValue(new Error('boom'));
+    putSavedFilterRecord.mockRejectedValueOnce(new Error('boom'));
     const r = setup();
     await fireEvent.click(r.getByLabelText('Filter'));
     await waitFor(() => r.getByRole('dialog', { name: 'Filter' }));
@@ -545,9 +549,10 @@ describe('phone Project screen — filter', () => {
     await waitFor(() => expect(showError).toHaveBeenCalledWith('Could not save the filter. Please try again.'));
   });
 
-  it('saves a filter on the project, in the desktop shape, and applies it later', async () => {
-    let doc: ProjectDoc = { ...project };
-    updateProject.mockImplementation(async (_id: string, fn: (p: ProjectDoc) => Partial<ProjectDoc>) => (doc = { ...doc, ...fn(doc) }));
+  it('saves a filter as its own record, in the desktop shape, and applies it later', async () => {
+    const recs = new Map<string, { name: string; deleted: boolean; filter: unknown }>();
+    getSavedFilterRecords.mockImplementation(async () => [...recs.values()]);
+    putSavedFilterRecord.mockImplementation(async (_id: string, f: { name: string }, deleted = false) => { recs.set(f.name, { name: f.name, deleted, filter: f }); });
     const r = setup();
     await fireEvent.click(r.getByLabelText('Filter'));
     await waitFor(() => r.getByRole('dialog', { name: 'Filter' }));
@@ -556,9 +561,10 @@ describe('phone Project screen — filter', () => {
     await fireEvent.click(chip(r, '#tiles'));
     await fireEvent.input(r.getByLabelText('Filter name'), { target: { value: 'Tiles' } });
     await fireEvent.click(r.getByText('Save'));
-    await waitFor(() => expect(doc.saved_filters).toEqual([
+    await waitFor(() => expect([...recs.values()].map(x => x.filter)).toEqual([
       { name: 'Tiles', search: '', filterCol: '', filterPrio: 0, filterTag: 'tiles', customFieldFilters: [] },
     ]));
+    expect(updateProject).not.toHaveBeenCalled();
     await fireEvent.click(await r.findByText('Tiles'));
     await waitFor(() => expect(titles(r.container)).toEqual(['b']));
   });

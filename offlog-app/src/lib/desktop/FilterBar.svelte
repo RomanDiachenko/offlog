@@ -2,7 +2,8 @@
   // Shared by List and Board. Saved filters belong to the project, not the
   // view, so a filter saved from List also appears in the Board's popover.
   import type { ProjectDoc, TaskDoc, CustomFieldDef, SavedFilterDoc } from '../types';
-  import { savedFiltersOf, moveLocalSavedFilters, putSavedFilter, removeSavedFilter } from '../shared/savedFilters';
+  import { getSavedFilters, moveLocalSavedFilters, putSavedFilter, removeSavedFilter } from '../shared/savedFilters';
+  import { subscribe } from '../db';
   import { showError } from '../store';
   import type { CustomFieldFilter } from '../utils';
   import { PRIORITY_COLOR as PRIO_COLOR } from '../constants';
@@ -11,6 +12,7 @@
   // to (string | number)[][], which silently degrades the filterPrio
   // assignment and the PRIO_COLOR index below to `any`.
   const PRIO_CHIPS: [number, string][] = [[0, 'All'], [1, 'Low'], [2, 'Medium'], [3, 'High']];
+  import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import { popIn, popOut } from '../motion';
   import CustomSelect from './CustomSelect.svelte';
@@ -74,8 +76,16 @@
 
   // customFieldFilters is optional: older saved filters may not have it.
   // Absent means "no custom-field filters".
-  $: savedFilters = savedFiltersOf(project);
-  $: moveLocalSavedFilters(project._id);
+  // Loaded per project, and again whenever a change arrives (another
+  // device's filter, a restore). A slow load for a project already left is dropped.
+  let savedFilters: SavedFilterDoc[] = [];
+  async function loadSaved(id: string) {
+    try { const list = await getSavedFilters(id); if (id === project._id) savedFilters = list; }
+    catch { /* the list stays as it was; the next change reloads it */ }
+  }
+  $: projectId = project._id;
+  $: void moveLocalSavedFilters(projectId).then(() => loadSaved(projectId));
+  onMount(() => subscribe(() => loadSaved(project._id)));
 
   async function saveCurrentFilter() {
     const name = newFilterName.trim();
