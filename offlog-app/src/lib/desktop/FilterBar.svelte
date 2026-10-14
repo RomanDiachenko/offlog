@@ -215,25 +215,25 @@
     border-radius: var(--r-s); font-size: var(--fs-2xs); font-weight: 700; line-height: 1;
   }
 
-  .menu-label {
-    font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
-    letter-spacing: .08em; color: var(--faint); padding: 6px 2px 2px;
-  }
-  .menu-divider { height: 1px; background: var(--border); margin: 8px -6px 0; }
+  .menu-label { font-size: var(--fs-s); font-weight: 500; color: var(--faint); padding: 6px 2px 2px; }
+  .menu-divider { height: 1px; background: var(--line); margin: 8px -6px 0; }
   .col-menu {
     position: fixed; z-index: 210;
-    border-radius: var(--radius-sm); padding: 6px; min-width: 150px;
+    border-radius: var(--r-l); padding: 6px; min-width: 150px;
     display: flex; flex-direction: column; gap: 2px;
     max-height: min(70vh, 420px); overflow-y: auto;
   }
 
   /* Soft pills on one track, the picked one lifted with the glow: the same
      priority switch as the task editor's. */
-  .prio-chips { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--rail-bg); }
+  /* The task window's pills: no track, round outlined fields. */
+  .filter-menu :global(.custom-select .cs-trigger) { background: none; border-color: var(--glass-edge); border-radius: 999px; height: 32px; padding: 0 12px; font-size: var(--fs-s); }
+  .filter-menu :global(.custom-select .cs-trigger:hover) { border-color: var(--glass-edge-hover); }
+  .prio-chips { display: inline-flex; gap: 4px; }
   .prio-chip {
     display: flex; align-items: center; gap: 5px;
     border: 0; border-radius: 999px; background: none; color: var(--muted);
-    font-size: var(--fs-s); font-weight: 600; padding: 4px 10px;
+    font-size: var(--fs-s); font-weight: 600; height: 28px; padding: 0 10px;
     cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
   .prio-chip:hover { background: var(--rail-hover); color: var(--text); }
@@ -272,12 +272,12 @@
   .filter-menu { width: 280px; min-width: 0; }
   .filter-save-row { display: flex; gap: 6px; padding: 2px; }
   .filter-name-input {
-    flex: 1; min-width: 0; font-size: var(--fs-s); padding: .4rem .5rem;
-    border: 1px solid transparent; border-radius: var(--r-s); background: var(--field-bg); color: var(--text);
+    flex: 1; min-width: 0; font-size: var(--fs-s); height: 32px; padding: 0 12px;
+    border: 1px solid var(--glass-edge); border-radius: 999px; background: none; color: var(--text);
   }
   .filter-save-btn {
-    background: var(--text); color: var(--bg); border: none; border-radius: var(--r-s);
-    padding: .4rem .6rem; font-size: var(--fs-s); font-weight: 600; cursor: pointer;
+    background: var(--text); color: var(--bg); border: none; border-radius: 999px;
+    height: 32px; padding: 0 14px; font-size: var(--fs-s); font-weight: 600; cursor: pointer;
   }
   .filter-save-btn:disabled { opacity: .5; cursor: default; }
   .filter-list { display: flex; flex-direction: column; gap: 1px; margin-top: 6px; }

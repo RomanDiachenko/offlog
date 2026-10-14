@@ -247,7 +247,7 @@
 
 <div class="focus">
   <div class="fluid-stage over-scroll">
-  <div class="fc-header fluid-panel glass">
+  <div class="fc-header fluid-panel glass flat">
     <button class="hamburger" on:click={() => dispatch('menu')} aria-label="Menu">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">{@html ICON.menu}</svg>
     </button>

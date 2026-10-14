@@ -581,7 +581,7 @@
 <div class="board" bind:this={boardEl} on:touchmove|nonpassive={onTouchMove} on:touchend={onTouchEnd} on:touchcancel={onTouchCancel}>
   {#each project.columns as col (col.id)}
     <div
-      class="column glass"
+      class="column glass flat"
       class:col-drag-over={dragOverCol === col.id}
       on:dragover={(e) => onColDragOver(e, col.id)}
       on:drop={(e) => onColDrop(e, col.id)}
@@ -939,7 +939,7 @@
   .card-menu-trigger:hover { background: var(--hover); color: var(--text); }
   .card-menu {
     position: absolute; top: calc(100% + 2px); right: 0;
-    width: 168px; border-radius: var(--radius-sm);
+    width: 168px; border-radius: var(--r-l);
     padding: .3rem; display: flex; flex-direction: column; z-index: 10;
   }
   .card-menu-item {
@@ -950,10 +950,9 @@
   }
   .card-menu-item:hover { background: var(--hover); }
   .card-menu-item svg { flex-shrink: 0; color: var(--muted); }
-  .card-menu-divider { height: 1px; background: var(--border); margin: .25rem .15rem; }
+  .card-menu-divider { height: 1px; background: var(--line); margin: .25rem .15rem; }
   .card-menu-label {
-    font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 600;
-    text-transform: uppercase; letter-spacing: .06em;
+    font-size: var(--fs-s); font-weight: 500;
     color: var(--faint); padding: .3rem .55rem .15rem;
   }
   .card-menu-item-danger { color: var(--danger); }

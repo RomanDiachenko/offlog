@@ -309,6 +309,13 @@ body {
   --glass-shadow: 0 1px 2px rgba(0,0,0,.035), 0 2px 6px rgba(0,0,0,.025);
   --glass-hi:    color-mix(in srgb, var(--surface) 70%, transparent);
   --glass-blur:  blur(10px) saturate(115%);
+  /* Menus and drop-downs (.glass.pop): frosted, so what is under them shows
+     through blurred; a brighter edge and highlight keep the outline crisp. */
+  --pop-fill:   color-mix(in srgb, var(--surface) 42%, transparent);
+  --pop-blur:   blur(12px) saturate(150%);
+  --pop-edge:   color-mix(in srgb, var(--text) 14%, transparent);
+  --pop-hi:     color-mix(in srgb, var(--surface) 70%, transparent);
+  --pop-shadow: 0 2px 6px rgba(0,0,0,.06), 0 10px 28px rgba(0,0,0,.08);
   --glow:        color-mix(in srgb, var(--accent) 14%, transparent);
   /* The light glass sits in: one even wash over the whole window, almost no
      colour, so every glass panel (sidebar, headers) shows the same ground.
@@ -346,6 +353,7 @@ body.dark {
   --glass-edge-hover: color-mix(in srgb, var(--text) 20%, transparent);
   --glass-shadow: 0 1px 2px rgba(0,0,0,.16), 0 2px 6px rgba(0,0,0,.10);
   --glass-hi:   color-mix(in srgb, var(--text) 7%, transparent);
+  --pop-hi:     color-mix(in srgb, var(--text) 18%, transparent);
   --glow:       color-mix(in srgb, var(--accent) 18%, transparent);
   --ambient: linear-gradient(160deg, color-mix(in srgb, var(--accent) 9%, transparent) 0%, transparent 45%, color-mix(in srgb, var(--accent) 7%, transparent) 100%);
   --elev-1: 0 0 0 1px color-mix(in srgb, var(--text) 7%, transparent), 0 1px 2px rgba(0,0,0,.3);
@@ -379,10 +387,19 @@ body.dark {
     body:not(.reduce-transparency):not(.high-contrast) .glass .glass.glass-inner { background: color-mix(in srgb, var(--surface) 55%, transparent); }
     /* .solid: glass that is opaque anyway (phone sheets over the scrim), so no blur to pay for. */
     body:not(.reduce-transparency):not(.high-contrast) .glass.solid { backdrop-filter: none; }
-    /* A view's header panel holds fixed popovers (Filters). A blur would make
-       it their containing block, shifting them off their button and under
-       the Board; nothing scrolls behind the header, so it blurs nothing. */
-    body:not(.reduce-transparency):not(.high-contrast) .glass.fluid-panel { backdrop-filter: none; }
+    /* .flat: glass straight on the page that nothing ever moves behind (desktop
+       view headers, Board columns), so a blur would
+       show nothing. It must not blur: a blurred element is the containing
+       block of its fixed popovers (Filters landed off its button) and walls
+       off what a menu inside it can blur. */
+    body:not(.reduce-transparency):not(.high-contrast) .glass.flat { backdrop-filter: none; }
+    /* .pop: menus and drop-downs, frosted even inside other glass; a pop
+       inside a pop (a drop-down in a menu) goes solid. */
+    body:not(.reduce-transparency):not(.high-contrast) .glass.pop {
+      background: var(--pop-fill); backdrop-filter: var(--pop-blur);
+      border-color: var(--pop-edge); box-shadow: inset 0 1px 0 var(--pop-hi), var(--pop-shadow);
+    }
+    body:not(.reduce-transparency):not(.high-contrast) .glass.pop .glass.pop { background: var(--glass-solid); backdrop-filter: none; }
   }
 }
 /* More contrast, from the OS or Settings: solid, with a strong edge. The

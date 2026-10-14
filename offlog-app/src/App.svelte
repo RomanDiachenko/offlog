@@ -644,7 +644,7 @@
       {:else if Desktop && $activeProject}
       <div class="view-fade" in:fade={viewIn} out:fade={viewOut}>
         <div class="fluid-stage">
-        <header class="board-header fluid fluid-panel glass">
+        <header class="board-header fluid fluid-panel glass flat">
           <button class="hamburger" on:click={() => sidebarOpen = true} aria-label="Menu">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">{@html ICON.menu}</svg>
           </button>
