@@ -183,7 +183,9 @@ export function encryptedFetch(dbUrl: string, keys: SyncKeys, onRejected: (count
         return notFound('Attachment could not be read.');
       }
       const type = plain.type || 'application/octet-stream';
-      const opened = rebuild(res, new Blob([plain.bytes as BlobPart], { type }), type);
+      // The bytes, not a Blob: the type travels in Content-Type either way,
+      // and Node 22's Response can't read a Blob from another realm (jsdom).
+      const opened = rebuild(res, plain.bytes as BodyInit, type);
       // PouchDB's Node build reads attachments through response.buffer()
       // (node-fetch); browsers and WebViews read the Blob.
       const NodeBuffer = (globalThis as { Buffer?: { from(b: Uint8Array): unknown } }).Buffer;

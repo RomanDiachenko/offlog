@@ -104,6 +104,8 @@ function ensureListening() {
 function restoreFocus(opener: Element | null) {
   if (!(opener instanceof HTMLElement) || opener.matches('input, textarea, [contenteditable="true"]')) return;
   setTimeout(() => {
+    // The page can be gone by then (a test environment torn down).
+    if (typeof document === 'undefined') return;
     const now = document.activeElement;
     if (opener.isConnected && (!now || now === document.body)) opener.focus({ preventScroll: true });
   }, 0);
