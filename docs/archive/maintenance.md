@@ -9,6 +9,45 @@ pass 22 and maintenance.md's scoping note.
 
 ---
 
+## 31st run — 2026-10-14 (on `main`, before 7.0.0)
+
+Aimed at the 112 commits since v6.12.2 (the audit fixes and the one-style
+design pass), in three audits: the routine sweep, adversarial data
+integrity, and long-uptime stability. Gates green by exit code before and
+after (check, zero-warning build, vitest 1458 → 1468, cargo build).
+Fixed: saved filters lived on the project doc, so saving one could conflict
+with another device's status edit and drop it; they are now one
+`meta:filter:<project>:<name>` doc each, a deletion kept as `deleted: true`
+so a device's old local copy can't revive it (this also covered the Draft
+"untouched" check and the deleted-filter-comes-back finding; caught before
+release, so nothing needed migrating). Agenda's "This week" froze at the
+week it was opened (end of week from the clock, not `today`). Phone: Undo
+of Duplicate raised a second Deleted toast; a bulk change failing partway
+gave no Undo for the part done. A project move whose task rewrite collided
+left tasks under the old space with nothing to repair them (new
+`wrong_space` integrity check and repair). The old readable server was
+deleted even after a pull with write failures, and each failed try leaked a
+PouchDB instance. Set-aside damaged sync folders were kept forever (newest
+two now). An Undo toast under the pointer never timed out once the window
+hid; pointer and focus holds are now separate. The sync host record could
+hold two PCs' versions (the host's write now removes the other). The
+restore preview claimed newer changes survive; it now says restored items
+go back to the backup's version. Plus one unused icon.
+Checked clean: no new hard delete, no new `_id` prefix beyond the
+documented `meta:`, positional done intact, every new mutating call site
+has try/catch + showError, no raw UTC dates, no `{@html}` beyond
+constants, npm audit 0, no `.env.local` value in `dist/`, CSP and Android
+permissions unchanged. Accepted widenings: Tauri `fs:allow-read-text-file`
+for auto-backups (plus their `-dev` twins) and the windows crate's
+`Win32_UI_Shell`/`Win32_UI_WindowsAndMessaging` for `open_web_link`.
+Size: dist 2.0 MB, unchanged since the 30th run (the growth over the
+v6.5.0 baseline is the phone shell and the notes editor, both before
+v6.12.2). APK and installer need release builds this pass cannot run.
+Left: `phone/format.ts`'s `shortDate` duplicates `fmtDay` (pre-existing, 16
+call sites).
+
+---
+
 ## 30th run — 2026-10-11 (on `main`, after the redesign's second round)
 
 Aimed at the 35 commits since the 29th run, in three independent audits:
