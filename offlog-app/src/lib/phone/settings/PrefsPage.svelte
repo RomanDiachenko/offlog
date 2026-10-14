@@ -751,7 +751,7 @@
   .rpage .rkey :global(svg.i) { width: 26px; height: 26px; }
   .rpage h1 { margin: 0 0 10px; font-size: 26px; font-weight: 700; line-height: 1.2; }
   .rpage .p-say { margin: 0; }
-  .rcode { margin: 28px 0 14px; padding: 26px 10px; border: 2px dashed var(--border-strong); border-radius: 16px; background: var(--surface);
+  .rcode { margin: 28px 0 14px; padding: 26px 10px; border: 2px solid var(--border-strong); border-radius: 16px; background: var(--surface);
     text-align: center; font-size: 30px; font-weight: 700; letter-spacing: .12em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; user-select: all; }
   .racts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .racts.one { grid-template-columns: 1fr; }

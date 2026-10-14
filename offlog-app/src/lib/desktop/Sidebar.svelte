@@ -709,13 +709,13 @@
          tooltip is the only place syncTooltip and the deleted count
          show, so they must stay folded into the title text below. -->
     <div class="bottom-row" class:bottom-row-collapsed={effectiveCollapsed}>
-      <button class="icon-btn" on:click={() => { openTimeTravel(); dispatch('navigate'); }} title="History" aria-label="History">
+      <button class="icon-btn glass-chip" on:click={() => { openTimeTravel(); dispatch('navigate'); }} title="History" aria-label="History">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.history}</svg>
       </button>
-      <button class="icon-btn" on:click={() => { openTrash(); dispatch('navigate'); }} title="Recycle bin{breakdown && breakdown.deletedTasks > 0 ? ` (${breakdown.deletedTasks})` : ''}" aria-label="Recycle bin{breakdown && breakdown.deletedTasks > 0 ? `, ${breakdown.deletedTasks} item${breakdown.deletedTasks === 1 ? '' : 's'}` : ''}">
+      <button class="icon-btn glass-chip" on:click={() => { openTrash(); dispatch('navigate'); }} title="Recycle bin{breakdown && breakdown.deletedTasks > 0 ? ` (${breakdown.deletedTasks})` : ''}" aria-label="Recycle bin{breakdown && breakdown.deletedTasks > 0 ? `, ${breakdown.deletedTasks} item${breakdown.deletedTasks === 1 ? '' : 's'}` : ''}">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.trash}</svg>
       </button>
-      <button class="icon-btn" on:click={() => { openSettings(); dispatch('navigate'); }} title="Settings" aria-label="Settings">
+      <button class="icon-btn glass-chip" on:click={() => { openSettings(); dispatch('navigate'); }} title="Settings" aria-label="Settings">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.gear}</svg>
       </button>
       {#if !syncNotConfigured}
@@ -727,7 +727,7 @@
              Clicking opens Settings' Sync category rather than syncing
              directly; "Sync now" lives inside that panel. -->
         <button
-          class="icon-btn icon-btn-sync"
+          class="icon-btn glass-chip icon-btn-sync"
           class:sync-synced={syncGlowState === 'synced'}
           class:sync-syncing={syncGlowState === 'syncing'}
           class:sync-error={syncGlowState === 'error'}
@@ -1167,13 +1167,13 @@
     width: 33px; height: 33px; padding: 0; flex-shrink: 0;
     min-width: 0; position: relative;
     display: flex; align-items: center; justify-content: center;
-    background: none; border: 1px solid transparent;
+    /* Fill, edge and highlight from .glass-chip (app.css). */
     border-radius: var(--r-m); cursor: pointer;
     color: var(--muted);
     transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
   .icon-btn svg { flex-shrink: 0; opacity: .85; }
-  .icon-btn:hover { background: var(--rail-hover); color: var(--text); }
+  .icon-btn:hover { color: var(--text); border-color: var(--glass-edge-hover); }
 
   /* No glow or border tint, and the icon color itself is blended toward
      var(--muted) (the button's default): full-strength semantic colors

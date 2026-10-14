@@ -564,7 +564,7 @@
   .month-add-card-btn {
     display: flex; align-items: center; gap: 6px;
     width: 100%; margin-top: 6px; padding: 9px 10px;
-    border: 1px dashed var(--border-strong); border-radius: var(--r-m);
+    border: 1px solid var(--border-strong); border-radius: var(--r-m);
     background: none; color: var(--muted); font-size: var(--fs-m); font-weight: 500;
     cursor: pointer; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }

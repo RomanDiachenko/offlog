@@ -374,6 +374,9 @@ body.dark {
     /* Glass inside glass (a dropdown in a menu): the inner blur would only
        see its parent, so it goes solid. */
     body:not(.reduce-transparency):not(.high-contrast) .glass .glass { background: var(--glass-solid); backdrop-filter: none; }
+    /* .glass-inner: glass on glass that should still look like glass (Board
+       cards in a glass column): a lighter see-through fill, no blur of its own. */
+    body:not(.reduce-transparency):not(.high-contrast) .glass .glass.glass-inner { background: color-mix(in srgb, var(--surface) 55%, transparent); }
     /* .solid: glass that is opaque anyway (phone sheets over the scrim), so no blur to pay for. */
     body:not(.reduce-transparency):not(.high-contrast) .glass.solid { backdrop-filter: none; }
   }
@@ -384,6 +387,16 @@ body.high-contrast .glass { background: var(--surface); border: 2px solid var(--
 @media (prefers-contrast: more) {
   body:not(.reduce-transparency):not(.high-contrast) .glass, body .glass { background: var(--surface); backdrop-filter: none; border: 2px solid var(--border-strong); }
 }
+
+/* A small button on glass (the sidebar footer): glass can't blur through
+   glass, so it is a faint fill with the glass edge and highlight. */
+.glass-chip {
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+}
+.glass-chip:hover { border-color: var(--glass-edge-hover); }
+body.high-contrast .glass-chip { border: 2px solid var(--border-strong); }
 
 /* A desktop view's top: a floating .glass panel (.fluid-panel). Its 14px top
    is the sidebar's margin too (Sidebar.svelte), so the two tops line up. */

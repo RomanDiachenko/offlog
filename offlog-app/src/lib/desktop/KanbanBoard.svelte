@@ -581,7 +581,7 @@
 <div class="board" bind:this={boardEl} on:touchmove|nonpassive={onTouchMove} on:touchend={onTouchEnd} on:touchcancel={onTouchCancel}>
   {#each project.columns as col (col.id)}
     <div
-      class="column"
+      class="column glass"
       class:col-drag-over={dragOverCol === col.id}
       on:dragover={(e) => onColDragOver(e, col.id)}
       on:drop={(e) => onColDrop(e, col.id)}
@@ -635,7 +635,7 @@
       >
         {#each tasksByCol[col.id] ?? [] as task, idx (task._id)}
           <div
-            class="card"
+            class="card glass glass-inner"
             data-task-idx={idx}
             class:dragging={isDragging(task)}
             class:insert-before={dragOverColId === col.id && dragOverIndex === idx}
@@ -821,19 +821,8 @@
     min-height: 0;
     flex: 1;
     -webkit-overflow-scrolling: touch;
-    /* Scroll-shadow affordance (CSS-only, no JS): "local" layers scroll with
-       content and cover the shadow once you've scrolled past it; "scroll"
-       layers stay fixed to the viewport and only show at an edge that still
-       has more content to reveal. */
-    background:
-      linear-gradient(to right, var(--bg) 30%, transparent) 0 0,
-      linear-gradient(to left, var(--bg) 30%, transparent) 100% 0,
-      linear-gradient(to right, rgba(0,0,0,.1), transparent) 0 0,
-      linear-gradient(to left, rgba(0,0,0,.1), transparent) 100% 0;
-    background-repeat: no-repeat;
-    background-color: var(--bg);
-    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
-    background-attachment: local, local, scroll, scroll;
+    /* No background of its own: the window's one light (--ambient) shows
+       through, as it does behind every view. */
   }
   @media (max-width: 768px) {
     .board { padding: 1rem; gap: .75rem; }
@@ -845,16 +834,16 @@
     .col-rename, .col-archive, .col-remove { opacity: .55; }
     .card-menu-trigger { opacity: .55; }
   }
+  /* A .glass panel like the sidebar; its cards are .glass-inner, a lighter
+     glass that needs no blur of its own (app.css). */
   .column {
-    background: var(--col-bg);
     border-radius: var(--radius);
     width: 286px;
     min-width: 240px;
     flex: 1;
     display: flex;
     flex-direction: column;
-    border: 1.5px solid transparent;
-    transition: border-color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
+    transition: border-color var(--dur-hover) var(--ease-hover);
   }
   .column.col-drag-over { border-color: var(--accent); }
 
@@ -919,22 +908,22 @@
 
   /* Priority reads as a plain thin color on the card's left edge — no
      glow, no pill, no dot. */
+  /* .glass (app.css) gives the fill, edge, highlight and hint of shadow.
+     Hover brightens the edge and lifts; the shadow never grows. */
   .card {
-    background: var(--surface);
     border-radius: var(--radius);
     padding: 14px 14px 13px;
     cursor: pointer;
-    box-shadow: var(--elev-1);
-    transition: box-shadow var(--dur) var(--ease),
+    transition: border-color var(--dur) var(--ease),
                 transform var(--dur) var(--ease),
                 opacity var(--dur) var(--ease);
   }
   .card:hover {
-    box-shadow: var(--elev-2);
+    border-color: var(--glass-edge-hover);
     transform: translateY(-2px);
   }
   .card.dragging { opacity: .35; transition: none; transform: none; }
-  .card.insert-before { box-shadow: inset 0 2px 0 var(--accent), var(--elev-1); }
+  .card.insert-before { box-shadow: inset 0 2px 0 var(--accent), inset 0 1px 0 var(--glass-hi), var(--glass-shadow); }
 
   .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; }
   .card-title { font-size: var(--fs-l); font-weight: 600; line-height: 1.4; color: var(--text); flex: 1; min-width: 0; overflow-wrap: anywhere; }
@@ -999,7 +988,7 @@
   .card-tag-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
   .add-card-btn {
-    border: 1.5px dashed var(--border-strong); background: none; cursor: pointer;
+    border: 1.5px solid var(--border-strong); background: none; cursor: pointer;
     color: var(--faint); font-size: var(--fs-m); font-weight: 500;
     text-align: center; padding: .5rem;
     border-radius: var(--radius-sm); width: 100%;
@@ -1024,7 +1013,7 @@
   .add-col-area { flex-shrink: 0; flex-grow: 0; display: flex; flex-direction: column; }
   .add-col-form { width: 220px; }
   .add-col-btn {
-    background: none; border: 1.5px dashed var(--border-strong);
+    background: none; border: 1.5px solid var(--border-strong);
     border-radius: var(--radius); color: var(--faint); cursor: pointer;
     padding: .7rem 1.2rem; font-size: var(--fs-m); font-weight: 600; white-space: nowrap;
     transition: border-color var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);

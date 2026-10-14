@@ -485,7 +485,7 @@
   .remove-btn:hover { background: var(--hover); color: var(--text); }
   .add-more-btn {
     width: 100%; padding: 12px 16px; border-radius: var(--r-s); cursor: pointer;
-    background: none; border: 1.5px dashed var(--border-strong); color: var(--muted);
+    background: none; border: 1.5px solid var(--border-strong); color: var(--muted);
     font-size: var(--fs-m); font-weight: 600; text-align: left;
     transition: border-color var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
