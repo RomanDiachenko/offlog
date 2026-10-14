@@ -9,7 +9,7 @@
   import { updateTask, unarchiveTask, getArchivedTasksForProject, getCustomFieldDefs, getTaskById, getTagColorOverrides, subscribe } from '../db';
   import { resolveTagColor, soften } from '../tagColors';
   import { reloadTasks, showError, projects } from '../store';
-  import { PRIORITY_COLOR as PRIO_COLOR, PRIORITY_LABEL as PRIO_LABEL } from '../constants';
+  import { PRIORITY_LABEL as PRIO_LABEL } from '../constants';
   import { dueLabel, dueInk, filterTasks, fmtDay, dayOf, type CustomFieldFilter } from '../utils';
   import { today } from '../today';
   import CardDetail from './CardDetail.svelte';
@@ -137,6 +137,9 @@
       sortSpec = existing && sortSpec.length === 1 ? [{ col, asc: !existing.asc }] : [{ col, asc: true }];
     }
   }
+
+  // Only Overdue keeps its colour here; Today/Tomorrow read as plain dates.
+  const listDueInk = (ink: string) => ink === 'var(--due-soon-ink)' ? 'var(--muted)' : ink;
 
   function sortIconFor(col: SortCol, spec: typeof sortSpec): string {
     const idx = spec.findIndex(s => s.col === col);
@@ -598,7 +601,7 @@
           </button>
         {/if}
         <span class="head-spacer"></span>
-        <button class="th-btn" title="Click to sort. Shift+click to add as a secondary sort." on:click={(e) => toggleSort('title', e.shiftKey)}>Title <span class="sort-icon">{sortIcons.title}</span></button>
+        <button class="th-btn" title="Click to sort. Shift+click to add as a secondary sort." on:click={(e) => toggleSort('title', e.shiftKey)}>Title <span class="sort-icon" class:idle={sortIcons.title === '↕'}>{sortIcons.title}</span></button>
         {#each visibleOrder as key (key)}
           {@const sortKey = key === 'tags' ? null : (key === 'status' ? 'column' : key) as SortCol | null}
           <button
@@ -616,7 +619,7 @@
             title={sortKey ? 'Drag to reorder. Click to sort. Shift+click to add as a secondary sort.' : 'Drag to reorder. Not sortable.'}
           >
             {colLabel(key)}
-            {#if sortKey}<span class="sort-icon">{sortIcons[sortKey]}</span>{/if}
+            {#if sortKey}<span class="sort-icon" class:idle={sortIcons[sortKey] === '↕'}>{sortIcons[sortKey]}</span>{/if}
           </button>
         {/each}
       </div>
@@ -669,9 +672,9 @@
             {#if key === 'status'}
               <span class="cell-status">{colName(task.column_id)}</span>
             {:else if key === 'priority'}
-              <span class="cell-prio" class:quiet={task.priority < 2} style:color={task.priority >= 2 ? PRIO_COLOR[task.priority] : null}>{PRIO_LABEL[task.priority]}</span>
+              <span class="cell-prio" class:quiet={task.priority < 2} class:high={task.priority === 3}>{PRIO_LABEL[task.priority]}</span>
             {:else if key === 'due'}
-              <span class="cell-due" style="color:{dueInk(task.due_date, task.column_id === lastColId(), $today)}">{dueLabel(task.due_date, '—', task.column_id === lastColId(), $today)}</span>
+              <span class="cell-due" style="color:{listDueInk(dueInk(task.due_date, task.column_id === lastColId(), $today))}">{dueLabel(task.due_date, '—', task.column_id === lastColId(), $today)}</span>
             {:else if key === 'tags'}
               <span class="cell-tags">
                 {#each task.tags as tag}<span class="tag"><i style:background={tagColor(tag)}></i>{tag}</span>{/each}
@@ -697,8 +700,6 @@
     </div>
   </div>
   </div>
-
-  <div class="sort-hint">Shift+click a column header to sort by more than one column</div>
 
   {#if showArchived && archivedTasksRaw.length > 0}
     <div class="archived-section">
@@ -756,7 +757,7 @@
   /* ── List panel — toolbar + grid share one outer border/radius so they
      read as a single structured surface instead of two floating cards ── */
   .list-panel {
-    background: var(--surface); border: 1px solid transparent; box-shadow: var(--elev-1);
+    background: var(--glass-solid); border: 1px solid var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow);
     border-radius: var(--r-l); overflow: hidden; margin-bottom: 20px;
     /* Never taller than the view: the grid scrolls inside it, so the column
        header can stay pinned (sticky needs its own scroller to stick to). */
@@ -772,23 +773,14 @@
   .toolbar {
     position: relative;
     display: flex; flex-wrap: nowrap; align-items: center; gap: 8px;
-    border-bottom: 1px solid var(--border); padding: 10px 14px;
+    border-bottom: 1px solid var(--line); padding: 10px 14px;
   }
   .toolbar-actions { display: flex; align-items: center; gap: 2px; margin-left: auto; flex-shrink: 0; }
 
-  /* Genuine footnote -- outside the table panel entirely, muted, small,
-     out of the way of the actual data. */
-  .sort-hint {
-    font-size: var(--fs-2xs); color: var(--faint);
-    padding: 0 4px; margin: 10px 0 4px;
-  }
-  /* Touch screens have no Shift key, so the hint describes nothing they can do. */
-  @media (hover: none) { .sort-hint { display: none; } }
-
   .search-box {
     display: flex; align-items: center; gap: 7px;
-    background: var(--field-bg); border: 1px solid transparent;
-    border-radius: 8px; padding: 6px 10px;
+    background: none; border: 1px solid var(--glass-edge);
+    border-radius: 999px; height: 32px; box-sizing: border-box; padding: 0 12px;
     flex: 1 1 auto; min-width: 110px; max-width: 280px;
   }
   /* The input drops its own outline, so the box carries the focus ring. */
@@ -808,14 +800,14 @@
 
   /* ── Icon-only action group (Filters/Archived/Columns) — fixed-size at
      every resolution, tooltips + aria-labels carry the names ── */
-  .toolbar-actions { display: inline-flex; align-items: center; height: 34px; box-sizing: border-box; padding: 3px; gap: 2px; border-radius: 11px; background: var(--rail-bg); flex-shrink: 0; }
+  .toolbar-actions { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
   .col-menu-wrap { position: relative; }
   .action-btn {
     position: relative;
     display: flex; align-items: center; justify-content: center; gap: 5px;
-    height: 26px; box-sizing: border-box;
-    background: none; border: none; border-radius: 8px;
-    color: var(--muted); font-size: var(--fs-s); font-weight: 500;
+    height: 28px; box-sizing: border-box;
+    background: none; border: none; border-radius: 999px;
+    color: var(--muted); font-size: var(--fs-s); font-weight: 600;
     padding: 0 10px; cursor: pointer; white-space: nowrap;
     transition: color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
@@ -894,12 +886,12 @@
   .grid-head {
     position: sticky; top: 0; z-index: 2;
     padding: 0 16px;
-    background: var(--col-bg); border-bottom: 1px solid var(--border);
+    background: var(--glass-solid); border-bottom: 1px solid var(--line);
     border-left: 3px solid transparent;
   }
   .head-spacer { width: 24px; }
   .th-btn {
-    font-family: var(--mono); font-size: var(--fs-2xs); letter-spacing: .06em; text-transform: uppercase;
+    font-family: inherit; font-size: var(--fs-s); font-weight: 500;
     color: var(--faint); text-align: left;
     background: none; border: none; cursor: grab; padding: 11px 0;
     display: flex; align-items: center; gap: 5px; transition: color var(--dur-hover) var(--ease-hover);
@@ -913,18 +905,21 @@
   .th-btn.drag-over-left { box-shadow: inset 3px 0 0 var(--accent); }
   .th-btn.drag-over-right { box-shadow: inset -3px 0 0 var(--accent); }
   .sort-icon { font-size: var(--fs-2xs); opacity: .6; }
+  /* An unsorted column's ↕ shows only on hover or keyboard focus. */
+  .sort-icon.idle { visibility: hidden; }
+  .th-btn:hover .sort-icon.idle, .th-btn:focus-visible .sort-icon.idle { visibility: visible; }
 
   .grid-row {
     position: relative;
     padding: 12px 16px;
-    border-bottom: 1px solid color-mix(in srgb, var(--text) 6%, transparent);
+    border-bottom: 1px solid var(--line);
     cursor: pointer; transition: background var(--dur-hover) var(--ease-hover);
   }
   .grid-row:last-child { border-bottom: none; }
   .grid-row:hover { background: var(--hover); }
   .grid-row.row-selected { background: var(--sel-fill); }
   /* Pinned: the same pushpin as a Board card and the phone, before the title. */
-  .pin-mark { display: inline-flex; color: var(--accent); vertical-align: -1px; margin-right: 4px; }
+  .pin-mark { display: inline-flex; color: var(--muted); vertical-align: -1px; margin-right: 4px; }
 
   .row-check {
     width: 16px; height: 16px; padding: 0; cursor: pointer;
@@ -985,9 +980,11 @@
   .recur-mark { display: inline-flex; align-items: center; color: var(--muted); opacity: .75; vertical-align: middle; margin-left: 4px; }
 
   .cell-status { color: var(--muted); font-size: var(--fs-s); white-space: nowrap; }
-  .cell-prio { font-size: var(--fs-s); font-weight: 700; white-space: nowrap; }
+  /* No colour: High is darker, Low fainter. */
+  .cell-prio { font-size: var(--fs-s); font-weight: 500; color: var(--muted); white-space: nowrap; }
+  .cell-prio.high { color: var(--text); font-weight: 600; }
   .cell-prio.quiet { color: var(--faint); font-weight: 500; }
-  .cell-due { font-family: var(--mono); font-size: var(--fs-xs); white-space: nowrap; }
+  .cell-due { font-size: var(--fs-s); white-space: nowrap; }
   .cell-date { font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint); white-space: nowrap; text-transform: capitalize; }
 
   .cell-tags { display: flex; flex-wrap: wrap; gap: 5px; }

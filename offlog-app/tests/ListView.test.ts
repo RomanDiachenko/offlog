@@ -275,4 +275,15 @@ describe('ListView due cell', () => {
     expect(dueCell(container).textContent).toBe('1 Mar');
     expect(dueCell(container).style.color).toBe('var(--faint)');
   });
+
+  it('keeps colour for Overdue only, not for Today', () => {
+    const { container } = render(ListView, { project: mkProject(), tasks: [
+      mkTask({ _id: 'task:late', column_id: 'col:todo', due_date: '2026-03-01' }),
+      mkTask({ _id: 'task:today', column_id: 'col:todo', due_date: '2026-03-11' }),
+    ] });
+    const inks = [...container.querySelectorAll<HTMLElement>('.cell-due')].map(e => `${e.textContent}=${e.style.color}`);
+
+    expect(inks).toContain('Overdue · 1 Mar=var(--overdue-ink)');
+    expect(inks).toContain('Today=var(--muted)');
+  });
 });
