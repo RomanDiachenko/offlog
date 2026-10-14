@@ -202,10 +202,9 @@ describe('phone Project screen — board', () => {
     expect(r.getByText('Add task')).toBeTruthy();
   });
 
-  it('the last status pill is marked as the done one; there are no page dots', () => {
-    const { getByRole, container } = setup();
-    expect(getByRole('tab', { name: 'Done 0' }).classList.contains('last')).toBe(true);
-    expect(getByRole('tab', { name: 'To do 3' }).classList.contains('last')).toBe(false);
+  it('the status pills are all alike, as on desktop; there are no page dots', () => {
+    const { container } = setup();
+    expect(container.querySelector('.pills .last')).toBeNull();
     expect(container.querySelector('.dots')).toBeNull();
   });
 
