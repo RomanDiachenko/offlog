@@ -28,20 +28,34 @@ export function offerUndo(key: string, msg: string, undo: () => Promise<void>): 
 export function dismissUndo(key: string): void {
   clearTimeout(timers.get(key));
   timers.delete(key);
+  holds.delete(key);
   undoToasts.update(list => list.filter(t => t.key !== key));
 }
 
 // WCAG 2.2.1: while the pointer or keyboard focus is on a toast it doesn't
-// time out; leaving it starts a full countdown again.
-export function holdUndo(key: string): void {
+// time out; once neither is, it gets a full countdown again. The two are held
+// apart, so the pointer leaving doesn't restart it under keyboard focus.
+type Hold = 'pointer' | 'focus';
+const holds = new Map<string, Set<Hold>>();
+export function holdUndo(key: string, why: Hold = 'pointer'): void {
   clearTimeout(timers.get(key));
   timers.delete(key);
+  holds.set(key, (holds.get(key) ?? new Set()).add(why));
 }
-export function releaseUndo(key: string): void {
+export function releaseUndo(key: string, why: Hold = 'pointer'): void {
+  const h = holds.get(key);
+  h?.delete(why);
+  if (h?.size) return;
+  holds.delete(key);
   let shown = false;
   undoToasts.update(list => { shown = list.some(t => t.key === key); return list; });
   if (!shown || timers.has(key)) return;
   timers.set(key, setTimeout(() => dismissUndo(key), SHOW_MS));
+}
+// The window hiding or losing focus never sends mouseleave, so a toast under
+// the pointer then would stay forever: drop every pointer hold.
+export function releasePointerHolds(): void {
+  for (const key of [...holds.keys()]) if (holds.get(key)?.has('pointer')) releaseUndo(key, 'pointer');
 }
 
 export async function runUndo(key: string): Promise<void> {

@@ -43,6 +43,30 @@ describe('desktop undo toasts', () => {
 // WCAG 2.2.1: a toast that times out pauses while the pointer or keyboard
 // focus is on it, and gets its full time again when left.
 describe('undo toast pause', () => {
+  it('keyboard focus keeps it held after the pointer leaves', async () => {
+    vi.useFakeTimers();
+    const { offerUndo, holdUndo, releaseUndo, undoToasts } = await import('../src/lib/undoToast');
+    offerUndo('k:both', 'x', async () => {});
+    holdUndo('k:both', 'focus');
+    holdUndo('k:both', 'pointer');
+    releaseUndo('k:both', 'pointer');
+    vi.advanceTimersByTime(60000);
+    expect(get(undoToasts).some(t => t.key === 'k:both')).toBe(true);
+    releaseUndo('k:both', 'focus');
+    vi.advanceTimersByTime(5100);
+    expect(get(undoToasts).some(t => t.key === 'k:both')).toBe(false);
+  });
+
+  it('the window hiding releases a pointer hold that never got its mouseleave', async () => {
+    vi.useFakeTimers();
+    const { offerUndo, holdUndo, releasePointerHolds, undoToasts } = await import('../src/lib/undoToast');
+    offerUndo('k:hid', 'x', async () => {});
+    holdUndo('k:hid', 'pointer');
+    releasePointerHolds();
+    vi.advanceTimersByTime(5100);
+    expect(get(undoToasts).some(t => t.key === 'k:hid')).toBe(false);
+  });
+
   it('holds while hovered or focused, then runs a fresh countdown', async () => {
     vi.useFakeTimers();
     try {

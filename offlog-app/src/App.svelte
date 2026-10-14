@@ -11,7 +11,7 @@
   import type { CustomFieldDef } from './lib/types';
   import type { CustomFieldFilter } from './lib/utils';
   import { pendingOpenTaskId, notificationActionError } from './lib/notifications';
-  import { undoToasts, offerUndo, dismissUndo, runUndo, holdUndo, releaseUndo, shortTitle } from './lib/undoToast';
+  import { undoToasts, offerUndo, dismissUndo, runUndo, holdUndo, releaseUndo, releasePointerHolds, shortTitle } from './lib/undoToast';
   import { applyTheme, watchSystemTheme, getThemeMode, setThemeMode, isEffectivelyDark, getHighContrast, setHighContrast } from './lib/theme';
   import { getCommands, projectCommands } from './lib/desktop/commands';
   // Type-only: the desktop views load through desktopViews.ts (see below).
@@ -579,7 +579,8 @@
   ];
 </script>
 
-<svelte:window on:keydown={onKeydown}/>
+<svelte:window on:keydown={onKeydown} on:blur={releasePointerHolds}/>
+<svelte:document on:visibilitychange={() => { if (document.hidden) releasePointerHolds(); }}/>
 
 {#if locked}
   {#if $isPhone && !phoneLockFailed}
@@ -839,7 +840,7 @@
 {#if $undoToasts.length}
   <div class="toast-stack">
     {#each $undoToasts as t (t.key)}
-      <div class="toast glass" role="status" on:mouseenter={() => holdUndo(t.key)} on:mouseleave={() => releaseUndo(t.key)} on:focusin={() => holdUndo(t.key)} on:focusout={() => releaseUndo(t.key)} in:toastIn out:toastOut>
+      <div class="toast glass" role="status" on:mouseenter={() => holdUndo(t.key, 'pointer')} on:mouseleave={() => releaseUndo(t.key, 'pointer')} on:focusin={() => holdUndo(t.key, 'focus')} on:focusout={() => releaseUndo(t.key, 'focus')} in:toastIn out:toastOut>
         <span class="toast-msg">{t.msg}</span>
         <button class="toast-undo" on:click={() => runUndo(t.key)}>Undo</button>
         <button class="toast-close" on:click={() => dismissUndo(t.key)} aria-label="Dismiss">✕</button>
