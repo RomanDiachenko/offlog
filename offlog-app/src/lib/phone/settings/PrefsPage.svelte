@@ -609,8 +609,8 @@
             Will restore <strong>{importPreview.byType.space}</strong> space{importPreview.byType.space === 1 ? '' : 's'},
             <strong>{importPreview.byType.project}</strong> project{importPreview.byType.project === 1 ? '' : 's'},
             <strong>{importPreview.byType.task}</strong> task{importPreview.byType.task === 1 ? '' : 's'}{#if importPreview.toSkip > 0} — <strong>{importPreview.toSkip}</strong> unrecognized entr{importPreview.toSkip === 1 ? 'y' : 'ies'} will be skipped{/if}.
-            Anything matching something you already have will be updated in place, not duplicated.
-            This isn't a full revert — anything you've created, changed or deleted since this backup was taken stays exactly as it is now.
+            Anything you already have that is also in this backup goes back to the backup's version, not a copy, so changes made to it since are replaced.
+            Anything created after the backup stays as it is.
           </p>
           <button class="p-go" on:click={() => confirmImport(close)}>Import {importPreview.toCreate} item{importPreview.toCreate === 1 ? '' : 's'}</button>
           <button class="p-tbtn wide" on:click={close}>Cancel</button>
