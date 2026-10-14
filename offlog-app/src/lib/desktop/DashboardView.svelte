@@ -319,7 +319,7 @@
   }
   .title-block { min-width: 0; }
   .dash-title { margin: 0 0 3px; font-size: var(--fs-t); font-weight: 700; letter-spacing: -.015em; }
-  .dash-sub { font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint); display: block; }
+  .dash-sub { font-size: var(--fs-xs); color: var(--faint); display: block; }
   .dash-week { margin-top: 2px; }
 
   .hamburger {
@@ -362,11 +362,8 @@
   }
   .brief:hover { border-color: var(--glass-edge-hover); }
   .brief-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .brief-label {
-    font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
-    letter-spacing: .08em; font-weight: 700; color: var(--faint);
-  }
-  .brief-count { font-family: var(--mono); font-size: var(--fs-xs); color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .brief-label { font-size: var(--fs-s); font-weight: 600; color: var(--faint); }
+  .brief-count { font-size: var(--fs-xs); color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
   .brief-empty { font-size: var(--fs-m); color: var(--muted); }
   .brief-row { display: flex; align-items: center; gap: 14px; }
   .brief-go { margin-left: auto; font-size: var(--fs-s); font-weight: 600; color: var(--accent-ink); white-space: nowrap; }
@@ -404,11 +401,7 @@
   }
   .view-all:hover { opacity: 1; color: var(--muted); }
 
-  .section-title {
-    font-family: var(--mono); font-size: var(--fs-2xs); text-transform: uppercase;
-    letter-spacing: .08em; font-weight: 700; color: var(--faint);
-    margin-bottom: 10px;
-  }
+  .section-title { font-size: var(--fs-s); font-weight: 600; color: var(--faint); margin-bottom: 10px; }
   /* Pinned/overdue are signalled through color alone here, matching every
      other view — no ★/⚠ glyphs. */
   .pinned-title { color: var(--accent); }
@@ -440,7 +433,7 @@
      instead of overflowing its row (flex items default to a content-based
      min-width). The grid's grid-auto-rows: minmax(130px, auto) absorbs the
      resulting variable heights. */
-  .space-name { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); text-transform: uppercase; letter-spacing: .05em; min-width: 0; overflow-wrap: break-word; }
+  .space-name { font-size: var(--fs-xs); color: var(--faint); min-width: 0; overflow-wrap: break-word; }
   /* min-height reserves 2 lines' worth of title height unconditionally, so
      every card budgets the same space whether or not its title wraps and
      the grid stays uniform without truncating 2-line titles. */
@@ -449,7 +442,7 @@
      wrap onto separate lines with uneven spacing. Pill chips still wrap,
      but each reads as one self-contained unit. */
   .stat {
-    font-family: var(--mono); font-size: var(--fs-xs); color: var(--muted);
+    font-size: var(--fs-xs); color: var(--muted);
     display: inline-flex; align-items: center; gap: 3px;
     padding: 2px 7px; border-radius: var(--r-xl); background: var(--hover);
     white-space: nowrap;
@@ -477,7 +470,7 @@
   .task-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .task-title { font-size: var(--fs-m); font-weight: 500; color: var(--text); overflow-wrap: break-word; }
   .task-proj {
-    font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
+    font-size: var(--fs-xs); color: var(--faint);
     overflow-wrap: break-word;
   }
   .task-due { color: var(--muted); }
@@ -485,7 +478,7 @@
 
   .all-good { color: var(--faint); font-size: var(--fs-m); padding: 6px 0; }
   .no-projects { grid-column: 1 / -1; color: var(--faint); font-size: var(--fs-m); padding: 6px 0; }
-  .loading { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 3rem; color: var(--faint); font-family: var(--mono); font-size: var(--fs-s); }
+  .loading { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 3rem; color: var(--faint); font-size: var(--fs-s); }
 
   /* ── Responsive ── */
   @media (max-width: 900px) {
