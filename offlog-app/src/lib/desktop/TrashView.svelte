@@ -152,11 +152,9 @@
               {#if t.project_name}<span class="item-proj">{t.project_name}</span>{/if}
             </div>
             <span class="item-time">{timeAgo(t.updated_at)}</span>
-            <button class="restore-btn" on:click={() => restore(t._id!)} title="Restore" aria-label="Restore {t.title}">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{@html ICON.restore}</svg>
-            </button>
+            <button class="restore-btn" on:click={() => restore(t._id!)} aria-label="Restore {t.title}">Restore</button>
             <button class="forever-btn" on:click={() => removeForever(t)} title="Delete forever" aria-label="Delete forever: {t.title}">
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.trash}</svg>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{@html ICON.trash}</svg>
             </button>
           </div>
         {/each}
@@ -171,7 +169,7 @@
 
   .panel {
     position: fixed; top: 0; right: 0; bottom: 0; width: min(480px, 100vw);
-    background: var(--surface); border-left: 1px solid var(--border);
+    background: var(--bg); border-left: 1px solid var(--glass-edge);
     box-shadow: var(--elev-3-side); z-index: 402;
     display: flex; flex-direction: column;
     padding-top: env(safe-area-inset-top, 0px);
@@ -184,24 +182,25 @@
   .panel-title { font-size: var(--fs-xl); font-weight: 700; flex: 1; letter-spacing: -.015em; }
 
   .rc-sub {
-    padding: 0 24px 16px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint);
+    padding: 0 24px 16px; font-size: var(--fs-s); color: var(--faint);
     flex-shrink: 0;
   }
 
+  /* The task window's round buttons. */
   .clear-btn {
-    background: none; border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent); border-radius: var(--r-s);
-    cursor: pointer; font-size: var(--fs-xs); font-weight: 500; color: var(--danger);
-    padding: 4px 10px; transition: background var(--dur-hover) var(--ease-hover); flex-shrink: 0;
+    background: none; border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent); border-radius: 999px;
+    cursor: pointer; font-size: var(--fs-s); font-weight: 600; color: var(--danger);
+    height: 32px; padding: 0 14px; transition: background var(--dur-hover) var(--ease-hover); flex-shrink: 0;
   }
   .clear-btn:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); }
   .clear-btn:disabled { opacity: .5; cursor: default; }
 
   .restore-all-btn {
-    background: var(--field-bg); border: 1px solid transparent; border-radius: var(--r-s);
-    cursor: pointer; font-size: var(--fs-xs); font-weight: 500; color: var(--muted);
-    padding: 4px 10px; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover); flex-shrink: 0;
+    background: none; border: 1px solid var(--glass-edge); border-radius: 999px;
+    cursor: pointer; font-size: var(--fs-s); font-weight: 600; color: var(--text);
+    height: 32px; padding: 0 14px; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover); flex-shrink: 0;
   }
-  .restore-all-btn:hover { background: var(--hover); color: var(--text); border-color: var(--accent); }
+  .restore-all-btn:hover { border-color: var(--glass-edge-hover); }
   .restore-all-btn:disabled { opacity: .5; cursor: default; }
 
   .close-btn {
@@ -214,15 +213,10 @@
   .item-list { flex: 1; overflow-y: auto; padding: 12px 24px 24px; }
   .empty { color: var(--faint); font-size: var(--fs-m); padding: 12px 0; line-height: 1.5; }
 
-  /* Rows sit straight on the panel, like History's: no dividers, a tint
-     on hover. */
-  .item-rows { display: flex; flex-direction: column; gap: 2px; }
-  .item-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 10px; border-radius: var(--r-m);
-    transition: background var(--dur-hover) var(--ease-hover);
-  }
-  .item-row:hover { background: var(--hover); }
+  /* One glass panel of lined rows, as in Archived projects. */
+  .item-rows { display: flex; flex-direction: column; background: var(--glass-solid); border: 1px solid var(--glass-edge); border-radius: var(--r-l); box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow); padding: 0 8px 0 14px; }
+  .item-row { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 8px 0; }
+  .item-row + .item-row { border-top: 1px solid var(--line); }
 
   .item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   /* Wrap, never truncate — the app-wide convention for task titles. */
@@ -237,14 +231,17 @@
     white-space: nowrap; flex-shrink: 0;
   }
 
-  /* Two matching icon buttons (restore / delete forever), same size and
-     shape, distinguished only by hover color per action. */
-  .restore-btn, .forever-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--faint); padding: .3rem; border-radius: var(--r-s);
-    display: flex; align-items: center; justify-content: center;
-    transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover); flex-shrink: 0;
+  .restore-btn {
+    flex-shrink: 0; background: none; border: 1px solid var(--glass-edge); cursor: pointer;
+    color: var(--text); font-size: var(--fs-s); font-weight: 600; height: 28px; padding: 0 12px;
+    border-radius: 999px; transition: border-color var(--dur-hover) var(--ease-hover);
   }
-  .restore-btn:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-ink); }
+  .restore-btn:hover { border-color: var(--glass-edge-hover); }
+  .forever-btn {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; background: none; border: none; cursor: pointer;
+    color: var(--faint); padding: 0; border-radius: 999px;
+    transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
+  }
   .forever-btn:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); color: color-mix(in srgb, var(--danger) 82%, var(--text)); }
 </style>

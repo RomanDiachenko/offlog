@@ -274,7 +274,7 @@
 
   .panel {
     position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100vw);
-    background: var(--surface); border-left: 1px solid var(--border);
+    background: var(--bg); border-left: 1px solid var(--glass-edge);
     box-shadow: var(--elev-3-side); z-index: 402;
     display: flex; flex-direction: column;
     padding-top: env(safe-area-inset-top, 0px);
@@ -287,9 +287,9 @@
   .panel-title { font-size: var(--fs-xl); font-weight: 700; flex: 1; letter-spacing: -.015em; }
 
   .clear-btn {
-    background: var(--field-bg); border: 1px solid transparent; border-radius: var(--r-s);
-    cursor: pointer; font-size: var(--fs-xs); font-weight: 500; color: var(--muted);
-    padding: 4px 10px; transition: color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
+    background: none; border: 1px solid var(--glass-edge); border-radius: 999px;
+    cursor: pointer; font-size: var(--fs-s); font-weight: 600; color: var(--text);
+    height: 32px; padding: 0 14px; transition: color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
   }
   .clear-btn:hover { color: var(--danger); border-color: var(--danger); }
 
@@ -309,7 +309,11 @@
     padding: 0 10px 6px;
   }
   .day-label { font-weight: 700; font-size: var(--fs-s); }
-  .day-summary { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint); }
+  .day-summary { font-size: var(--fs-xs); color: var(--faint); }
+  /* Each day: one glass panel of lined entries, as in Archived projects. */
+  .entries-list { background: var(--glass-solid); border: 1px solid var(--glass-edge); border-radius: var(--r-l); box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow); padding: 4px 6px; }
+  .entries-list > * + * { border-top: 1px solid var(--line); }
+  .entries-list > .entry { border-radius: 0; }
 
   /* Grid, not flex: fixed columns pin every description to the same x
      position on every row.
@@ -360,11 +364,11 @@
 
   .load-more-btn {
     display: block; margin: 8px auto 0;
-    padding: .5rem 1.2rem; border-radius: var(--radius-sm);
-    border: 1px solid transparent; background: var(--field-bg); color: var(--text);
-    font-size: var(--fs-m); font-weight: 500; cursor: pointer;
-    transition: background var(--dur-hover) var(--ease-hover);
+    height: 34px; padding: 0 18px; border-radius: 999px;
+    border: 1px solid var(--glass-edge); background: none; color: var(--text);
+    font-size: var(--fs-s); font-weight: 600; cursor: pointer;
+    transition: border-color var(--dur-hover) var(--ease-hover);
   }
-  .load-more-btn:hover:not(:disabled) { background: var(--hover); }
+  .load-more-btn:hover:not(:disabled) { border-color: var(--glass-edge-hover); }
   .load-more-btn:disabled { opacity: .6; cursor: default; }
 </style>
