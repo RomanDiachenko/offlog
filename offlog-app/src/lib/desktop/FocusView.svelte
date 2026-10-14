@@ -375,7 +375,7 @@
   }
   .title-block { min-width: 0; flex: 1; }
   .fc-title { margin: 0 0 3px; font-size: var(--fs-t); font-weight: 700; letter-spacing: -.015em; }
-  .fc-count { font-family: var(--mono); font-size: var(--fs-xs); color: var(--faint); }
+  .fc-count { font-size: var(--fs-xs); color: var(--faint); }
 
   .hamburger {
     display: none;
@@ -390,14 +390,14 @@
      filled) but scaled down for a header button — matching the footer
      CTA's size exactly is too big for this spot. */
   .reset-btn {
-    background: var(--field-bg); border: 1px solid transparent; color: var(--muted);
-    font-size: var(--fs-m); font-weight: 700; padding: 8px 18px; border-radius: var(--r-m); cursor: pointer;
+    background: none; border: 1px solid var(--glass-edge); color: var(--text);
+    font-size: var(--fs-s); font-weight: 600; height: 34px; padding: 0 16px; border-radius: 999px; cursor: pointer;
     flex-shrink: 0; transition: background var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover);
     /* header is align-items:flex-start — this button sits centered
        against the row instead. */
     align-self: center;
   }
-  .reset-btn:hover { background: var(--hover); color: var(--text); border-color: var(--accent); }
+  .reset-btn:hover { border-color: var(--glass-edge-hover); }
 
   .palette-btn {
     display: flex; align-items: center; justify-content: center;
@@ -431,16 +431,15 @@
   .note {
     position: relative;
     display: flex; flex-direction: column; gap: 10px;
-    background: var(--surface);
-    border: 1px solid transparent;
-    border-radius: var(--r-s);
+    background: var(--glass-solid); border: 1px solid var(--glass-edge);
+    box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow);
+    border-radius: var(--r-l);
     padding: 14px 16px;
     cursor: pointer;
-    box-shadow: var(--elev-1);
     transform: rotate(var(--tilt)) translateY(var(--jitter, 0px));
     transition: transform var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover), border-color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
   }
-  .note:hover { transform: rotate(0deg) translateY(-2px); box-shadow: var(--elev-2); }
+  .note:hover { transform: rotate(0deg) translateY(-2px); border-color: var(--glass-edge-hover); }
   .note.selected {
     transform: rotate(0deg); border-color: var(--accent);
     box-shadow: var(--sel-ring);
@@ -470,11 +469,12 @@
     display: flex;
     align-items: center; gap: 12px;
     padding: 14px 16px; border-radius: var(--r-l);
-    background: var(--surface); box-shadow: var(--elev-1);
+    background: var(--glass-solid); border: 1px solid var(--glass-edge);
+    box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow);
     margin-bottom: 8px; cursor: pointer;
-    transition: background var(--dur-hover) var(--ease-hover), box-shadow var(--dur-hover) var(--ease-hover);
+    transition: border-color var(--dur-hover) var(--ease-hover);
   }
-  .task-row:hover { box-shadow: var(--elev-2); }
+  .task-row:hover { border-color: var(--glass-edge-hover); }
   .task-row .task-body { flex: 1; }
   .row-prio { font-size: var(--fs-s); font-weight: 700; white-space: nowrap; }
   .remove-btn {
@@ -484,12 +484,12 @@
   }
   .remove-btn:hover { background: var(--hover); color: var(--text); }
   .add-more-btn {
-    width: 100%; padding: 12px 16px; border-radius: var(--r-s); cursor: pointer;
-    background: none; border: 1.5px solid var(--border-strong); color: var(--muted);
+    width: 100%; padding: 12px 16px; border-radius: var(--r-l); cursor: pointer;
+    background: none; border: 1px solid var(--glass-edge); color: var(--muted);
     font-size: var(--fs-m); font-weight: 600; text-align: left;
     transition: border-color var(--dur-hover) var(--ease-hover), color var(--dur-hover) var(--ease-hover);
   }
-  .add-more-btn:hover { border-color: var(--accent); color: var(--text); }
+  .add-more-btn:hover { border-color: var(--glass-edge-hover); color: var(--text); }
 
   /* The reason a note is suggested, as a word: only Overdue takes a colour. */
   .suggest-chip { font-size: var(--fs-xs); font-weight: 700; white-space: nowrap; color: var(--muted); }
@@ -518,8 +518,8 @@
      background so it reads cleanly over however far the title wraps. */
   .check {
     position: absolute; top: 10px; right: 10px;
-    width: 18px; height: 18px; border-radius: 5px;
-    background: var(--surface);
+    width: 20px; height: 20px; border-radius: 50%;
+    background: none;
     border: 1.6px solid var(--border-strong); flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     transition: border-color var(--dur-hover) var(--ease-hover), background var(--dur-hover) var(--ease-hover);
@@ -541,31 +541,28 @@
      explicit `none`/`0` clears — setting other properties here does not
      shadow them. */
   .task-row .proj-badge {
-    font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
+    font-size: var(--fs-xs); color: var(--faint);
     background: none; padding: 0;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  .proj-badge {
-    font-family: var(--mono); font-size: var(--fs-2xs); color: var(--faint);
-    background: var(--col-bg); padding: 2px 8px; border-radius: var(--r-s);
-    white-space: nowrap;
-  }
+  .proj-badge { font-size: var(--fs-xs); color: var(--faint); white-space: nowrap; }
 
+  /* No strip of its own: a hairline over the page's own background. */
   .fc-footer {
     flex-shrink: 0;
     display: flex; justify-content: center; gap: 10px;
-    padding: 14px 28px; border-top: 1px solid var(--border);
-    background: var(--surface);
+    padding: 14px 28px; border-top: 1px solid var(--line);
   }
 
   .commit-btn {
     width: auto; min-width: 240px;
     background: var(--text); color: var(--bg); border: 1.5px solid var(--text);
-    font-size: var(--fs-l); font-weight: 700; padding: 13px 32px; border-radius: var(--r-l);
+    font-size: var(--fs-m); font-weight: 600; height: 44px; padding: 0 32px; border-radius: 999px;
     cursor: pointer; transition: opacity var(--dur-hover) var(--ease-hover);
   }
-  .commit-btn:disabled { opacity: .4; cursor: not-allowed; }
+  /* Disabled stays solid (no see-through over the notes), just quieter. */
+  .commit-btn:disabled { background: var(--surface); color: var(--faint); border-color: var(--glass-edge); cursor: not-allowed; }
   .commit-btn:not(:disabled):hover { opacity: .9; }
 
   @media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
