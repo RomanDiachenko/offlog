@@ -495,13 +495,21 @@ a { -webkit-tap-highlight-color: transparent; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* calm scrollbars */
-/* The 10px width is also in .fluid-stage.over-scroll: change both. */
-::-webkit-scrollbar { width: 10px; height: 10px; }
+/* The app's own scrollbars: a thin soft pill with no track, arrows or corner.
+   Always shown: a thumb styled on the container's :hover only repaints on
+   the next scroll in Chromium, so it would stay invisible.
+   background-color, never the background shorthand: the shorthand resets
+   background-clip and the pill fills the whole 10px.
+   The 10px width is also in .fluid-stage.over-scroll: change both. */
+::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
+  background-color: color-mix(in srgb, var(--text) 18%, transparent);
   border-radius: 8px;
   border: 3px solid transparent;
   background-clip: padding-box;
 }
-::-webkit-scrollbar-thumb:hover { background: var(--faint); }
+::-webkit-scrollbar-thumb:hover { background-color: color-mix(in srgb, var(--text) 34%, transparent); }
+::-webkit-scrollbar-thumb:active { background-color: color-mix(in srgb, var(--text) 46%, transparent); }
+/* High contrast: a stronger thumb. */
+body.high-contrast ::-webkit-scrollbar-thumb { background-color: var(--border-strong); }
