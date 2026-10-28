@@ -13,6 +13,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import urllib.error
 import urllib.request
 
 REPO = "RomanDiachenko/qualinaut"
@@ -42,7 +43,17 @@ def main():
     token = os.environ.get("QLT_GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
     if not token:
         sys.exit("set QLT_GITHUB_TOKEN: a token that can read " + REPO + " (Contents: read)")
-    with fetch(API + "/releases/tags/" + TAG, token, "application/vnd.github+json") as answer:
+    try:
+        answer = fetch(API + "/releases/tags/" + TAG, token, "application/vnd.github+json")
+    except urllib.error.HTTPError as error:
+        if error.code in (401, 403, 404):  # GitHub answers 404 for a repository not visible
+            sys.exit(
+                "QLT_GITHUB_TOKEN cannot read release " + TAG + " of " + REPO + " (HTTP "
+                + str(error.code) + "): give the token access to that repository, with "
+                "Contents: read (fine-grained: Repository access > Only select repositories)"
+            )
+        raise
+    with answer:
         release = json.load(answer)
     wheels = [a for a in release.get("assets", []) if a["name"].endswith(".whl")]
     if not wheels:
