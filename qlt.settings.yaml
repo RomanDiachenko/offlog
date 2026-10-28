@@ -1,0 +1,358 @@
+# qlt.settings.yaml: how Qualinaut's agents work in this project.
+# project.yaml says what to test; this file holds every agent's options.
+#
+# Uncomment a line and change its value to override the default. Values may use
+# ${NAME} from the environment or .env, like project.yaml. Durations take units:
+# 500ms, 30s, 10m, 1h.
+#
+# Where a value comes from, weakest first: the default shown here, this file,
+# pipeline.agents in project.yaml, a flow's agents, `--set agent.key=value`.
+# `qlt settings` shows the values in effect; `qlt settings update` adds options from
+# newer agents and keeps your values (not your own comments).
+# Written by Qualinaut 0.5.0.0.
+
+format: 1  # the layout of this file; `qlt migrate` upgrades it
+
+# --- limits: how far a whole run goes
+limits:
+  # Preset for the agents' limits: deep (the default: hours, thorough, a finer map),
+  # standard (the agents' own defaults: about 30 minutes, 100 screens), quick (minutes, a
+  # first look). Options set in this file still win; one of: quick | standard | deep
+  # profile: "deep"
+  # Time for the whole run (e.g. 45m), shared among the steps that have a time limit; none =
+  # each step keeps its own
+  # run_time: null
+  # What each profile sets (an option set in this file wins over it):
+  # quick: flow-mapper max_paths=200; test-validator timeout_s=900, reruns=0; ui-explorer
+  # time_budget_s=600, flag_time_budget_s=300, max_states=30, max_actions=300, max_depth=8,
+  # max_variations_per_form=10
+  # standard: test-validator timeout_s=1800; ui-explorer time_budget_s=1800,
+  # flag_time_budget_s=600
+  # deep: flow-mapper max_depth=25, max_paths=5000; test-validator reruns=3; ui-explorer
+  # state_detail="detailed", max_states=400, max_actions=5000, max_depth=25,
+  # max_variations_per_form=80
+
+# --- behavior-comparator: Compare behavior with a legacy system or a golden master (parity)
+behavior-comparator:
+  # Defaults to every explored subject
+  # system: null
+  # Extra masks for volatile text, e.g. order numbers
+  # normalize: []
+  # Regexes on '<kind> <where>' of differences that are intended
+  # accepted: []
+
+# --- code-analyzer: Read the repository: endpoints, handlers, guards, data access, messages
+code-analyzer:
+  # Read only this target's code; by default each subject target's own code
+  # system: null
+
+# --- code-linker: Link UI elements and actions to code: element -> request -> handler ->
+# data
+code-linker:
+  # Defaults to every explored system
+  # system: null
+  # Regexes on URL paths to leave out (test-only or infrastructure routes)
+  # ignore_paths: ["^/__"]
+
+# --- code-mapper: Map the code itself, in any language: modules and imports, classes and
+# functions with their calls, packages, entry points and the call chains behind them,
+# and the feature flags they read
+code-mapper:
+  # Map only this target's code; by default one map per subject target
+  # system: null
+  # Glob patterns of files to leave out (relative to the project)
+  # exclude: ["**/test/**", "**/tests/**", "**/__tests__/**", "**/*.min.js"]
+  # Read at most this many files
+  # max_files: 5000
+  # Call chain depth per entry
+  # max_depth: 6
+  # Symbols per call chain at most
+  # max_nodes: 300
+  # Regexes for the project's own flag helpers, group 1 being the flag name
+  # flag_calls: []
+
+# --- doc-reader: Extract testable rules from documentation and chats
+doc-reader:
+  # auto: read prose with Claude when credentials work, else keywords; one of: auto | always
+  # | never
+  # use_model: "auto"
+  # model: "claude-opus-5-5"
+  # one of: low | medium | high | xhigh | max
+  # effort: "medium"
+  # fallbacks: true
+  # max_retries: 3
+  # max_sections: 200
+  # concurrency: 4
+  # cache: true
+  # min_confidence: 0
+
+# --- flow-mapper: Build the flow tree, Mermaid diagram and user paths from the UI graph
+flow-mapper:
+  # Longest user path, in actions (also the flow tree)
+  # max_depth: 15
+  # User paths listed at most (in <system>.paths.json); enumeration stops there
+  # max_paths: 1000
+  # Lines at most in each list of the Markdown report (flow tree, validation branches,
+  # unreachable states, dead ends); the rest is counted
+  # max_listed: 500
+  # Largest flow, in states, drawn as one Mermaid diagram in the Markdown report and the
+  # HTML overview; bigger ones get <system>.mmd and the view around a state
+  # max_diagram_states: 60
+  # Also write <system>.html: every state, transition and user path, to browse
+  # html: true
+  # User paths embedded in the HTML page at most; the page notes the rest, which stay in
+  # <system>.paths.json
+  # html_max_paths: 1000
+  # Screenshots in the HTML page: link = files next to the run (small page), embed = inside
+  # the page (one file to share, much larger); one of: link | embed | none
+  # html_screenshots: "link"
+
+# --- flow-seed: Load a UI flow described in YAML into the Application Model
+flow-seed:
+  # file:  (required when the agent runs)
+  # system: null
+
+# --- golden-recorder: Record the observed behavior of a system as a golden master
+golden-recorder:
+  # Folder, relative to the project
+  # output: "golden"
+  # Defaults to every explored system
+  # system: null
+  # Extra masks for volatile text, e.g. order numbers
+  # normalize: []
+
+# --- interaction-mapper: Map how the apps of a project and their parts talk: IPC bridges,
+# HTTP, mDNS, database replication, WebSocket and started processes, both ends in the
+# code
+interaction-mapper:
+  # Only these apps (target ids); by default all
+  # systems: []
+
+# --- map-reconciler: Join the observed UI map with the one read from code: one final map,
+# each part confirmed, code-only (and why) or runtime-only; contradictions as findings
+map-reconciler:
+  # Severity of the findings for contradictions; one of: low | medium | high
+  # contradiction_severity: "medium"
+
+# --- reporter: One report of the whole run, with prioritized recommendations
+reporter:
+  # Findings listed in the report
+  # max_findings: 100
+
+# --- requirements: Derive traceable requirements (Markdown + Gherkin) from the model
+requirements:
+  # Defaults to every explored system except reference (legacy) targets
+  # system: null
+
+# --- test-generator: Generate pytest projects (Playwright for web, Appium for native apps)
+test-generator:
+  # Folder, relative to the project
+  output: "generated-tests"
+  # Defaults to the target's origin
+  # base_url: null
+  # test_id_attribute: "data-testid"
+  # Defaults to every planned system
+  # system: null
+  # Target the tests run against, when it differs from the planned system: plan from the
+  # legacy system, run on the rewrite (golden-master parity tests)
+  # run_against: null
+  # auto: Appium for android/ios/desktop targets; one of: auto | pytest-playwright | pytest-
+  # appium
+  # framework: "auto"
+  # Native: package or bundle id the tests relaunch
+  # app_id: null
+  # Native: Appium capabilities of the generated suite
+  # capabilities: {}
+
+# --- test-planner: Plan automated tests by suite, layer and risk from requirements
+test-planner:
+  # Defaults to every planned system
+  # system: null
+
+# --- test-validator: Run the generated tests against the target; find failures and flaky
+# tests
+test-validator:
+  # Re-runs of failing tests to spot flakiness
+  # reruns: 2
+  # pytest -m expression, e.g. 'smoke'
+  # markers: null
+  # Interpreter with pytest-playwright
+  # python: null
+  # Stop a test run after this long (bare number: seconds); none = no limit
+  # timeout_s: null
+  # Defaults to the suite's base URL
+  # base_url: null
+  # Snapshot data first; restore it between runs and at the end
+  # restore_data: true
+  # Only the suite of this system
+  # system: null
+  # Git ref: run only tests the changes since it can affect, plus the `always` suites;
+  # everything when the impact is unclear
+  # changed_since: null
+  # Suites that run even when a change does not touch them
+  # always: ["smoke", "healthcheck"]
+
+# --- ui-code-mapper: Read the UI code (React, Svelte): screens, states, controls,
+# transitions and the feature flags that gate them, as a map like the explorer's
+ui-code-mapper:
+  # Read only this target's code; by default each subject target's own code
+  # system: null
+  # Folders of the UI code inside the repositories (default: all of them)
+  # paths: []
+  # Regexes for the project's own flag helpers, group 1 being the flag name (isEnabled('x'),
+  # useFeature('x') and similar are known already)
+  # flag_calls: []
+
+# --- ui-explorer: Explore running apps in their sandboxes and map every reachable UI state
+ui-explorer:
+  # Feature flags to explore turned on, one extra pass each (names as ui-code-mapper reports
+  # them), e.g. {VITE_FEATURE_EXPORT: {how: env}}; what only that pass finds is marked as
+  # needing the flag
+  # flags: {}
+  # Time for each flag's extra pass (bare number: seconds); none = until nothing is left to
+  # try
+  # flag_time_budget_s: null
+  # Target ids to explore; auto = every subject target, plus the reference target when the
+  # oracle is a live reference (legacy vs rewrite); one of: auto
+  targets: "auto"
+  # One target id (same as targets: [id])
+  # target: null
+  # Defaults to the target URL; only with a single target
+  # entry_url: null
+  # Stop after this many distinct screens
+  # max_states: 100
+  # Stop after this many actions
+  # max_actions: 1000
+  # Longest path of actions from the start
+  # max_depth: 15
+  # Actions tried on one screen at most
+  # max_actions_per_state: 40
+  # Stop exploring after this long (bare number: seconds); none = no time limit, exploring
+  # ends when nothing is left to try or a count limit is reached
+  # time_budget_s: null
+  # How each form is first submitted: filled with valid values, and empty; one of: valid |
+  # empty
+  # form_profiles: ["valid", "empty"]
+  # Try equivalence classes and boundaries per form field
+  # input_variations: true
+  # Input variations tried per form; 0 turns them off
+  # max_variations_per_form: 40
+  # A submission rejected with a validation message changed no data
+  # rejected_submits_keep_data: true
+  # Input label, test id or name -> value to use
+  # fill: {}
+  # Regexes on element names never to trigger
+  # skip: []
+  # Origins besides the entry URL's that may be visited
+  # allowed_origins: []
+  # Regexes on request URLs that do not change data
+  # ignore_mutations: []
+  # How to tell that an action changed data: network = by write requests; submit = form
+  # submits and saving buttons (apps without request capture); auto = network when the
+  # driver captures requests; one of: auto | network | submit
+  # mutation_detection: "auto"
+  # Actions that delete, pay or wipe (named like `destructive`): auto = only when the
+  # sandbox can restore the data (snapshot/restore), skip = never, allow = always; one of:
+  # auto | skip | allow
+  # destructive_actions: "auto"
+  # Regex on the names of controls whose actions are destructive
+  # destructive: "\\b(delete|remove|destroy|erase|purge|wipe|drop|deactivate|terminate|revoke|unsubscribe|close account|pay|purchase|buy|checkout|place order|transfer|withdraw|reset all|clear all)\\b"
+  # With submit detection: buttons whose names match change data
+  # saving_actions: "\\b(save|submit|create|add|delete|remove|update|send|confirm|ok|apply|buy|pay)\\b"
+  # Also checkpoint states at depths divisible by N
+  # checkpoint_every: 0
+  # Open GET routes from the code graph that no explored screen matches
+  # deep_links: true
+  # Regexes on route paths to leave out
+  # deep_link_ignore: ["^/__"]
+  # Sign-in steps to run before exploring (see auth.py)
+  # auth: null
+  # Git ref: re-explore only screens the changes since it touch (and new ones), carrying the
+  # rest of the last exploration over; full when unclear
+  # changed_since: null
+  # Upload a file to file inputs
+  # uploads: true
+  # File to upload; defaults to a small generated text file
+  # upload_file: null
+  # Drag-and-drop attempts per screen (item onto the next)
+  # max_drags: 2
+  # detailed: a list searched, filtered or toggled differently is a state of its own (more
+  # states, a finer map; slower); one of: standard | detailed
+  # state_detail: "standard"
+  # Start from the previous map: try every known transition once more, keep what still does
+  # the same, explore again the screens where something changed, drop what is gone; false
+  # explores from scratch
+  # verify: true
+  # Save progress while exploring, so `qlt resume` continues an interrupted exploration
+  # instead of starting over
+  # resume: true
+  # Save a screenshot of every screen
+  # screenshots: true
+  # Options for the driver of the target's platform
+  driver:
+    # -- android, desktop, ios --
+    # server_url: "http://127.0.0.1:4723"
+    # Extra capabilities, e.g. deviceName, udid
+    # capabilities: {}
+    # Desktop only: which desktop driver to use; one of: auto | windows | mac
+    # os: "auto"
+    # Android: launch activity
+    # app_activity: null
+    # How a fresh session starts between explorations; one of: relaunch | clear_data
+    reset: "clear_data"
+    # Wait after each action (bare number: ms); a duration, e.g. 30s, 10m
+    # settle_ms: 600
+    # Wait for an element to appear (bare number: seconds); a duration, e.g. 30s, 10m
+    # implicit_wait_s: 2
+    # -- web --
+    # one of: chromium | firefox | webkit
+    # browser: "chromium"
+    # false shows the browser window
+    # headless: true
+    # viewport_width: 1280
+    # viewport_height: 800
+    # locale: "en-US"
+    # timezone: "UTC"
+    # Abort requests to other hosts
+    # block_external: true
+    # Other hosts requests may go to
+    # allowed_hosts: []
+    # Answer to confirm() and alert() dialogs; one of: accept | dismiss
+    # dialogs: "accept"
+    # Wait for a click or fill before giving up (bare number: ms); a duration, e.g. 30s, 10m
+    # action_timeout_ms: 5000
+    # Wait for a page to load (bare number: ms); a duration, e.g. 30s, 10m
+    # navigation_timeout_ms: 15000
+    # DOM must be unchanged this long (bare number: ms); a duration, e.g. 30s, 10m
+    # settle_quiet_ms: 150
+    settle_timeout_ms: "20s"
+    # Attributes read as test ids, most preferred first
+    # test_id_attributes: ["data-testid", "data-test", "data-qa", "data-cy"]
+    # Elements read from one screen at most
+    # max_elements: 500
+    # Saved signed-in session (`qlt auth` writes one) fresh sessions start from
+    # storage_state: null
+    # Saved sessions (checkpoints) keep IndexedDB, not only cookies and local storage; false
+    # keeps them small for apps with a large in-browser database
+    # session_indexed_db: true
+
+# --- vision-analyzer: Review screenshots with Claude: purpose, visual defects, controls not
+# in DOM
+vision-analyzer:
+  # model: "claude-opus-5-5"
+  # one of: low | medium | high | xhigh | max
+  # effort: "medium"
+  # Let the API retry a declined request on a fallback model
+  # fallbacks: true
+  # max_states: 50
+  # concurrency: 4
+  # Page pixels per screenshot part
+  # part_height: 1600
+  # max_parts: 3
+  # Longest image edge sent
+  # max_edge: 2576
+  # max_retries: 3
+  # Reuse answers for unchanged screens
+  # cache: true
+  # Defaults to every explored system
+  # system: null

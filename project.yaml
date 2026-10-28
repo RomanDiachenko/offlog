@@ -1,0 +1,61 @@
+# Qualinaut: what to test in this project and what to produce.
+# Written by Qualinaut 0.4.1.0.
+# Values can use environment variables: ${NAME} or ${NAME:-default}.
+version: 1  # the layout of this file; `qlt migrate` upgrades it
+name: "offlog"
+
+# One product, three apps sharing offlog-app's code (needs Qualinaut 0.5.0.0+).
+targets:
+  - id: web
+    platform: web
+    url: "http://localhost:5173"
+    repos: [offlog-app]
+    sandbox:  # start the app for each run, stop it afterwards
+      provider: process
+      cwd: offlog-app  # the web app lives here, not in the repository root
+      command: "npm run dev"
+    build: {command: "npm ci", cwd: offlog-app}  # CI: dependencies before `npm run dev`
+
+  - id: android  # the Capacitor build, on an emulator, driven through Appium
+    platform: android
+    app: offlog-app/android/app/build/outputs/apk/debug/app-debug.apk
+    repos: [offlog-app]  # offlog-app/android holds the native side
+    # CI: the web assets, synced into the Android project, then the debug APK
+    build:
+      command: "npm ci && npm run build && npx cap sync android && cd android && chmod +x gradlew && ./gradlew assembleDebug"
+      cwd: offlog-app
+    sandbox:
+      provider: android-emulator
+      avd: qlt-offlog
+      emulator: D:/Android/Sdk/emulator/emulator.exe
+      adb: D:/Android/Sdk/platform-tools/adb.exe
+
+  - id: desktop  # the Tauri build (Windows), with its sync host, driven through Appium
+    platform: desktop
+    app: offlog-desktop/src-tauri/target/debug/Offlog.exe
+    repos: [offlog-app, offlog-desktop]
+
+sources:
+  repos: ["."]  # source code: routes, guards, data access
+  docs: []  # specifications: md, txt, html, pdf, docx, OpenAPI
+  chats: []  # chat exports (Slack folders, JSON, text)
+
+oracle:
+  type: requirements  # requirements | recorded_snapshot | live_reference
+
+policy: intended  # intended | strict (pin observed behavior, bug for bug)
+
+pipeline:
+  goals: [test.results]  # test.results = explore, requirements, tests, run them
+  agents:  # which agents run; their options: qlt.settings.yaml
+    ui-explorer: {}
+    code-linker: {}
+    test-generator: {}
+    # vision-analyzer: {}  # needs qualinaut[vision] and ANTHROPIC_API_KEY
+  gates: []  # artifact kinds to approve before the pipeline continues
+
+# Own flows for `qlt run <name>`, next to the built-in discover/requirements/tests/code:
+flows: {}
+#  smoke:
+#    goals: [test.results]
+#    agents: {test-validator: {markers: smoke}}

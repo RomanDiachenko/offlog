@@ -1,0 +1,123 @@
+# Qualinaut pipeline (GitHub Actions), written by `qlt ci`. Edit freely.
+# Fast job: committed generated tests (smoke or healthcheck) on every change.
+# Scheduled job (0 3 * * *): `qlt run discover`, fails past `never`.
+# Set these as CI secrets: QLT_GITHUB_TOKEN.
+# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.3.0 with it.
+# No generated web tests yet: run `qlt run tests` and commit them.
+# Desktop (Tauri) is left out until it has been tried: `qlt ci github` adds its job back.
+# Android targets (android): a job each on ubuntu-latest with an emulator (API 34),
+# on the schedule; it builds the app, installs Appium with UiAutomator2, runs `qlt run discover --time 5h`.
+
+name: qa
+'on':
+  pull_request: null
+  push:
+    branches:
+    - main
+  schedule:
+  - cron: 0 3 * * *
+  workflow_dispatch: null
+jobs:
+  explore:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env: &id001
+      QLT_GITHUB_TOKEN: ${{ secrets.QLT_GITHUB_TOKEN }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - run: python qlt-install.py mobile
+    - run: playwright install --with-deps chromium
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: build web
+      run: npm ci
+      working-directory: offlog-app
+    - uses: actions/cache@v4
+      with:
+        path: .qlt/cache
+        key: qlt-cache-${{ github.run_id }}
+        restore-keys: qlt-cache-
+    - run: qlt doctor
+      continue-on-error: true
+    - run: qlt run discover --target web --fail-on never --time 5h
+    - if: always()
+      run: qlt report --format md >> "$GITHUB_STEP_SUMMARY" || true
+    - if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: qa
+        path: '.qlt/artifacts
+
+          generated-tests
+
+          golden'
+  android-android:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env: *id001
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '21'
+    - name: build android
+      run: npm ci && npm run build && npx cap sync android && cd android && chmod +x gradlew && ./gradlew assembleDebug
+      working-directory: offlog-app
+    - name: KVM
+      run: 'echo ''KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"'' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+
+        sudo udevadm control --reload-rules
+
+        sudo udevadm trigger --name-match=kvm
+
+        '
+    - name: Appium with UiAutomator2
+      run: 'npm install -g appium
+
+        appium driver install uiautomator2'
+    - run: python qlt-install.py mobile
+    - uses: actions/cache@v4
+      with:
+        path: .qlt/cache
+        key: qlt-cache-android-android-${{ github.run_id }}
+        restore-keys: qlt-cache-android-android-
+    - name: explore android on an emulator
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 34
+        target: google_apis
+        arch: x86_64
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save
+        disable-animations: true
+        script: 'qlt doctor || true
+
+          qlt run discover --target android --fail-on never --time 5h'
+    - if: always()
+      run: qlt report --format md > qa-report.md && cat qa-report.md >> "$GITHUB_STEP_SUMMARY" || true
+    - if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: qa-android-android
+        path: '.qlt/artifacts
+
+          generated-tests
+
+          golden
+
+          qa-report.md'

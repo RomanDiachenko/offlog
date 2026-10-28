@@ -29,3 +29,7 @@ offlog-app/android/build/
 # tracked *.md files, so those numbers never sit hand-typed and drifting.
 # The tool and its computed-values cache stay local, not the docs it edits.
 /tools/docsync/
+
+# qualinaut: local state and secrets
+.qlt/
+.env
