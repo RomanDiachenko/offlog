@@ -1,6 +1,6 @@
 # Qualinaut pipeline (GitHub Actions), written by `qlt ci`. Edit freely.
 # Fast job: committed generated tests (smoke or healthcheck) on every change.
-# Scheduled job (0 3 * * *): `qlt run discover`, fails past `never`.
+# Scheduled job (0 22 * * *): `qlt run discover`, fails past `never`.
 # Set these as CI secrets: QLT_GITHUB_TOKEN.
 # QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.4.0 with it.
 # No generated web tests yet: run `qlt run tests` and commit them.
@@ -15,7 +15,7 @@ name: qa
     branches:
     - main
   schedule:
-  - cron: 0 3 * * *
+  - cron: 0 22 * * *
   workflow_dispatch:
     inputs:
       target:
@@ -79,7 +79,7 @@ jobs:
           .qlt/qlt.db-shm'
         key: qlt-cache-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
-      if: always() && github.event_name != 'pull_request'
+      if: '!cancelled() && github.event_name != ''pull_request'''
       env:
         GH_TOKEN: ${{ github.token }}
       run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 10 ]; then\n  echo \"10 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target web; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=web -f chain=$((chain + 1))\nfi\n"
@@ -191,7 +191,7 @@ jobs:
           .qlt/qlt.db-shm'
         key: qlt-cache-android-android-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
-      if: always() && github.event_name != 'pull_request'
+      if: '!cancelled() && github.event_name != ''pull_request'''
       env:
         GH_TOKEN: ${{ github.token }}
       run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 10 ]; then\n  echo \"10 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target android; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=android -f chain=$((chain + 1))\nfi\n"
