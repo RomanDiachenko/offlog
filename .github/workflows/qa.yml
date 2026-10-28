@@ -2,7 +2,7 @@
 # Fast job: committed generated tests (smoke or healthcheck) on every change.
 # Scheduled job (0 3 * * *): `qlt run discover`, fails past `never`.
 # Set these as CI secrets: QLT_GITHUB_TOKEN.
-# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.3.0 with it.
+# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.4.0 with it.
 # No generated web tests yet: run `qlt run tests` and commit them.
 # Desktop (Tauri) is left out until it has been tried: `qlt ci github` adds its job back.
 # Android targets (android): a job each on ubuntu-latest with an emulator (API 34),
@@ -23,13 +23,23 @@ name: qa
         required: false
         default: ''
         type: string
+      chain:
+        description: 'Set by the workflow itself: which run of a chain going on with an unfinished exploration (0: a new one)'
+        required: false
+        default: '0'
+        type: string
 jobs:
   explore:
     if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (inputs.target == '' || inputs.target == 'web'))
     runs-on: ubuntu-latest
     timeout-minutes: 355
-    env: &id001
+    permissions: &id001
+      contents: read
+      actions: write
+    env:
       QLT_GITHUB_TOKEN: ${{ secrets.QLT_GITHUB_TOKEN }}
+      QLT_CHAIN: ${{ inputs.chain || '0' }}
+      QLT_CONTINUE: ${{ (inputs.chain || '0') != '0' && '--set ui-explorer.continue_unfinished=true' || '' }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
@@ -43,14 +53,36 @@ jobs:
     - name: build web
       run: npm ci
       working-directory: offlog-app
-    - uses: actions/cache@v4
+    - uses: actions/cache/restore@v4
       with:
-        path: .qlt/cache
-        key: qlt-cache-${{ github.run_id }}
+        path: '.qlt/cache
+
+          .qlt/qlt.db
+
+          .qlt/qlt.db-wal
+
+          .qlt/qlt.db-shm'
+        key: qlt-cache-${{ github.run_id }}-${{ github.run_attempt }}
         restore-keys: qlt-cache-
     - run: qlt doctor
       continue-on-error: true
-    - run: qlt run discover --target web --fail-on never --time 5h
+    - run: qlt run discover --target web --fail-on never --time 5h $QLT_CONTINUE
+    - if: always()
+      uses: actions/cache/save@v4
+      with:
+        path: '.qlt/cache
+
+          .qlt/qlt.db
+
+          .qlt/qlt.db-wal
+
+          .qlt/qlt.db-shm'
+        key: qlt-cache-${{ github.run_id }}-${{ github.run_attempt }}
+    - name: go on in a next run if the map is unfinished
+      if: always() && github.event_name != 'pull_request'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 10 ]; then\n  echo \"10 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target web; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=web -f chain=$((chain + 1))\nfi\n"
     - if: always()
       run: qlt report --format md >> "$GITHUB_STEP_SUMMARY" || true
     - if: always()
@@ -66,7 +98,11 @@ jobs:
     if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (inputs.target == '' || inputs.target == 'android'))
     runs-on: ubuntu-latest
     timeout-minutes: 355
-    env: *id001
+    permissions: *id001
+    env:
+      QLT_GITHUB_TOKEN: ${{ secrets.QLT_GITHUB_TOKEN }}
+      QLT_CHAIN: ${{ inputs.chain || '0' }}
+      QLT_CONTINUE: ${{ (inputs.chain || '0') != '0' && '--set ui-explorer.continue_unfinished=true' || '' }}
     defaults:
       run:
         shell: bash
@@ -104,10 +140,16 @@ jobs:
 
         appium driver install uiautomator2'
     - run: python qlt-install.py mobile
-    - uses: actions/cache@v4
+    - uses: actions/cache/restore@v4
       with:
-        path: .qlt/cache
-        key: qlt-cache-android-android-${{ github.run_id }}
+        path: '.qlt/cache
+
+          .qlt/qlt.db
+
+          .qlt/qlt.db-wal
+
+          .qlt/qlt.db-shm'
+        key: qlt-cache-android-android-${{ github.run_id }}-${{ github.run_attempt }}
         restore-keys: qlt-cache-android-android-
     - name: explore android on an emulator
       uses: reactivecircus/android-emulator-runner@v2
@@ -119,7 +161,23 @@ jobs:
         disable-animations: true
         script: 'qlt doctor || true
 
-          qlt run discover --target android --fail-on never --time 5h'
+          qlt run discover --target android --fail-on never --time 5h $QLT_CONTINUE'
+    - if: always()
+      uses: actions/cache/save@v4
+      with:
+        path: '.qlt/cache
+
+          .qlt/qlt.db
+
+          .qlt/qlt.db-wal
+
+          .qlt/qlt.db-shm'
+        key: qlt-cache-android-android-${{ github.run_id }}-${{ github.run_attempt }}
+    - name: go on in a next run if the map is unfinished
+      if: always() && github.event_name != 'pull_request'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 10 ]; then\n  echo \"10 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target android; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=android -f chain=$((chain + 1))\nfi\n"
     - if: always()
       run: qlt report --format md > qa-report.md && cat qa-report.md >> "$GITHUB_STEP_SUMMARY" || true
     - if: always()
