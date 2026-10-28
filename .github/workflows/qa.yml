@@ -127,6 +127,14 @@ jobs:
         pkill -f ''[K]otlinCompileDaemon'' || true
 
         '
+    - name: room for the emulator
+      run: 'sudo rm -rf /usr/share/dotnet /usr/local/lib/node_modules/@azure /opt/ghc /usr/local/.ghcup /usr/local/share/boost /usr/share/swift /opt/hostedtoolcache/CodeQL
+
+        rm -rf ~/.gradle/caches/build-cache-* ~/.gradle/daemon
+
+        df -h / && free -m
+
+        '
     - name: KVM
       run: 'echo ''KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"'' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
 
@@ -159,9 +167,18 @@ jobs:
         arch: x86_64
         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save
         disable-animations: true
-        script: 'qlt doctor || true
+        script: 'nohup sh -c ''while true; do echo "$(date -u +%H:%M) memory free $(free -m | awk "/Mem/{print \$7}") MB, disk free $(df -h / | awk "NR==2{print \$4}")"; sleep 300; done'' > ~/qlt-runner.log 2>&1 &
+
+          qlt doctor || true
 
           qlt run discover --target android --fail-on never --time 5h $QLT_CONTINUE'
+    - name: what the runner had left
+      if: always()
+      run: 'cat ~/qlt-runner.log || true
+
+        df -h / && free -m
+
+        '
     - if: always()
       uses: actions/cache/save@v4
       with:
