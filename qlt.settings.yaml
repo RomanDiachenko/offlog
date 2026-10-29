@@ -240,7 +240,11 @@ ui-explorer:
   # A submission rejected with a validation message changed no data
   # rejected_submits_keep_data: true
   # Input label, test id or name -> value to use
-  # fill: {}
+  # The sync form ("Use my own server") points at the NyxDB service the web target starts
+  fill:
+    Address: "http://localhost:5984"
+    Username: "qlt"
+    Password: "qlt-ci-sync"
   # Regexes on element names never to trigger
   # skip: []
   # Origins besides the entry URL's that may be visited

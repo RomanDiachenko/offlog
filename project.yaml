@@ -14,7 +14,18 @@ targets:
       provider: process
       cwd: offlog-app  # the web app lives here, not in the repository root
       command: "npm run dev"
-    build: {command: "npm ci", cwd: offlog-app}  # CI: dependencies before `npm run dev`
+      services:  # the sync server ("Use my own server"), started before the app
+        - name: nyxdb
+          command: ".qlt-tools/bin/nyxdb"
+          env:
+            NYXDB_ADDR: "127.0.0.1:5984"
+            NYXDB_DATA: ".qlt-tools/nyxdb-data"
+            NYXDB_USER: "qlt"
+            NYXDB_PASSWORD: "qlt-ci-sync"  # a throwaway test server
+          health_url: "http://127.0.0.1:5984/"
+    # CI: NyxDB (the sync server, built from its pinned tag), then the app's dependencies
+    build:
+      command: "cargo install --git https://github.com/hrach-gevorgyan/nyxdb --tag v0.1.8 --locked nyxdb --root .qlt-tools && cd offlog-app && npm ci"
 
   - id: android  # the Capacitor build, on an emulator, driven through Appium
     platform: android
