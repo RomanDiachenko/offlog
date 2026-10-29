@@ -43,8 +43,9 @@ sources:
   docs: []  # specifications: md, txt, html, pdf, docx, OpenAPI
   chats: []  # chat exports (Slack folders, JSON, text)
 
-oracle:
-  type: requirements  # requirements | recorded_snapshot | live_reference
+oracle:  # parity: compare with the golden master recorded from an earlier version
+  type: recorded_snapshot  # requirements | recorded_snapshot | live_reference
+  reference: golden
 
 policy: intended  # intended | strict (pin observed behavior, bug for bug)
 
