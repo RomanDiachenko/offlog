@@ -183,7 +183,8 @@ test-validator:
   # Defaults to the suite's base URL
   # base_url: null
   # Snapshot data first; restore it between runs and at the end
-  # restore_data: true
+  # The CI emulator does not come back from a snapshot; native tests clear the data
+  restore_data: false
   # Only the suite of this system
   # system: null
   # Git ref: run only tests the changes since it can affect, plus the `always` suites;
