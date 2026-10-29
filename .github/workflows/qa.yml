@@ -166,7 +166,7 @@ jobs:
         ram-size: 3072M
         target: google_apis
         arch: x86_64
-        emulator-options: -no-window -gpu guest -noaudio -no-boot-anim -no-snapshot-save
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save
         disable-animations: true
         script: 'nohup sh -c ''while true; do echo "$(date -u +%H:%M) memory free $(free -m | awk "/Mem/{print \$7}") MB, disk free $(df -h / | awk "NR==2{print \$4}")"; sleep 300; done'' > ~/qlt-runner.log 2>&1 &
 
