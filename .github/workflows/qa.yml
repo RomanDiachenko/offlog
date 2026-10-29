@@ -2,7 +2,7 @@
 # Fast job: committed generated tests (smoke or healthcheck) on every change.
 # Scheduled job (0 22 * * *): `qlt run discover`, fails past `never`.
 # Set these as CI secrets: QLT_GITHUB_TOKEN.
-# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.4.4 with it.
+# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.4.5 with it.
 # No generated web tests yet: run `qlt run tests` and commit them.
 # Desktop targets (desktop): a job each on windows-latest, on the schedule;
 # it builds the app, installs Appium's Windows driver, runs `qlt run discover`.
