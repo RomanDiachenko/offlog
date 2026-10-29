@@ -1,13 +1,16 @@
 # Qualinaut pipeline (GitHub Actions), written by `qlt ci`. Edit freely.
+# Made from project.yaml 5dcf58d6c808: `qlt doctor` says when it has changed.
 # Fast job: committed generated tests (smoke or healthcheck) on every change.
-# Scheduled job (0 22 * * *): `qlt run discover`, fails past `never`.
+# Scheduled job (0 22 * * *): `qlt run tests`, fails past `never`.
 # Set these as CI secrets: QLT_GITHUB_TOKEN.
-# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.5.0 with it.
+# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.6.0 with it.
 # No generated web tests yet: run `qlt run tests` and commit them.
 # Desktop targets (desktop): a job each on windows-latest, on the schedule;
-# it builds the app, installs Appium's Windows driver, runs `qlt run discover`.
+# it builds the app, installs Appium's Windows driver, runs `qlt run tests`.
 # Android targets (android): a job each on ubuntu-latest with an emulator (API 34),
-# on the schedule; it builds the app, installs Appium with UiAutomator2, runs `qlt run discover --time 5h`.
+# on the schedule; it builds the app, installs Appium with UiAutomator2, runs `qlt run tests --time 5h`.
+# Links (web-android): a job each after the targets' jobs, with the suites they generated
+# (a flow that generates tests, e.g. `--flow tests`): `qlt links`, then the link suite with both targets up.
 
 name: qa
 'on':
@@ -152,7 +155,7 @@ jobs:
         restore-keys: qlt-cache-desktop-desktop-
     - run: qlt doctor
       continue-on-error: true
-    - run: qlt run discover --target desktop --fail-on never --time 5h $QLT_CONTINUE
+    - run: qlt run tests --target desktop --fail-on never --time 5h $QLT_CONTINUE
     - if: always()
       uses: actions/cache/save@v4
       with:
@@ -260,7 +263,7 @@ jobs:
 
           qlt doctor || true
 
-          qlt run discover --target android --fail-on never --time 5h $QLT_CONTINUE'
+          qlt run tests --target android --fail-on never --time 5h $QLT_CONTINUE'
     - name: what the runner had left
       if: always()
       run: 'cat ~/qlt-runner.log || true
@@ -297,3 +300,92 @@ jobs:
           golden
 
           qa-report.md'
+  links-web-android:
+    if: '!cancelled() && (github.event_name == ''schedule'' || (github.event_name == ''workflow_dispatch'' && (inputs.target == '''')))'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      QLT_GITHUB_TOKEN: ${{ secrets.QLT_GITHUB_TOKEN }}
+      QLT_CHAIN: ${{ inputs.chain || '0' }}
+      QLT_CONTINUE: ${{ (inputs.chain || '0') != '0' && '--set ui-explorer.continue_unfinished=true' || '' }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '21'
+    - name: build android
+      run: npm ci && npm run build && npx cap sync android && cd android && chmod +x gradlew && ./gradlew assembleDebug
+      working-directory: offlog-app
+    - name: free the build's memory
+      run: 'pkill -f ''[G]radleDaemon'' || true
+
+        pkill -f ''[K]otlinCompileDaemon'' || true
+
+        '
+    - name: room for the emulator
+      run: 'sudo rm -rf /usr/share/dotnet /usr/local/lib/node_modules/@azure /opt/ghc /usr/local/.ghcup /usr/local/share/boost /usr/share/swift /opt/hostedtoolcache/CodeQL
+
+        rm -rf ~/.gradle/caches/build-cache-* ~/.gradle/daemon
+
+        df -h / && free -m
+
+        '
+    - name: build web
+      run: cargo install --git https://github.com/hrach-gevorgyan/nyxdb --tag v0.1.8 --locked nyxdb --root .qlt-tools && cd offlog-app && npm ci
+    - run: python qlt-install.py mobile
+    - run: playwright install --with-deps chromium
+    - name: the suites the targets' jobs generated
+      uses: actions/download-artifact@v4
+      with:
+        pattern: qa*
+        path: ${{ runner.temp }}/qlt-suites
+    - name: the link suite web-android
+      run: "mkdir -p generated-tests\nfor d in $(find \"${{ runner.temp }}/qlt-suites\" -name index.json -exec dirname {} \\;); do\n  case \"$(basename \"$d\")\" in web|android) rm -rf \"generated-tests/$(basename \"$d\")\" && cp -r \"$d\" generated-tests/ ;; esac\ndone\nqlt links\npip install -r generated-tests/web/requirements.txt -r generated-tests/android/requirements.txt\n"
+    - name: KVM
+      run: 'echo ''KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"'' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+
+        sudo udevadm control --reload-rules
+
+        sudo udevadm trigger --name-match=kvm
+
+        '
+    - name: Appium with UiAutomator2
+      run: 'npm install -g appium
+
+        appium driver install uiautomator2'
+    - name: web-android with android on an emulator
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 34
+        ram-size: 3072M
+        target: google_apis
+        arch: x86_64
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save
+        disable-animations: true
+        script: 'adb reverse tcp:5173 tcp:5173
+
+          adb reverse tcp:5984 tcp:5984
+
+          nohup appium > appium.log 2>&1 &
+
+          timeout 120 bash -c ''until curl -fs http://127.0.0.1:4723/status >/dev/null; do sleep 2; done''
+
+          qlt serve --target web -- pytest generated-tests/links/web-android --junitxml=generated-tests/links/web-android/results.xml'
+    - if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: qa-links-web-android
+        path: generated-tests/links/web-android
+    needs:
+    - explore
+    - android-android

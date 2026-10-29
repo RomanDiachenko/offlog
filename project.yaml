@@ -49,6 +49,13 @@ targets:
     build:
       command: "cd offlog-app && npm ci && npm run build && cd ../offlog-desktop && pwsh -File scripts/fetch-nyxdb-win.ps1 && cd src-tauri && cargo build"
 
+# Targets that share data: what one creates, the other shows (link-tester).
+links:
+  - between: [web, android]
+    via: nyxdb  # the web target's sync service; the phone reaches it through adb reverse
+    connect: {web: "Save & restart sync", android: "Save and connect"}
+    wait_s: 60
+
 sources:
   repos: ["."]  # source code: routes, guards, data access
   docs: []  # specifications: md, txt, html, pdf, docx, OpenAPI
