@@ -52,8 +52,7 @@ jobs:
       with:
         node-version: lts/*
     - name: build web
-      run: npm ci
-      working-directory: offlog-app
+      run: cargo install --git https://github.com/hrach-gevorgyan/nyxdb --tag v0.1.8 --locked nyxdb --root .qlt-tools && cd offlog-app && npm ci
     - uses: actions/cache/restore@v4
       with:
         path: '.qlt/cache
