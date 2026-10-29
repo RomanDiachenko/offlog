@@ -2,7 +2,7 @@
 # Fast job: committed generated tests (smoke or healthcheck) on every change.
 # Scheduled job (0 22 * * *): `qlt run discover`, fails past `never`.
 # Set these as CI secrets: QLT_GITHUB_TOKEN.
-# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.4.2 with it.
+# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.4.3 with it.
 # No generated web tests yet: run `qlt run tests` and commit them.
 # Desktop (Tauri) is left out until it has been tried: `qlt ci github` adds its job back.
 # Android targets (android): a job each on ubuntu-latest with an emulator (API 34),
@@ -82,7 +82,7 @@ jobs:
       if: '!cancelled() && github.event_name != ''pull_request'''
       env:
         GH_TOKEN: ${{ github.token }}
-      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 10 ]; then\n  echo \"10 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target web; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=web -f chain=$((chain + 1))\nfi\n"
+      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target web; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=web -f chain=$((chain + 1))\nfi\n"
     - if: always()
       run: qlt report --format md >> "$GITHUB_STEP_SUMMARY" || true
     - if: always()
@@ -195,7 +195,7 @@ jobs:
       if: '!cancelled() && github.event_name != ''pull_request'''
       env:
         GH_TOKEN: ${{ github.token }}
-      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 10 ]; then\n  echo \"10 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target android; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=android -f chain=$((chain + 1))\nfi\n"
+      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target android; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=android -f chain=$((chain + 1))\nfi\n"
     - if: always()
       run: qlt report --format md > qa-report.md && cat qa-report.md >> "$GITHUB_STEP_SUMMARY" || true
     - if: always()

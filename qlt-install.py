@@ -1,4 +1,4 @@
-"""Install Qualinaut 0.5.4.2 from its GitHub release. Written by `qlt ci`; commit it.
+"""Install Qualinaut 0.5.4.3 from its GitHub release. Written by `qlt ci`; commit it.
 
 The pipeline runs it instead of `pip install git+...`: no clone of the Qualinaut
 repository and no write access are needed, only a token that can read its releases.
@@ -17,7 +17,7 @@ import urllib.error
 import urllib.request
 
 REPO = "RomanDiachenko/qualinaut"
-TAG = "v0.5.4.2"
+TAG = "v0.5.4.3"
 API = "https://api.github.com/repos/" + REPO
 
 
