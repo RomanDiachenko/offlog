@@ -300,6 +300,9 @@ ui-explorer:
     # app_activity: null
     # How a fresh session starts between explorations; one of: relaunch | clear_data
     reset: "clear_data"
+    # Desktop: the folders the app keeps its data in (the Tauri app's identifier), emptied
+    # by `reset: clear_data` while it is closed
+    data_dirs: ["%APPDATA%/com.offlog.app", "%LOCALAPPDATA%/com.offlog.app"]
     # Wait after each action (bare number: ms); a duration, e.g. 30s, 10m
     # settle_ms: 600
     # Wait for an element to appear (bare number: seconds); a duration, e.g. 30s, 10m
