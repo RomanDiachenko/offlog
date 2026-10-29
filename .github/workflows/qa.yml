@@ -67,7 +67,7 @@ jobs:
         restore-keys: qlt-cache-
     - run: qlt doctor
       continue-on-error: true
-    - run: qlt run discover --target web --fail-on never --time 5h $QLT_CONTINUE
+    - run: qlt run tests --target web --fail-on never --time 5h $QLT_CONTINUE
     - if: always()
       uses: actions/cache/save@v4
       with:
