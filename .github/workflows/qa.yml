@@ -3,7 +3,7 @@
 # Fast job: committed generated tests (smoke or healthcheck) on every change.
 # Scheduled job (0 22 * * *): `qlt run tests`, fails past `never`.
 # Set these as CI secrets: QLT_GITHUB_TOKEN.
-# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.6.4 with it.
+# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.6.5 with it.
 # No generated web tests yet: run `qlt run tests` and commit them.
 # Desktop targets (desktop): a job each on windows-latest, on the schedule;
 # it builds the app, installs Appium's Windows driver, runs `qlt run tests`.
@@ -263,7 +263,7 @@ jobs:
 
           qlt doctor || true
 
-          qlt run tests --target android --fail-on never --skip test-validator --time 4h $QLT_CONTINUE'
+          qlt run --goal test.suite --goal report --target android --fail-on never --time 4h $QLT_CONTINUE'
     - name: tests of android on a fresh emulator
       uses: reactivecircus/android-emulator-runner@v2
       with:
@@ -273,7 +273,7 @@ jobs:
         arch: x86_64
         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save
         disable-animations: true
-        script: qlt agent test-validator --target android --fail-on never
+        script: qlt agent test-validator reporter --target android --fail-on never
     - name: what the runner had left
       if: always()
       run: 'cat ~/qlt-runner.log || true
