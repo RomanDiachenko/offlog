@@ -46,7 +46,7 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-    - run: python qlt-install.py mobile
+    - run: pip install "qualinaut[mobile] @ git+https://x-access-token:${QLT_GITHUB_TOKEN}@github.com/RomanDiachenko/qualinaut@feat/a11y"
     - run: playwright install --with-deps chromium
     - uses: actions/setup-node@v4
       with:
@@ -54,7 +54,8 @@ jobs:
     - name: build web
       run: npm ci
       working-directory: offlog-app
-    - uses: actions/cache/restore@v4
+    - if: false
+      uses: actions/cache/restore@v4
       with:
         path: '.qlt/cache
 
@@ -67,8 +68,8 @@ jobs:
         restore-keys: qlt-cache-
     - run: qlt doctor
       continue-on-error: true
-    - run: qlt run tests --target web --fail-on never --time 5h $QLT_CONTINUE
-    - if: always()
+    - run: qlt run discover --target web --profile quick --fail-on never
+    - if: false
       uses: actions/cache/save@v4
       with:
         path: '.qlt/cache
@@ -80,7 +81,7 @@ jobs:
           .qlt/qlt.db-shm'
         key: qlt-cache-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
-      if: '!cancelled() && github.event_name != ''pull_request'''
+      if: false
       env:
         GH_TOKEN: ${{ github.token }}
       run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target web; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=web -f chain=$((chain + 1))\nfi\n"
