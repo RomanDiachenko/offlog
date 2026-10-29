@@ -2,9 +2,10 @@
 # Fast job: committed generated tests (smoke or healthcheck) on every change.
 # Scheduled job (0 22 * * *): `qlt run discover`, fails past `never`.
 # Set these as CI secrets: QLT_GITHUB_TOKEN.
-# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.4.3 with it.
+# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.4.4 with it.
 # No generated web tests yet: run `qlt run tests` and commit them.
-# Desktop (Tauri) is left out until it has been tried: `qlt ci github` adds its job back.
+# Desktop targets (desktop): a job each on windows-latest, on the schedule;
+# it builds the app, installs Appium's Windows driver, runs `qlt run discover`.
 # Android targets (android): a job each on ubuntu-latest with an emulator (API 34),
 # on the schedule; it builds the app, installs Appium with UiAutomator2, runs `qlt run discover --time 5h`.
 
@@ -94,6 +95,94 @@ jobs:
           generated-tests
 
           golden'
+  desktop-desktop:
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (inputs.target == '' || inputs.target == 'desktop'))
+    runs-on: windows-latest
+    timeout-minutes: 355
+    permissions: *id001
+    env:
+      QLT_GITHUB_TOKEN: ${{ secrets.QLT_GITHUB_TOKEN }}
+      QLT_CHAIN: ${{ inputs.chain || '0' }}
+      QLT_CONTINUE: ${{ (inputs.chain || '0') != '0' && '--set ui-explorer.continue_unfinished=true' || '' }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - uses: actions/cache@v4
+      with:
+        path: '~/.cargo/registry
+
+          ~/.cargo/git
+
+          offlog-desktop/src-tauri/target'
+        key: cargo-{{ runner.os }}-{{ hashFiles('offlog-desktop/src-tauri/Cargo.lock') }}
+        restore-keys: cargo-${{ runner.os }}-
+    - name: build desktop
+      run: cd offlog-app && npm ci && npm run build && cd ../offlog-desktop && pwsh -File scripts/fetch-nyxdb-win.ps1 && cd src-tauri && cargo build
+    - name: Appium with the Windows driver
+      run: 'npm install -g appium
+
+        appium driver install windows'
+    - name: WinAppDriver
+      shell: pwsh
+      run: '$exe = "${env:ProgramFiles(x86)}\Windows Application Driver\WinAppDriver.exe"
+
+        if (-not (Test-Path $exe)) { choco install winappdriver -y --no-progress }
+
+        reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f
+
+        '
+    - run: python qlt-install.py mobile
+    - uses: actions/cache/restore@v4
+      with:
+        path: '.qlt/cache
+
+          .qlt/qlt.db
+
+          .qlt/qlt.db-wal
+
+          .qlt/qlt.db-shm'
+        key: qlt-cache-desktop-desktop-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: qlt-cache-desktop-desktop-
+    - run: qlt doctor
+      continue-on-error: true
+    - run: qlt run discover --target desktop --fail-on never --time 5h $QLT_CONTINUE
+    - if: always()
+      uses: actions/cache/save@v4
+      with:
+        path: '.qlt/cache
+
+          .qlt/qlt.db
+
+          .qlt/qlt.db-wal
+
+          .qlt/qlt.db-shm'
+        key: qlt-cache-desktop-desktop-${{ github.run_id }}-${{ github.run_attempt }}
+    - name: go on in a next run if the map is unfinished
+      if: '!cancelled() && github.event_name != ''pull_request'''
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target desktop; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=desktop -f chain=$((chain + 1))\nfi\n"
+    - if: always()
+      run: qlt report --format md > qa-report.md && cat qa-report.md >> "$GITHUB_STEP_SUMMARY" || true
+    - if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: qa-desktop-desktop
+        path: '.qlt/artifacts
+
+          generated-tests
+
+          golden
+
+          qa-report.md'
   android-android:
     if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (inputs.target == '' || inputs.target == 'android'))
     runs-on: ubuntu-latest

@@ -34,6 +34,9 @@ targets:
     platform: desktop
     app: offlog-desktop/src-tauri/target/debug/Offlog.exe
     repos: [offlog-app, offlog-desktop]
+    # CI: the web assets, the bundled NyxDB, then the Tauri app (debug: target/debug)
+    build:
+      command: "cd offlog-app && npm ci && npm run build && cd ../offlog-desktop && pwsh -File scripts/fetch-nyxdb-win.ps1 && cd src-tauri && cargo build"
 
 sources:
   repos: ["."]  # source code: routes, guards, data access
