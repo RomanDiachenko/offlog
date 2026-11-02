@@ -3,7 +3,7 @@
 # Fast job: committed generated tests (smoke or healthcheck) on every change.
 # Scheduled job (0 22 * * *): `qlt run tests`, fails past `never`.
 # Set these as CI secrets: QLT_GITHUB_TOKEN.
-# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.8.2 with it.
+# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.8.3 with it.
 # No generated web tests yet: run `qlt run tests` and commit them.
 # Desktop targets (desktop): a job each on windows-latest, on the schedule;
 # it builds the app, installs Appium's Windows driver, runs `qlt run tests`.
@@ -66,12 +66,17 @@ jobs:
 
           .qlt/qlt.db-wal
 
-          .qlt/qlt.db-shm'
+          .qlt/qlt.db-shm
+
+          .qlt/baseline'
         key: qlt-cache-${{ github.run_id }}-${{ github.run_attempt }}
         restore-keys: qlt-cache-
     - run: qlt doctor
       continue-on-error: true
     - run: qlt run tests --target web --fail-on never --time 5h $QLT_CONTINUE
+    - name: changes since the previous run
+      if: '!cancelled()'
+      run: "if [ -f \".qlt/baseline/web.json\" ]; then\n  qlt agent behavior-comparator --target web --set behavior-comparator.baseline=.qlt/baseline --fail-on never || true\nfi\nqlt agent golden-recorder --target web --set golden-recorder.output=.qlt/baseline --fail-on never || true\n"
     - if: always()
       uses: actions/cache/save@v4
       with:
@@ -81,7 +86,9 @@ jobs:
 
           .qlt/qlt.db-wal
 
-          .qlt/qlt.db-shm'
+          .qlt/qlt.db-shm
+
+          .qlt/baseline'
         key: qlt-cache-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
       if: '!cancelled() && github.event_name != ''pull_request'''
@@ -152,12 +159,17 @@ jobs:
 
           .qlt/qlt.db-wal
 
-          .qlt/qlt.db-shm'
+          .qlt/qlt.db-shm
+
+          .qlt/baseline'
         key: qlt-cache-desktop-desktop-${{ github.run_id }}-${{ github.run_attempt }}
         restore-keys: qlt-cache-desktop-desktop-
     - run: qlt doctor
       continue-on-error: true
     - run: qlt run tests --target desktop --fail-on never --time 5h $QLT_CONTINUE
+    - name: changes since the previous run
+      if: '!cancelled()'
+      run: "if [ -f \".qlt/baseline/desktop.json\" ]; then\n  qlt agent behavior-comparator --target desktop --set behavior-comparator.baseline=.qlt/baseline --fail-on never || true\nfi\nqlt agent golden-recorder --target desktop --set golden-recorder.output=.qlt/baseline --fail-on never || true\n"
     - if: always()
       uses: actions/cache/save@v4
       with:
@@ -167,7 +179,9 @@ jobs:
 
           .qlt/qlt.db-wal
 
-          .qlt/qlt.db-shm'
+          .qlt/qlt.db-shm
+
+          .qlt/baseline'
         key: qlt-cache-desktop-desktop-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
       if: '!cancelled() && github.event_name != ''pull_request'''
@@ -252,7 +266,9 @@ jobs:
 
           .qlt/qlt.db-wal
 
-          .qlt/qlt.db-shm'
+          .qlt/qlt.db-shm
+
+          .qlt/baseline'
         key: qlt-cache-android-android-${{ github.run_id }}-${{ github.run_attempt }}
         restore-keys: qlt-cache-android-android-
     - name: explore android on an emulator
@@ -286,6 +302,9 @@ jobs:
         df -h / && free -m
 
         '
+    - name: changes since the previous run
+      if: '!cancelled()'
+      run: "if [ -f \".qlt/baseline/android.json\" ]; then\n  qlt agent behavior-comparator --target android --set behavior-comparator.baseline=.qlt/baseline --fail-on never || true\nfi\nqlt agent golden-recorder --target android --set golden-recorder.output=.qlt/baseline --fail-on never || true\n"
     - if: always()
       uses: actions/cache/save@v4
       with:
@@ -295,7 +314,9 @@ jobs:
 
           .qlt/qlt.db-wal
 
-          .qlt/qlt.db-shm'
+          .qlt/qlt.db-shm
+
+          .qlt/baseline'
         key: qlt-cache-android-android-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
       if: '!cancelled() && github.event_name != ''pull_request'''
