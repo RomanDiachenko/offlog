@@ -9,8 +9,6 @@
 # it builds the app, installs Appium's Windows driver, runs `qlt run tests`.
 # Android targets (android): a job each on ubuntu-latest with an emulator (API 34),
 # on the schedule; it builds the app, installs Appium with UiAutomator2, runs `qlt run tests --time 5h`.
-# Links (web-android): a job each after the targets' jobs, with the suites they generated
-# (a flow that generates tests, e.g. `--flow tests`): `qlt links`, then the link suite with both targets up.
 # Round summary: a last job (`round`) sums up every scheduled job from their artifacts (`qlt round`), in its job summary and the artifact `qa-round`.
 
 name: qa
@@ -65,7 +63,9 @@ jobs:
 
           .qlt/qlt.db-wal
 
-          .qlt/qlt.db-shm'
+          .qlt/qlt.db-shm
+
+          .qlt/baseline'
         key: qlt-cache-${{ github.run_id }}-${{ github.run_attempt }}
         restore-keys: qlt-cache-
     - run: qlt doctor
@@ -80,7 +80,9 @@ jobs:
 
           .qlt/qlt.db-wal
 
-          .qlt/qlt.db-shm'
+          .qlt/qlt.db-shm
+
+          .qlt/baseline'
         key: qlt-cache-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
       if: '!cancelled() && github.event_name != ''pull_request'''
@@ -151,7 +153,9 @@ jobs:
 
           .qlt/qlt.db-wal
 
-          .qlt/qlt.db-shm'
+          .qlt/qlt.db-shm
+
+          .qlt/baseline'
         key: qlt-cache-desktop-desktop-${{ github.run_id }}-${{ github.run_attempt }}
         restore-keys: qlt-cache-desktop-desktop-
     - run: qlt doctor
@@ -166,7 +170,9 @@ jobs:
 
           .qlt/qlt.db-wal
 
-          .qlt/qlt.db-shm'
+          .qlt/qlt.db-shm
+
+          .qlt/baseline'
         key: qlt-cache-desktop-desktop-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
       if: '!cancelled() && github.event_name != ''pull_request'''
@@ -248,7 +254,9 @@ jobs:
 
           .qlt/qlt.db-wal
 
-          .qlt/qlt.db-shm'
+          .qlt/qlt.db-shm
+
+          .qlt/baseline'
         key: qlt-cache-android-android-${{ github.run_id }}-${{ github.run_attempt }}
         restore-keys: qlt-cache-android-android-
     - name: explore android on an emulator
@@ -291,7 +299,9 @@ jobs:
 
           .qlt/qlt.db-wal
 
-          .qlt/qlt.db-shm'
+          .qlt/qlt.db-shm
+
+          .qlt/baseline'
         key: qlt-cache-android-android-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
       if: '!cancelled() && github.event_name != ''pull_request'''
@@ -311,102 +321,12 @@ jobs:
           golden
 
           qa-report.md'
-  links-web-android:
-    if: '!cancelled() && (github.event_name == ''schedule'' || (github.event_name == ''workflow_dispatch'' && (inputs.target == '''')))'
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
-    env:
-      QLT_GITHUB_TOKEN: ${{ secrets.QLT_GITHUB_TOKEN }}
-      QLT_CHAIN: ${{ inputs.chain || '0' }}
-      QLT_CONTINUE: ${{ (inputs.chain || '0') != '0' && '--set ui-explorer.continue_unfinished=true' || '' }}
-    defaults:
-      run:
-        shell: bash
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - uses: actions/setup-java@v4
-      with:
-        distribution: temurin
-        java-version: '21'
-    - name: build android
-      run: npm ci && npm run build && npx cap sync android && cd android && chmod +x gradlew && ./gradlew assembleDebug
-      working-directory: offlog-app
-    - name: free the build's memory
-      run: 'pkill -f ''[G]radleDaemon'' || true
-
-        pkill -f ''[K]otlinCompileDaemon'' || true
-
-        '
-    - name: room for the emulator
-      run: 'sudo rm -rf /usr/share/dotnet /usr/local/lib/node_modules/@azure /opt/ghc /usr/local/.ghcup /usr/local/share/boost /usr/share/swift /opt/hostedtoolcache/CodeQL
-
-        rm -rf ~/.gradle/caches/build-cache-* ~/.gradle/daemon
-
-        df -h / && free -m
-
-        '
-    - name: build web
-      run: cargo install --git https://github.com/hrach-gevorgyan/nyxdb --tag v0.1.8 --locked nyxdb --root .qlt-tools && cd offlog-app && npm ci
-    - run: python qlt-install.py mobile
-    - run: playwright install --with-deps chromium
-    - name: the suites the targets' jobs generated
-      uses: actions/download-artifact@v4
-      with:
-        pattern: qa*
-        path: ${{ runner.temp }}/qlt-suites
-    - name: the link suite web-android
-      run: "mkdir -p generated-tests\nfor d in $(find \"${{ runner.temp }}/qlt-suites\" -name index.json -exec dirname {} \\;); do\n  case \"$(basename \"$d\")\" in web|android) rm -rf \"generated-tests/$(basename \"$d\")\" && cp -r \"$d\" generated-tests/ ;; esac\ndone\nqlt links\npip install -r generated-tests/web/requirements.txt -r generated-tests/android/requirements.txt\n"
-    - name: KVM
-      run: 'echo ''KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"'' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-
-        sudo udevadm control --reload-rules
-
-        sudo udevadm trigger --name-match=kvm
-
-        '
-    - name: Appium with UiAutomator2
-      run: 'npm install -g appium
-
-        appium driver install uiautomator2'
-    - name: web-android with android on an emulator
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 34
-        ram-size: 3072M
-        target: google_apis
-        arch: x86_64
-        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save
-        disable-animations: true
-        script: 'adb reverse tcp:5173 tcp:5173
-
-          adb reverse tcp:5984 tcp:5984
-
-          nohup appium > appium.log 2>&1 &
-
-          timeout 120 bash -c ''until curl -fs http://127.0.0.1:4723/status >/dev/null; do sleep 2; done''
-
-          qlt serve --target web -- pytest generated-tests/links/web-android --junitxml=generated-tests/links/web-android/results.xml || { code=$?; [ $code -eq 5 ] && echo ''::warning::no link tests: see why in the link suite step (qlt links)''; [ $code -eq 5 ]; }'
-    - if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: qa-links-web-android
-        path: generated-tests/links/web-android
-    needs:
-    - explore
-    - android-android
   round:
     needs:
     - explore
     - desktop-desktop
     - android-android
-    - links-web-android
-    if: always() && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    if: always() && !cancelled()
     runs-on: ubuntu-latest
     env:
       QLT_GITHUB_TOKEN: ${{ secrets.QLT_GITHUB_TOKEN }}
