@@ -3,13 +3,14 @@
 # Fast job: committed generated tests (smoke or healthcheck) on every change.
 # Scheduled job (0 22 * * *): `qlt run tests`, fails past `never`.
 # Set these as CI secrets: QLT_GITHUB_TOKEN.
-# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.8.16 with it.
+# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.9.0 with it.
 # No generated web tests yet: run `qlt run tests` and commit them.
 # Desktop targets (desktop): a job each on windows-latest, on the schedule;
 # it builds the app, installs Appium's Windows driver, runs `qlt run tests`.
 # Android targets (android): a job each on ubuntu-latest with an emulator (API 34),
 # on the schedule; it builds the app, installs Appium with UiAutomator2, runs `qlt run tests --time 5h`.
-# Round summary: a last job (`round`) sums up every scheduled job from their artifacts (`qlt round`), in its job summary and the artifact `qa-round`.
+# Round summary: a last job (`round`) sums up every scheduled job from their artifacts (`qlt round`), in its job summary and the artifact `qa-round`,
+# with what changed since the previous run (its `qa-round`, when there is one).
 
 name: qa
 'on':
@@ -346,6 +347,9 @@ jobs:
     - android-android
     if: always() && !cancelled()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     env:
       QLT_GITHUB_TOKEN: ${{ secrets.QLT_GITHUB_TOKEN }}
     steps:
@@ -359,12 +363,18 @@ jobs:
       with:
         pattern: qa*
         path: ${{ runner.temp }}/qlt-round
+    - name: the previous run's round
+      continue-on-error: true
+      env:
+        GH_TOKEN: ${{ github.token }}
+        BRANCH: ${{ github.head_ref || github.ref_name }}
+      run: "workflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nfor run in $(gh run list -R \"$GITHUB_REPOSITORY\" --workflow \"$workflow\" --branch \"$BRANCH\" --status completed --limit 10 --json databaseId --jq '.[].databaseId'); do\n  if gh run download \"$run\" -R \"$GITHUB_REPOSITORY\" -n qa-round -D \"${{ runner.temp }}/qlt-previous-round\"; then\n    echo \"compared with run $run\"\n    break\n  fi\ndone\n"
     - name: one summary of the round
       env:
         QLT_NEEDS: ${{ toJSON(needs) }}
       run: 'echo "$QLT_NEEDS" > needs.json
 
-        qlt round ${{ runner.temp }}/qlt-round --jobs needs.json --output qa-round >> "$GITHUB_STEP_SUMMARY"
+        qlt round ${{ runner.temp }}/qlt-round --jobs needs.json --output qa-round --previous ${{ runner.temp }}/qlt-previous-round >> "$GITHUB_STEP_SUMMARY"
 
         '
     - if: always()
