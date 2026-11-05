@@ -3,7 +3,7 @@
 # Fast job: committed generated tests (smoke or healthcheck) on every change.
 # Scheduled job (0 22 * * *): `qlt run tests`, fails past `never`.
 # Set these as CI secrets: QLT_GITHUB_TOKEN.
-# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.9.4 with it.
+# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.9.5 with it.
 # No generated web tests yet: run `qlt run tests` and commit them.
 # Desktop targets (desktop): a job each on windows-latest, on the schedule;
 # it builds the app, installs Appium's Windows driver, runs `qlt run tests`.
@@ -22,6 +22,15 @@ name: qa
   - cron: 0 22 * * *
   workflow_dispatch:
     inputs:
+      profile:
+        description: 'How far to go: quick (minutes, a first look: a release checked), standard (about 30 minutes) or deep (hours, as the scheduled run)'
+        required: false
+        default: quick
+        type: choice
+        options:
+        - quick
+        - standard
+        - deep
       target:
         description: 'Explore only this target (its id; empty: every target)'
         required: false
@@ -59,7 +68,8 @@ jobs:
         node-version: lts/*
     - name: build web
       run: cargo install --git https://github.com/hrach-gevorgyan/nyxdb --tag v0.1.8 --locked nyxdb --root .qlt-tools && cd offlog-app && npm ci
-    - uses: actions/cache/restore@v4
+    - if: (inputs.profile || 'deep') == 'deep'
+      uses: actions/cache/restore@v4
       with:
         path: '.qlt/cache
 
@@ -74,11 +84,11 @@ jobs:
         restore-keys: qlt-cache-
     - run: qlt doctor --target web
       continue-on-error: true
-    - run: qlt run tests --target web --fail-on never --time 5h $QLT_CONTINUE
+    - run: qlt run tests --target web --profile ${{ inputs.profile || 'deep' }} --fail-on never --time 5h $QLT_CONTINUE
     - name: changes since the previous run
-      if: '!cancelled()'
+      if: '!cancelled() && (inputs.profile || ''deep'') == ''deep'''
       run: "if [ -f \".qlt/baseline/web.json\" ]; then\n  qlt agent behavior-comparator --target web --set behavior-comparator.baseline=.qlt/baseline --fail-on never || true\nfi\nqlt agent golden-recorder --target web --set golden-recorder.output=.qlt/baseline --fail-on never || true\n"
-    - if: always()
+    - if: always() && (inputs.profile || 'deep') == 'deep'
       uses: actions/cache/save@v4
       with:
         path: '.qlt/cache
@@ -92,10 +102,10 @@ jobs:
           .qlt/baseline'
         key: qlt-cache-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
-      if: '!cancelled() && github.event_name != ''pull_request'''
+      if: '!cancelled() && github.event_name != ''pull_request'' && (inputs.profile || ''deep'') == ''deep'''
       env:
         GH_TOKEN: ${{ github.token }}
-      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target web; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=web -f chain=$((chain + 1))\nfi\n"
+      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target web; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=web -f profile=deep -f chain=$((chain + 1))\nfi\n"
     - if: always()
       run: qlt report --format md >> "$GITHUB_STEP_SUMMARY" || true
     - if: always()
@@ -152,7 +162,8 @@ jobs:
 
         '
     - run: python qlt-install.py mobile
-    - uses: actions/cache/restore@v4
+    - if: (inputs.profile || 'deep') == 'deep'
+      uses: actions/cache/restore@v4
       with:
         path: '.qlt/cache
 
@@ -167,11 +178,11 @@ jobs:
         restore-keys: qlt-cache-desktop-desktop-
     - run: qlt doctor --target desktop
       continue-on-error: true
-    - run: qlt run tests --target desktop --fail-on never --time 5h $QLT_CONTINUE
+    - run: qlt run tests --target desktop --profile ${{ inputs.profile || 'deep' }} --fail-on never --time 5h $QLT_CONTINUE
     - name: changes since the previous run
-      if: '!cancelled()'
+      if: '!cancelled() && (inputs.profile || ''deep'') == ''deep'''
       run: "if [ -f \".qlt/baseline/desktop.json\" ]; then\n  qlt agent behavior-comparator --target desktop --set behavior-comparator.baseline=.qlt/baseline --fail-on never || true\nfi\nqlt agent golden-recorder --target desktop --set golden-recorder.output=.qlt/baseline --fail-on never || true\n"
-    - if: always()
+    - if: always() && (inputs.profile || 'deep') == 'deep'
       uses: actions/cache/save@v4
       with:
         path: '.qlt/cache
@@ -185,10 +196,10 @@ jobs:
           .qlt/baseline'
         key: qlt-cache-desktop-desktop-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
-      if: '!cancelled() && github.event_name != ''pull_request'''
+      if: '!cancelled() && github.event_name != ''pull_request'' && (inputs.profile || ''deep'') == ''deep'''
       env:
         GH_TOKEN: ${{ github.token }}
-      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target desktop; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=desktop -f chain=$((chain + 1))\nfi\n"
+      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target desktop; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=desktop -f profile=deep -f chain=$((chain + 1))\nfi\n"
     - if: always()
       run: qlt report --format md > qa-report.md && cat qa-report.md >> "$GITHUB_STEP_SUMMARY" || true
     - if: always()
@@ -259,7 +270,8 @@ jobs:
 
         appium driver install uiautomator2'
     - run: python qlt-install.py mobile
-    - uses: actions/cache/restore@v4
+    - if: (inputs.profile || 'deep') == 'deep'
+      uses: actions/cache/restore@v4
       with:
         path: '.qlt/cache
 
@@ -285,7 +297,7 @@ jobs:
 
           qlt doctor --target android || true
 
-          qlt run --goal test.suite --goal report --target android --fail-on never --time 4h $QLT_CONTINUE'
+          qlt run --goal test.suite --goal report --target android --profile ${{ inputs.profile || ''deep'' }} --fail-on never --time 4h $QLT_CONTINUE'
     - name: tests of android on a fresh emulator
       uses: reactivecircus/android-emulator-runner@v2
       with:
@@ -295,7 +307,7 @@ jobs:
         arch: x86_64
         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save
         disable-animations: true
-        script: qlt agent test-validator reporter --target android --fail-on never --time 70m
+        script: qlt agent test-validator reporter --target android --profile ${{ inputs.profile || 'deep' }} --fail-on never --time 70m
     - name: what the runner had left
       if: always()
       run: 'cat ~/qlt-runner.log || true
@@ -304,9 +316,9 @@ jobs:
 
         '
     - name: changes since the previous run
-      if: '!cancelled()'
+      if: '!cancelled() && (inputs.profile || ''deep'') == ''deep'''
       run: "if [ -f \".qlt/baseline/android.json\" ]; then\n  qlt agent behavior-comparator --target android --set behavior-comparator.baseline=.qlt/baseline --fail-on never || true\nfi\nqlt agent golden-recorder --target android --set golden-recorder.output=.qlt/baseline --fail-on never || true\n"
-    - if: always()
+    - if: always() && (inputs.profile || 'deep') == 'deep'
       uses: actions/cache/save@v4
       with:
         path: '.qlt/cache
@@ -320,10 +332,10 @@ jobs:
           .qlt/baseline'
         key: qlt-cache-android-android-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
-      if: '!cancelled() && github.event_name != ''pull_request'''
+      if: '!cancelled() && github.event_name != ''pull_request'' && (inputs.profile || ''deep'') == ''deep'''
       env:
         GH_TOKEN: ${{ github.token }}
-      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target android; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=android -f chain=$((chain + 1))\nfi\n"
+      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target android; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=android -f profile=deep -f chain=$((chain + 1))\nfi\n"
     - if: always()
       run: qlt report --format md > qa-report.md && cat qa-report.md >> "$GITHUB_STEP_SUMMARY" || true
     - if: always()
@@ -368,13 +380,15 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
         BRANCH: ${{ github.head_ref || github.ref_name }}
-      run: "workflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nfor run in $(gh run list -R \"$GITHUB_REPOSITORY\" --workflow \"$workflow\" --branch \"$BRANCH\" --status completed --limit 10 --json databaseId --jq '.[].databaseId'); do\n  if gh run download \"$run\" -R \"$GITHUB_REPOSITORY\" -n qa-round -D \"${{ runner.temp }}/qlt-previous-round\"; then\n    echo \"compared with run $run\"\n    break\n  fi\ndone\n"
+        QLT_PROFILE: ${{ inputs.profile || 'deep' }}
+      run: "workflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nfor run in $(gh run list -R \"$GITHUB_REPOSITORY\" --workflow \"$workflow\" --branch \"$BRANCH\" --status completed --limit 10 --json databaseId --jq '.[].databaseId'); do\n  rm -rf \"${{ runner.temp }}/qlt-previous-round\"\n  if gh run download \"$run\" -R \"$GITHUB_REPOSITORY\" -n qa-round -D \"${{ runner.temp }}/qlt-previous-round\"; then\n    profile=$(jq -r '.profile // \"deep\"' \"${{ runner.temp }}/qlt-previous-round/round.json\")\n    if [ \"$profile\" = \"$QLT_PROFILE\" ]; then\n      echo \"compared with run $run\"\n      break\n    fi\n  fi\n  rm -rf \"${{ runner.temp }}/qlt-previous-round\"\ndone\n"
     - name: one summary of the round
       env:
         QLT_NEEDS: ${{ toJSON(needs) }}
+        QLT_PROFILE: ${{ inputs.profile || 'deep' }}
       run: 'echo "$QLT_NEEDS" > needs.json
 
-        qlt round ${{ runner.temp }}/qlt-round --jobs needs.json --output qa-round --previous ${{ runner.temp }}/qlt-previous-round >> "$GITHUB_STEP_SUMMARY"
+        qlt round ${{ runner.temp }}/qlt-round --jobs needs.json --output qa-round --profile "$QLT_PROFILE" --previous ${{ runner.temp }}/qlt-previous-round >> "$GITHUB_STEP_SUMMARY"
 
         '
     - if: always()
