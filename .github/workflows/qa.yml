@@ -3,7 +3,7 @@
 # Fast job: committed generated tests (smoke or healthcheck) on every change.
 # Scheduled job (0 22 * * *): `qlt run tests`, fails past `never`.
 # Set these as CI secrets: QLT_GITHUB_TOKEN.
-# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.9.7 with it.
+# QLT_GITHUB_TOKEN: a token that can read RomanDiachenko/qualinaut releases (Contents: read); qlt-install.py installs Qualinaut 0.5.9.8 with it.
 # No generated web tests yet: run `qlt run tests` and commit them.
 # Desktop targets (desktop): a job each on windows-latest, on the schedule;
 # it builds the app, installs Appium's Windows driver, runs `qlt run tests`.
@@ -80,14 +80,17 @@ jobs:
           .qlt/qlt.db-shm
 
           .qlt/baseline'
-        key: qlt-cache-${{ github.run_id }}-${{ github.run_attempt }}
-        restore-keys: qlt-cache-
+        key: qlt-cache-explore-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: qlt-cache-explore-
     - run: qlt doctor --target web
       continue-on-error: true
     - run: qlt run tests --target web --profile ${{ inputs.profile || 'deep' }} --fail-on never --time 5h $QLT_CONTINUE
     - name: changes since the previous run
       if: '!cancelled() && (inputs.profile || ''deep'') == ''deep'''
       run: "if [ -f \".qlt/baseline/web.json\" ]; then\n  qlt agent behavior-comparator --target web --set behavior-comparator.baseline=.qlt/baseline --fail-on never || true\nfi\nqlt agent golden-recorder --target web --set golden-recorder.output=.qlt/baseline --fail-on never || true\n"
+    - name: is the map unfinished
+      if: '!cancelled() && github.event_name != ''pull_request'' && (inputs.profile || ''deep'') == ''deep'''
+      run: "rm -f \"$RUNNER_TEMP/qlt-chain-next\"\nchain=\"${QLT_CHAIN:-0}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target web; then\n  echo \"web\" >> \"$RUNNER_TEMP/qlt-chain-next\"\nfi\n"
     - if: always() && (inputs.profile || 'deep') == 'deep'
       uses: actions/cache/save@v4
       with:
@@ -100,12 +103,12 @@ jobs:
           .qlt/qlt.db-shm
 
           .qlt/baseline'
-        key: qlt-cache-${{ github.run_id }}-${{ github.run_attempt }}
+        key: qlt-cache-explore-${{ github.run_id }}-${{ github.run_attempt }}
     - name: go on in a next run if the map is unfinished
       if: '!cancelled() && github.event_name != ''pull_request'' && (inputs.profile || ''deep'') == ''deep'''
       env:
         GH_TOKEN: ${{ github.token }}
-      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target web; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=web -f profile=deep -f chain=$((chain + 1))\nfi\n"
+      run: "[ -f \"$RUNNER_TEMP/qlt-chain-next\" ] || exit 0\nchain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nwhile IFS= read -r target; do\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=\"$target\" -f profile=deep -f chain=$((chain + 1))\ndone < \"$RUNNER_TEMP/qlt-chain-next\"\n"
     - if: always()
       run: qlt report --format md >> "$GITHUB_STEP_SUMMARY" || true
     - if: always()
@@ -182,6 +185,9 @@ jobs:
     - name: changes since the previous run
       if: '!cancelled() && (inputs.profile || ''deep'') == ''deep'''
       run: "if [ -f \".qlt/baseline/desktop.json\" ]; then\n  qlt agent behavior-comparator --target desktop --set behavior-comparator.baseline=.qlt/baseline --fail-on never || true\nfi\nqlt agent golden-recorder --target desktop --set golden-recorder.output=.qlt/baseline --fail-on never || true\n"
+    - name: is the map unfinished
+      if: '!cancelled() && github.event_name != ''pull_request'' && (inputs.profile || ''deep'') == ''deep'''
+      run: "rm -f \"$RUNNER_TEMP/qlt-chain-next\"\nchain=\"${QLT_CHAIN:-0}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target desktop; then\n  echo \"desktop\" >> \"$RUNNER_TEMP/qlt-chain-next\"\nfi\n"
     - if: always() && (inputs.profile || 'deep') == 'deep'
       uses: actions/cache/save@v4
       with:
@@ -199,7 +205,7 @@ jobs:
       if: '!cancelled() && github.event_name != ''pull_request'' && (inputs.profile || ''deep'') == ''deep'''
       env:
         GH_TOKEN: ${{ github.token }}
-      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target desktop; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=desktop -f profile=deep -f chain=$((chain + 1))\nfi\n"
+      run: "[ -f \"$RUNNER_TEMP/qlt-chain-next\" ] || exit 0\nchain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nwhile IFS= read -r target; do\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=\"$target\" -f profile=deep -f chain=$((chain + 1))\ndone < \"$RUNNER_TEMP/qlt-chain-next\"\n"
     - if: always()
       run: qlt report --format md > qa-report.md && cat qa-report.md >> "$GITHUB_STEP_SUMMARY" || true
     - if: always()
@@ -318,6 +324,9 @@ jobs:
     - name: changes since the previous run
       if: '!cancelled() && (inputs.profile || ''deep'') == ''deep'''
       run: "if [ -f \".qlt/baseline/android.json\" ]; then\n  qlt agent behavior-comparator --target android --set behavior-comparator.baseline=.qlt/baseline --fail-on never || true\nfi\nqlt agent golden-recorder --target android --set golden-recorder.output=.qlt/baseline --fail-on never || true\n"
+    - name: is the map unfinished
+      if: '!cancelled() && github.event_name != ''pull_request'' && (inputs.profile || ''deep'') == ''deep'''
+      run: "rm -f \"$RUNNER_TEMP/qlt-chain-next\"\nchain=\"${QLT_CHAIN:-0}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target android; then\n  echo \"android\" >> \"$RUNNER_TEMP/qlt-chain-next\"\nfi\n"
     - if: always() && (inputs.profile || 'deep') == 'deep'
       uses: actions/cache/save@v4
       with:
@@ -335,7 +344,7 @@ jobs:
       if: '!cancelled() && github.event_name != ''pull_request'' && (inputs.profile || ''deep'') == ''deep'''
       env:
         GH_TOKEN: ${{ github.token }}
-      run: "chain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nif [ \"$chain\" -ge 20 ]; then\n  echo \"20 runs in a row: not going on (start the workflow to go on)\"\n  exit 0\nfi\nif qlt unfinished --target android; then\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=android -f profile=deep -f chain=$((chain + 1))\nfi\n"
+      run: "[ -f \"$RUNNER_TEMP/qlt-chain-next\" ] || exit 0\nchain=\"${QLT_CHAIN:-0}\"\nworkflow=\"${GITHUB_WORKFLOW_REF%@*}\"\nworkflow=\"${workflow##*/}\"\nwhile IFS= read -r target; do\n  gh workflow run \"$workflow\" -R \"$GITHUB_REPOSITORY\" --ref \"$GITHUB_REF_NAME\" -f target=\"$target\" -f profile=deep -f chain=$((chain + 1))\ndone < \"$RUNNER_TEMP/qlt-chain-next\"\n"
     - if: always()
       run: qlt report --format md > qa-report.md && cat qa-report.md >> "$GITHUB_STEP_SUMMARY" || true
     - if: always()
