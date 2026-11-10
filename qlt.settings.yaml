@@ -9,7 +9,7 @@
 # pipeline.agents in project.yaml, a flow's agents, `--set agent.key=value`.
 # `qlt settings` shows the values in effect; `qlt settings update` adds options from
 # newer agents and keeps your values (not your own comments).
-# Written by Qualinaut 0.5.9.9.
+# Written by Qualinaut 0.5.9.10.
 
 format: 1  # the layout of this file; `qlt migrate` upgrades it
 
